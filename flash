@@ -1,0 +1,247 @@
+eval(require('Storage').read('dsd6')); //call ninebot
+var nb_mac="20:91:48:4c:49:d1 public"; //enaon
+//var nb_mac="88:C2:55:32:F6:5B public"; //manowar
+
+var nb_als=25;
+
+var clockFace = {
+  offms: 6000,
+  show : function(o){
+    if (!this.run) return;
+    var g=o.gfx;g.clear();
+    var d=(Date()).toString().split(' ');
+    var t=(d[4]).toString().split(':');
+    function central(text, y) {
+       g.drawString(text, (g.getWidth() - g.stringWidth(text))/2, y);
+    }
+       
+    g.setFontVector(23);
+    central(t[0],26);
+    central(t[1],67);
+    g.setFont8x16();
+    central(".  .",49);
+    central(this.v,2); 
+    g.setFont7x11Numeric7Seg();
+    central(d[2],100);
+    g.setFontDylex7x13();
+    central(d[0],118);
+	g.drawRect(0, 0, 29, 17);
+    g.drawRect(30, 4, 31, 12);
+    o.flip();o.on();
+
+    this.tid=setTimeout(function(t,o){
+      t.tid=-1;
+      t.show(o);
+    },1000-Date().getMilliseconds(),this,o);
+  },
+  tid:-1,
+  run:false,
+  init: function(){
+    //this.v=w.battVoltage().toString().substr(0,5)+"V";
+    this.v=(w.battVoltage()*100)-315|0;
+    if (this.v>=100) this.v=100;
+    this.run=true;
+  },
+  exit: function(o){
+    this.run=false;
+    if (this.tid>=0) clearTimeout(this.tid);
+    this.tid=-1;
+    return true;
+  },
+  off: function(o){
+    this.exit(o);
+  }
+};
+
+var NineBot = {
+  offms: 30000, //30 sec timeout
+  show : function(o){
+    var g=o.gfx;g.clear();
+    var nb_s;
+	var nb_a;
+    var nb_w;
+    var nb_m=(ninebot_185/100).toFixed(2);
+    //var nb_trip=((ninebot_185+ninebot_trip)/100).toFixed(2);
+    if (ninebot_38>0) nb_s=(ninebot_38/1000).toFixed(1).toString().split('.');
+      else nb_s=["-","0"]; 
+   	if (ninebot_lock) nb_s=["L","0"]; 
+	if (ninebot_80>32768) nb_a=((ninebot_80-65536)/100).toFixed(1); 
+      else nb_a=(ninebot_80/100).toFixed(1);
+    //nb_w=nb_a*(ninebot_71/100);
+    function central(text, y) {
+       g.drawString(text, (g.getWidth() - g.stringWidth(text))/2, y);
+    }
+    
+    if (nb_conn==1) {
+      nb_trip=((ninebot_185+ninebot_trip)/100).toFixed(2);
+      g.setFontVector(23);
+      central(nb_s[0], 24); //speed 1
+      //bigThenSmall(nb_s[0], nb_s[1], 0,22);
+      //central(nb_s[0], 22); //speed 
+     // g.setFont8x16();
+      //central(nb_a, 75); //amp
+      g.setFontVector(13);
+    //central(nb_w, 70); //watt
+      central(nb_a, 72); //amp
+      g.setFont7x11Numeric7Seg();
+      central(ninebot_62/10, 55); //temp
+    g.drawCircle(29, 55, 2);
+    } else if (nb_conn==3) {
+      nb_trip=(ninebot_trip/100).toFixed(2);
+      nb_s=["SCAN"];
+      g.setFontVector(10);
+      central(nb_s[0], 45); //speed-state
+    }  else if (nb_conn==2)  {
+      nb_trip=(ninebot_trip/100).toFixed(2);
+      nb_s=["Wait"];
+      g.setFontVector(12);
+      central(nb_s[0], 45); //speed-state      
+    }  else if (nb_conn==0)  {
+      nb_trip=(ninebot_trip/100).toFixed(2);
+      nb_s=["OFF"];
+      g.setFontVector(12);
+      central(nb_s[0], 45); //speed-state      
+    }   else if (nb_conn==4)  {
+      nb_trip=(ninebot_trip/100).toFixed(2);
+      nb_s=["ON"];
+      g.setFontVector(12);
+      central(nb_s[0], 45); //speed-state
+    }
+    g.setFont8x16();
+    central((((ninebot_71/100)-51.5)*10|0), 0); //fixed bat
+    g.drawLine(6,13,25,13);
+//    g.drawRect(0, 0, 29, 17);
+//    g.drawRect(30, 4, 31, 12);
+    g.setFont7x11Numeric7Seg();
+    central(nb_m, 97); //mileage
+    central(nb_trip, 117); //mileage total today
+    g.drawLine(0,92,31,92);
+    g.drawLine(0,112,31,112);
+	
+    o.flip();o.on();
+     // schedule refresh 
+    this.tid=setTimeout(function(t,o){
+      t.tid=-1;
+      t.show(o);
+    },100,this,o);
+
+  },
+  
+  exit: function(o){
+    this.run=false;
+    if (this.tid>=0) clearTimeout(this.tid);
+    this.tid=-1;
+    return true;
+  },
+
+  off: function(o){
+    this.exit(o);
+  }, 
+  init: function(){
+    this.page=0;
+  }
+};
+
+var offid=-1;
+var offms=5000;
+var fcurr=-1;
+var fprev=-1;
+var faces = [
+  clockFace,
+  NineBot
+];
+
+
+//var dbl_s=false;
+
+
+function buttonHandler(s){
+//  if (dbl_s) { dls_s=false; return;}
+//  var isLong = (s && s.lastTime && (s.time-s.lastTime)>1.1);
+//  console.log("lala");
+
+  if (digitalRead(BTN)==1) { 
+    press=s.time;
+    l1=setTimeout(() => {
+      if (gatt.connected || nb_conn==3) {
+        nb_conn=0; w.vibrate(0.85,1,450,200);
+        faces[0].exit(); faces[1].exit();
+        faces[0].off(); faces[1].off();
+        fcurr=1;
+        faces[1].init();
+        faces[1].show(o);
+        setTimeout(() => { faces[0].exit(); faces[1].exit(); 
+          faces[0].off(); faces[1].off();o.off(); fcurr=-1; }, 1500);
+      } else if (!gatt.connected && nb_conn!=4 && nb_conn!=3) {
+        w.vibrate(0.85,1,100,600); ninebot(); nb_conn=4; 
+        faces[0].exit();
+        faces[1].exit();
+        faces[0].off(); faces[1].off();
+        fcurr=1;
+        faces[1].init();
+        faces[1].show(o);
+        setTimeout(() => { faces[0].exit(); faces[1].exit();
+          faces[0].off(); faces[1].off(); o.off();fcurr=-1; }, 8000);
+      }
+      press=false;
+    }, 1000);
+    setTimeout(() => {
+      if (digitalRead(BTN)==1) {
+       w.vibrate(0.85,2,300,100); ninebot_trip=0;
+      press=false;}
+    }, 5000);              
+    return;
+  }else if (press)  { 
+    clearTimeout(l1);
+
+   //if (typeof l2 !== "undefined") {clearTimeout(l2); return;}
+   //if (!press) return;
+    if ((s.time-press)>0.5) {
+       
+    }	
+	var fshow=1;
+    if (fcurr<0){
+    // nothing active, make first one
+    fprev=fcurr;
+    fcurr=0;
+    if (nb_conn==1) fcurr=1;  
+    if (faces[fcurr].init) faces[fcurr].init();
+    } else {
+    // ask active one to exit
+    if (!faces[fcurr].exit || faces[fcurr].exit(o)){
+      // ok exit from current face allowed
+      fprev=fcurr;
+      if(o.isOn) {
+        fcurr++; if (fcurr >= faces.length) fcurr=0;
+      } else fcurr=0;
+      if (faces[fcurr].init) faces[fcurr].init();
+      } else fshow=0;
+    }
+    if (offid>=0) clearTimeout(offid);
+    var foffms=faces[fcurr].offms;
+    offid=setTimeout((f)=>{
+      if (f>=0 && faces[f].off) faces[f].off(o);
+      o.off();offid=-1;fcurr=-1;
+    },(foffms>0)?foffms:offms,fcurr);
+    if (fshow) faces[fcurr].show(o);
+  }
+}
+
+
+setTimeout(()=>{
+  o.setContrast(100);
+  o.off();
+  o.setRotation(0); //enaon-vertical
+  E.setPassword("sotos");
+//  E.lockConsole();
+  w.vibrate(0.75,1,200,600);
+  eval(require('Storage').read('ninebot')); //enaon call ninebot
+  //w.setClock("2020-04-05T20:25:02",0); //enaon set time
+  setWatch(buttonHandler,BTN1, {repeat:true, debounce:10,edge:"both"});
+},1000);
+
+setupSerial();// first set to known state
+// now pause serial console for power saving, it will be enabled when RX goes high
+// it should be enough to connect to serial adapter
+pauseConsole(Serial1);
+
