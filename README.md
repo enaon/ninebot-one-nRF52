@@ -15,7 +15,7 @@ code has some bugs and is wip, yet usable as it stands.
 Hold the button for 1.5 sec for turning the connection to the ninebot on/off.
 Hold the button for 5 secs to reset total trip mileage.
 
-If the wheel will auto-lock if left still and the bracelet goes further than -79dBm, it auto-unlocks when the bracelet is closer than -68dBm. 
+The wheel will auto-lock if left still and the bracelet goes further away than -79dBm, it auto-unlocks when the bracelet is closer than -68dBm. 
 
 The sceen displays battery persentage, speed, temp, amperage, ride mileage since last power on and total ride mileage.
 
