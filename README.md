@@ -20,3 +20,5 @@ If the wheel will auto-lock if left still and the bracelet goes further than -79
 The sceen displays battery persentage, speed, temp, amperage, ride mileage since last power on and total ride mileage.
 
 The battery persentage is not the one reported by ninebot but a "fixed one", meaning 100% is 61.5volts instead of 60V, 0% is 51.5V thus safer, and allows for values over 100% to accommodate for overvoltage when going down a slope on a full battery. At 63Vollts the ninebot auto-shuts off to protect the battery, thus values over 100% are informative. 
+
+The BLE antenna of the dsd6 is bad, it will loose connection to the ninebot when raised tfo face level, it must be changed using a piece of copper wire.
