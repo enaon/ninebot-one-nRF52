@@ -5,7 +5,7 @@ Scripts for directly connecting a Nordic Semiconductor nRF5 based smart bracelet
 
 Dsd6 runs espruino https://github.com/fanoush/ds-d6
 
-More info on nRF5 based bracets/watches and custom firmwares.
+More info on nRF5 based bands/watches and custom firmwares.
 https://github.com/atc1441/D6-arduino-nRF5
 
 
