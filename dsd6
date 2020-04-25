@@ -157,7 +157,7 @@ spi.setup({mosi:D6,sck:D5,baud:8000000});
 
 if (f===undefined) f=function(){
  o.gfx.setFont8x16();
- o.gfx.drawString("enaon band v1 ",20,12);
+ o.gfx.drawString("NineBot One",20,12);
  o.flip();
 };
 if(rot===undefined) rot=0;
