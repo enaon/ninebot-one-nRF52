@@ -1,11 +1,17 @@
 eval(require('Storage').read('dsd6')); //call ninebot
 var nb_mac="20:91:48:4c:49:d1 public"; //enaon
+var nb_pass="2200022";
 //var nb_mac="88:C2:55:32:F6:5B public"; //manowar
 
-var nb_als=25;
+var nb_als=23; // speed in khm
+var nb_alt=58; // temp in celcius
+var nb_alah=12; // amps high
+var nb_alal=-3.5;// amps regenerative
+var nb_a;
+var nb_s=["-","0"];
 
 var clockFace = {
-  offms: 6000,
+  offms: 3000,
   show : function(o){
     if (!this.run) return;
     var g=o.gfx;g.clear();
@@ -38,7 +44,8 @@ var clockFace = {
   run:false,
   init: function(){
     //this.v=w.battVoltage().toString().substr(0,5)+"V";
-    this.v=(w.battVoltage()*100)-315|0;
+    //this.v=(w.battVoltage()*100)-315|0;
+	this.v=(w.battVoltage()*100-365)*2|0;
     if (this.v>=100) this.v=100;
     this.run=true;
   },
@@ -54,67 +61,63 @@ var clockFace = {
 };
 
 var NineBot = {
-  offms: 30000, //30 sec timeout
+  offms: 10000, //10 sec timeout
   show : function(o){
     var g=o.gfx;g.clear();
-    var nb_s;
-	var nb_a;
-    var nb_w;
+    //var nb_s;
+	//var nb_a;
     var nb_m=(ninebot_185/100).toFixed(2);
-    //var nb_trip=((ninebot_185+ninebot_trip)/100).toFixed(2);
+    var nb_trip=((ninebot_185+ninebot_trip)/100).toFixed(2);
     if (ninebot_38>0) nb_s=(ninebot_38/1000).toFixed(1).toString().split('.');
       else nb_s=["-","0"]; 
    	if (ninebot_lock) nb_s=["L","0"]; 
-	if (ninebot_80>32768) nb_a=((ninebot_80-65536)/100).toFixed(1); 
-      else nb_a=(ninebot_80/100).toFixed(1);
-    //nb_w=nb_a*(ninebot_71/100);
     function central(text, y) {
        g.drawString(text, (g.getWidth() - g.stringWidth(text))/2, y);
     }
-    
+  
     if (nb_conn==1) {
       nb_trip=((ninebot_185+ninebot_trip)/100).toFixed(2);
       g.setFontVector(23);
-      central(nb_s[0], 24); //speed 1
-      //bigThenSmall(nb_s[0], nb_s[1], 0,22);
-      //central(nb_s[0], 22); //speed 
-     // g.setFont8x16();
-      //central(nb_a, 75); //amp
-      g.setFontVector(13);
-    //central(nb_w, 70); //watt
+      central(nb_s[0], 23); //speed 1
+      g.setFontVector(15);
       central(nb_a, 72); //amp
       g.setFont7x11Numeric7Seg();
       central(ninebot_62/10, 55); //temp
-    g.drawCircle(29, 55, 2);
+	  g.drawCircle(29, 55, 2);
     } else if (nb_conn==3) {
       nb_trip=(ninebot_trip/100).toFixed(2);
       nb_s=["SCAN"];
       g.setFontVector(10);
-      central(nb_s[0], 45); //speed-state
+      central(nb_s[0], 40); //speed-state
+      g.setFontVector(16);
+      if (ninebot_lock) {central("L", 62);} //speed-state
     }  else if (nb_conn==2)  {
       nb_trip=(ninebot_trip/100).toFixed(2);
       nb_s=["Wait"];
       g.setFontVector(12);
-      central(nb_s[0], 45); //speed-state      
+      central(nb_s[0], 40); //speed-state      
     }  else if (nb_conn==0)  {
       nb_trip=(ninebot_trip/100).toFixed(2);
       nb_s=["OFF"];
       g.setFontVector(12);
-      central(nb_s[0], 45); //speed-state      
+      central(nb_s[0], 40); //speed-state 
+      g.setFontVector(16);
+      if (ninebot_lock) {central("L", 62);} //speed-state	  
     }   else if (nb_conn==4)  {
       nb_trip=(ninebot_trip/100).toFixed(2);
       nb_s=["ON"];
-      g.setFontVector(12);
-      central(nb_s[0], 45); //speed-state
+      g.setFontVector(16);
+      central(nb_s[0], 40); //speed-state
     }
-    g.setFont8x16();
+//    g.setFont8x16();
+    g.setFontVector(15);
     central((((ninebot_71/100)-51.5)*10|0), 0); //fixed bat
-    g.drawLine(6,13,25,13);
+    g.drawLine(4,18,26,18);
 //    g.drawRect(0, 0, 29, 17);
 //    g.drawRect(30, 4, 31, 12);
     g.setFont7x11Numeric7Seg();
     central(nb_m, 97); //mileage
-    central(nb_trip, 117); //mileage total today
+    central(nb_trip, 117); //mileage total
     g.drawLine(0,92,31,92);
     g.drawLine(0,112,31,112);
 	
@@ -139,9 +142,10 @@ var NineBot = {
   }, 
   init: function(){
     this.page=0;
+    
   }
 };
-
+var dbl=0;
 var offid=-1;
 var offms=5000;
 var fcurr=-1;
@@ -151,26 +155,21 @@ var faces = [
   NineBot
 ];
 
-
-//var dbl_s=false;
-
-
 function buttonHandler(s){
-//  if (dbl_s) { dls_s=false; return;}
-//  var isLong = (s && s.lastTime && (s.time-s.lastTime)>1.1);
-//  console.log("lala");
 
   if (digitalRead(BTN)==1) { 
     press=s.time;
+    if (typeof l2 !== "undefined") {clearTimeout(l2);}
+    if (typeof offid !== "undefined") {clearTimeout(offid);}
     l1=setTimeout(() => {
       if (gatt.connected || nb_conn==3) {
-        nb_conn=0; w.vibrate(0.85,1,450,200);
+        nb_conn=0; w.vibrate(0.85,2,80,50);
         faces[0].exit(); faces[1].exit();
         faces[0].off(); faces[1].off();
         fcurr=1;
         faces[1].init();
         faces[1].show(o);
-        setTimeout(() => { faces[0].exit(); faces[1].exit(); 
+        offid=setTimeout(() => { faces[0].exit(); faces[1].exit(); 
           faces[0].off(); faces[1].off();o.off(); fcurr=-1; }, 1500);
       } else if (!gatt.connected && nb_conn!=4 && nb_conn!=3) {
         w.vibrate(0.85,1,100,600); ninebot(); nb_conn=4; 
@@ -180,25 +179,36 @@ function buttonHandler(s){
         fcurr=1;
         faces[1].init();
         faces[1].show(o);
-        setTimeout(() => { faces[0].exit(); faces[1].exit();
+        offid=setTimeout(() => { faces[0].exit(); faces[1].exit();
           faces[0].off(); faces[1].off(); o.off();fcurr=-1; }, 8000);
       }
       press=false;
     }, 1000);
-    setTimeout(() => {
-      if (digitalRead(BTN)==1) {
-       w.vibrate(0.85,2,300,100); ninebot_trip=0;
-      press=false;}
-    }, 5000);              
+    l2=setTimeout(() => {
+        if (digitalRead(BTN)==1) {
+        w.vibrate(0.85,2,300,100); 
+        NRF.setServices({},{uart:false});
+        NRF.setServices({},{uart:true});  
+        setTimeout(() => {reset();}, 500);
+        //reset();
+	    }
+      }, 5000);  
     return;
+    
   }else if (press)  { 
     clearTimeout(l1);
-
-   //if (typeof l2 !== "undefined") {clearTimeout(l2); return;}
-   //if (!press) return;
-    if ((s.time-press)>0.5) {
-       
-    }	
+    clearTimeout(l2);
+//	  var dbl=(s && s.lastTime && (s.time-s.lastTime)<0.15);
+//  if (dbl)console.log("double click",(s.time-s.lastTime));
+//    if ((s.time-press)>0.5) {
+//    }	
+    s.last=s.time;
+    if  (fcurr==-1) {
+      dbl++;
+      setTimeout(() => {dbl=0;}, 300);
+      if (dbl==2) { dbl=0;}
+      else return;
+    }
 	var fshow=1;
     if (fcurr<0){
     // nothing active, make first one
@@ -227,18 +237,19 @@ function buttonHandler(s){
   }
 }
 
-
+//setup
 setTimeout(()=>{
   o.setContrast(100);
   o.off();
-  o.setRotation(0); //enaon-vertical
-  E.setPassword("sotos");
+  o.setRotation(0); //vertical
+  E.setPassword("1234");
 //  E.lockConsole();
   w.vibrate(0.75,1,200,600);
-  eval(require('Storage').read('ninebot')); //enaon call ninebot
-  //w.setClock("2020-04-05T20:25:02",0); //enaon set time
+  eval(require('Storage').read('ninebot')); //call ninebot
+  //w.setClock("2020-04-19T04:29:02",0); //set time
+  E.setTimeZone(3);
   setWatch(buttonHandler,BTN1, {repeat:true, debounce:10,edge:"both"});
-},1000);
+},500);
 
 setupSerial();// first set to known state
 // now pause serial console for power saving, it will be enabled when RX goes high
