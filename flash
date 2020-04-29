@@ -1,10 +1,12 @@
 eval(require('Storage').read('dsd6')); //call ninebot
 var nb_mac="20:91:48:4c:49:d1 public"; //enaon
-var nb_pass="2200022";
 //var nb_mac="88:C2:55:32:F6:5B public"; //manowar
+//var nb_mac="20:91:48:AB:2A:AD public"; //megadeath
+
+var nb_pass="2200022";
 
 var nb_als=23; // speed in khm
-var nb_alt=58; // temp in celcius
+var nb_alt=60; // temp in celcius
 var nb_alah=12; // amps high
 var nb_alal=-3.5;// amps regenerative
 var nb_a;
@@ -76,7 +78,6 @@ var NineBot = {
     }
   
     if (nb_conn==1) {
-      nb_trip=((ninebot_185+ninebot_trip)/100).toFixed(2);
       g.setFontVector(23);
       central(nb_s[0], 23); //speed 1
       g.setFontVector(15);
@@ -85,26 +86,22 @@ var NineBot = {
       central(ninebot_62/10, 55); //temp
 	  g.drawCircle(29, 55, 2);
     } else if (nb_conn==3) {
-      nb_trip=(ninebot_trip/100).toFixed(2);
       nb_s=["SCAN"];
       g.setFontVector(10);
       central(nb_s[0], 40); //speed-state
       g.setFontVector(16);
       if (ninebot_lock) {central("L", 62);} //speed-state
     }  else if (nb_conn==2)  {
-      nb_trip=(ninebot_trip/100).toFixed(2);
       nb_s=["Wait"];
       g.setFontVector(12);
       central(nb_s[0], 40); //speed-state      
     }  else if (nb_conn==0)  {
-      nb_trip=(ninebot_trip/100).toFixed(2);
       nb_s=["OFF"];
       g.setFontVector(12);
       central(nb_s[0], 40); //speed-state 
       g.setFontVector(16);
       if (ninebot_lock) {central("L", 62);} //speed-state	  
     }   else if (nb_conn==4)  {
-      nb_trip=(ninebot_trip/100).toFixed(2);
       nb_s=["ON"];
       g.setFontVector(16);
       central(nb_s[0], 40); //speed-state
@@ -113,8 +110,6 @@ var NineBot = {
     g.setFontVector(15);
     central((((ninebot_71/100)-51.5)*10|0), 0); //fixed bat
     g.drawLine(4,18,26,18);
-//    g.drawRect(0, 0, 29, 17);
-//    g.drawRect(30, 4, 31, 12);
     g.setFont7x11Numeric7Seg();
     central(nb_m, 97); //mileage
     central(nb_trip, 117); //mileage total
@@ -202,13 +197,13 @@ function buttonHandler(s){
 //  if (dbl)console.log("double click",(s.time-s.lastTime));
 //    if ((s.time-press)>0.5) {
 //    }	
-    s.last=s.time;
-    if  (fcurr==-1) {
-      dbl++;
-      setTimeout(() => {dbl=0;}, 300);
-      if (dbl==2) { dbl=0;}
-      else return;
-    }
+//    s.last=s.time;
+//    if  (fcurr==-1) {
+//      dbl++;
+//      setTimeout(() => {dbl=0;}, 300);
+//      if (dbl==2) { dbl=0;}
+//      else return;
+//    }
 	var fshow=1;
     if (fcurr<0){
     // nothing active, make first one
