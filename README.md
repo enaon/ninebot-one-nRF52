@@ -1,5 +1,5 @@
-# ninebot-one-c-e-p
-ninebot one unicycle
+# ninebot-one nRF52
+ninebot one (c/e/p) unicycle
 
 Scripts for directly connecting a Nordic Semiconductor nRF5 based smart bracelet/fitness band, mpow dsd6, to a ninebot one c/e/p.
 
