@@ -190,7 +190,7 @@ function accRegDump(reg){
   val=accRead(reg,1)[0];return val.toString(10)+" 0x"+val.toString(16)+" %"+val.toString(2);
 }
 exports.accINSDump=function(){
-  console.log("INS1:",accRegDump(0x12),"INS2:",accRegDump(0x13),"INS3:",accRegDump(0x14));
+  console.log("tscp:",accRegDump(0x10),"INS1:",accRegDump(0x12),"INS2:",accRegDump(0x13),"INS3:",accRegDump(0x14));
 };
 exports.accelCoords=function(){
   coords=new Int16Array(accRead(0x06,6).buffer);
@@ -231,6 +231,6 @@ function pauseConsole(s){
 
 
 // watch KX023 interrupt pin
-setWatch(function(s){
-  if (s.state){w.accINSDump();console.log(s,w.accRegDump(0x17));}
-},D15,true);
+//setWatch(function(s){
+//  if (s.state){w.accINSDump();console.log(s,w.accRegDump(0x17));}
+//},D15,true);
