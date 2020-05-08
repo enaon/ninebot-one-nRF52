@@ -1,14 +1,14 @@
 eval(require('Storage').read('dsd6')); //call ninebot
-var nb_mac="20:91:48:4c:49:d1 public"; //enaon
+//var nb_mac="20:91:48:4c:49:d1 public"; //enaon
 //var nb_mac="88:C2:55:32:F6:5B public"; //manowar
-//var nb_mac="20:91:48:AB:2A:AD public"; //megadeath
+var nb_mac="20:91:48:AB:2A:AD public"; //megadeath
 
 var nb_pass="2200022";
 
 var nb_als=23; // speed in khm
 var nb_alt=60; // temp in celcius
-var nb_alah=12; // amps high
-var nb_alal=-3.5;// amps regenerative
+var nb_alah=18; // amps high
+var nb_alal=-5;// amps regenerative
 var nb_a;
 var nb_s=["-","0"];
 
@@ -62,7 +62,7 @@ var clockFace = {
   }
 };
 
-var NineBot = {
+var nb_Main = {
   offms: 10000, //10 sec timeout
   show : function(o){
     var g=o.gfx;g.clear();
@@ -140,6 +140,88 @@ var NineBot = {
     
   }
 };
+
+var nb_Info = {
+  offms: 30000, //30 sec timeout
+  show : function(o){
+    var g=o.gfx;g.clear();
+    var nb_s;
+	var nb_a;
+    var nb_m=(ninebot_185/100).toFixed(2);
+    if (ninebot_38>0) nb_s=(ninebot_38/1000).toFixed(1).toString().split('.');
+      else nb_s=["-","0"]; 
+   	if (ninebot_lock) nb_s=["L","0"]; 
+	if (ninebot_80>32768) nb_a=((ninebot_80-65536)/100).toFixed(1); 
+      else nb_a=(ninebot_80/100).toFixed(1);
+    function central(text, y) {
+       g.drawString(text, (g.getWidth() - g.stringWidth(text))/2, y);
+    }
+    
+	      
+    if (nb_conn==1) {
+      g.setFontVector(23);
+      central(nb_s[0], 32); //speed 1
+      g.setFontVector(13);
+    } else if (nb_conn==3) {
+      nb_s=["SCAN"];
+      g.setFontVector(10);
+      central(nb_s[0], 30); //speed-state
+    }  else if (nb_conn==2)  {
+      nb_s=["Wait"];
+      g.setFontVector(12);
+      central(nb_s[0], 30); //speed-state      
+    }  else if (nb_conn==0)  {
+      nb_s=["OFF"];
+      g.setFontVector(12);
+      central(nb_s[0], 30); //speed-state  
+      if (ninebot_lock) {central("L", 50);} //speed-state	  
+    }   else if (nb_conn==4)  {
+      nb_s=["ON"];
+      g.setFontVector(12);
+      central(nb_s[0], 37); //speed-state
+    }
+	
+      if  (nb_a<=0){
+        var nb_a_tmp=-nb_a;
+        g.fillRect(0,74,31,102);
+        o.gfx.setColor(0);
+        g.setFontVector(19);central(nb_a_tmp, 82);
+        o.gfx.setColor(1);
+      } else if (nb_a<10) {g.setFontVector(19);central(nb_a, 82);} //amp
+      else  {g.setFontVector(23); central(nb_a|0, 77);}//amp
+      g.setFontVector(13);
+      central(ninebot_62/10, 110); //temp
+      g.setFontVector(14);
+      central((((ninebot_71/100)-51.5)*10|0), 0); //fixed bat
+    g.drawLine(0,20,31,20);
+    g.drawLine(0,72,31,72);
+    g.drawLine(0,105,31,105);
+	
+    o.flip();o.on();
+     // schedule refresh 
+    this.tid=setTimeout(function(t,o){
+      t.tid=-1;
+      t.show(o);
+    },100,this,o);
+
+  },
+  
+  exit: function(o){
+    this.run=false;
+    if (this.tid>=0) clearTimeout(this.tid);
+    this.tid=-1;
+    return true;
+  },
+
+  off: function(o){
+    this.exit(o);
+  }, 
+  init: function(){
+    this.page=0;
+  }
+};
+var w_up=false;
+var press=true;
 var dbl=0;
 var offid=-1;
 var offms=5000;
@@ -147,69 +229,79 @@ var fcurr=-1;
 var fprev=-1;
 var faces = [
   clockFace,
-  NineBot
+  nb_Main,
+  nb_Info
 ];
 
 function buttonHandler(s){
 
   if (digitalRead(BTN)==1) { 
-    press=s.time;
+  
+	
+    press=true;
     if (typeof l2 !== "undefined") {clearTimeout(l2);}
     if (typeof offid !== "undefined") {clearTimeout(offid);}
-    l1=setTimeout(() => {
+	
+    offid=setTimeout(() => {
       if (gatt.connected || nb_conn==3) {
-        nb_conn=0; w.vibrate(0.85,2,80,50);
-        faces[0].exit(); faces[1].exit();
-        faces[0].off(); faces[1].off();
-        fcurr=1;
-        faces[1].init();
-        faces[1].show(o);
-        offid=setTimeout(() => { faces[0].exit(); faces[1].exit(); 
-          faces[0].off(); faces[1].off();o.off(); fcurr=-1; }, 1500);
+        nb_conn=0; w.vibrate(0.85,2,100,50);
+		if (typeof nb_rec_tmr !== "undefined") {clearTimeout(nb_rec_tmr); console.log("clear tmr");}
+        o.setContrast(100);
+        w.accWrite(0x18,0x41);
+        w_up=false;
+        if (fcurr!=-1){
+        faces[fcurr].exit(); faces[fcurr].off();
+        }
+        fcurr=2;
+        faces[fcurr].init();faces[fcurr].show(o);
+        offid=setTimeout(() => { faces[fcurr].exit(); 
+          faces[fcurr].off();o.off(); fcurr=-1; }, 1500);
+        
       } else if (!gatt.connected && nb_conn!=4 && nb_conn!=3) {
         w.vibrate(0.85,1,100,600); ninebot(); nb_conn=4; 
-        faces[0].exit();
-        faces[1].exit();
-        faces[0].off(); faces[1].off();
-        fcurr=1;
-        faces[1].init();
-        faces[1].show(o);
-        offid=setTimeout(() => { faces[0].exit(); faces[1].exit();
-          faces[0].off(); faces[1].off(); o.off();fcurr=-1; }, 8000);
-      }
+        o.setContrast(254);
+        w.accWrite(0x18,0xC1);
+        if (fcurr!=-1){
+        faces[fcurr].exit(); faces[fcurr].off();
+        }        fcurr=2;
+        faces[fcurr].init();faces[fcurr].show(o);
+        offid=setTimeout(() => { faces[fcurr].exit(); 
+        faces[fcurr].off();o.off(); fcurr=-1; }, 8000);
+       }
       press=false;
     }, 1000);
     l2=setTimeout(() => {
         if (digitalRead(BTN)==1) {
-        w.vibrate(0.85,2,300,100); 
+        w.vibrate(0.85,2,400,100); 
         NRF.setServices({},{uart:false});
         NRF.setServices({},{uart:true});  
-        setTimeout(() => {reset();}, 500);
+		l2=setTimeout(() => {reset();}, 1000);
         //reset();
 	    }
-      }, 5000);  
+    }, 5000);  
     return;
     
   }else if (press)  { 
-    clearTimeout(l1);
-    clearTimeout(l2);
+    if (typeof l2 !== "undefined") {clearTimeout(l2);}
+    if (typeof offid !== "undefined") {clearTimeout(offid);}
+	
 //	  var dbl=(s && s.lastTime && (s.time-s.lastTime)<0.15);
 //  if (dbl)console.log("double click",(s.time-s.lastTime));
 //    if ((s.time-press)>0.5) {
 //    }	
 //    s.last=s.time;
-//    if  (fcurr==-1) {
-//      dbl++;
-//      setTimeout(() => {dbl=0;}, 300);
-//      if (dbl==2) { dbl=0;}
-//      else return;
-//    }
+    if  (fcurr==-1 && w_up==false) {
+      dbl++;
+      setTimeout(() => {dbl=0;}, 300);
+      if (dbl==2) { dbl=0;}
+      else return;
+    }
 	var fshow=1;
     if (fcurr<0){
     // nothing active, make first one
     fprev=fcurr;
     fcurr=0;
-    if (nb_conn==1) fcurr=1;  
+    if (nb_conn!=0) fcurr=2;  
     if (faces[fcurr].init) faces[fcurr].init();
     } else {
     // ask active one to exit
@@ -244,6 +336,48 @@ setTimeout(()=>{
   //w.setClock("2020-04-19T04:29:02",0); //set time
   E.setTimeZone(3);
   setWatch(buttonHandler,BTN1, {repeat:true, debounce:10,edge:"both"});
+
+   w.initAccel();
+  w.accWrite(0x18,0x41); //standby mode
+  //w.accWrite(0x18,0x45); //both tilt and tap
+  //w.accWrite(0x19,0x3F);;//all three axes
+  w.accWrite(0x19,0x10);//enable when face up
+  w.accWrite(0x22,0x01);
+  //w.accWrite(0x32,0x0C); //22 degrees
+  w.accWrite(0x32,0x03); //6 degrees
+  w.accWrite(0x1c,0x30);
+  w.accWrite(0x1f,0x01);
+  //w.accWrite(0x1f,0x05); //both tilt and tap
+  w.accWrite(0x18,0xC1); // operational mode tilt
+  //w.accWrite(0x18,0xC5);//operational mode both tilt and tap
+  w.accRegDump(0x17);
+  
+  setWatch(function(s){
+  if (s.state){
+  console.log((w.accRegDump(0x10)));
+    var state=(w.accRegDump(0x10)).toString().split(' ');
+	if (state[0]==16) {
+      w.accWrite(0x19,0x2f);
+      w_up=true;
+      if (fcurr==-1) { 
+        if (typeof offid !== "undefined") {clearTimeout(offid);}
+        press=true;
+        buttonHandler();
+      }
+    }else if (state[0]!=16) {
+       w.accWrite(0x19,0x10);
+       w_up=false;
+      if (fcurr!=-1) {  
+      if (typeof offid !== "undefined") {clearTimeout(offid);}
+      offid=setTimeout(() => { faces[fcurr].exit(); 
+        faces[fcurr].off();o.off(); fcurr=-1; }, 10);
+    }
+    }
+    w.accRegDump(0x17);
+  }
+  },D15,true);  
+  w.accRegDump(0x17);
+  
 },500);
 
 setupSerial();// first set to known state
