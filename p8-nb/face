@@ -1,5 +1,5 @@
 //face
-
+E.setFlags({pretokenise:1});
 console.log("face start");
 var button;    
 var g=w.gfx;  
@@ -9,33 +9,54 @@ var clockFace = {
   offms: 5000,
   show : function(o){
     if (!this.run) return;
-  function central(text, y) {
-     g.drawString(text, (240 - g.stringWidth(text))/2, y);
-  }  
+ 
   var d=(Date()).toString().split(' ');
   var t=(d[4]).toString().split(':');
   var s=(t[2]).toString().split('');
-    
   g.setColor(0);
-  g.fillRect(0,60,100,150);
+  g.fillRect(0,60,100,155);
   g.setColor(15);
-  g.setFont("7x11Numeric7Seg",7);
+  //g.setFont("7x11Numeric7Seg",7);
+  g.setFont("Vector",65);
   g.drawString(t[0],0,75); //hours
   g.setFont("Vector",45);
   g.drawString(":",96,85);
   g.flip();
   g.drawString(":",96,85);
-  g.setFont("7x11Numeric7Seg",7);
-  g.setColor(0);g.fillRect(110,60,210,150);
-  g.setColor(7);//blue
+//  g.setFont("7x11Numeric7Seg",7);
+  g.setFont("Vector",65);
+  g.setColor(0);g.fillRect(110,60,210,155);
+  g.setColor(10);//
   g.drawString(t[1],118,75); //minutes
-  g.setFont("7x11Numeric7Seg",3);
+  g.setFont("Vector",35);
+//  g.setFont("7x11Numeric7Seg",3);
   g.flip();
-  g.setColor(0);g.fillRect(211,60,240,150);
-  g.setColor(9);//blue
+  g.setColor(0);g.fillRect(211,60,240,155);
+  g.setColor(11);//
   g.drawString(s[0],222,77); //seconds
   g.drawString(s[1],222,118); //seconds
   g.flip();  
+  //batt
+  if (digitalRead(w.pin.CHARGING)==0)
+    g.setColor(13);
+  else 
+    g.setColor(7);
+  g.fillRect(162,0,239,50);//batt
+  g.setColor(0);
+  g.setFont("7x11Numeric7Seg",4);
+  g.drawString(this.v,240-(g.stringWidth(this.v)),3); //batt
+  g.flip();
+  //euc
+  if (euc.val.lock==1)  g.setColor(13);
+  else if (euc.val.conn=="READY") g.setColor(9);
+  else g.setColor(7);
+  g.fillRect(162,200,239,239);
+  g.setColor(0);
+  g.setFont("Vector",28);
+  g.drawString("EUC", 163 ,205); 
+  g.flip();
+
+    
   //loop
     this.tid=setTimeout(function(t,o){
       t.tid=-1;
@@ -44,7 +65,6 @@ var clockFace = {
   },
   tid:-1,
   run:false,
-  
   init: function(){
     var d=(Date()).toString().split(' ');
     this.v=(w.battVoltage()*100-365)*2|0;
@@ -57,29 +77,13 @@ var clockFace = {
     g.setColor(0);
     g.setFont("Vector",28);
     g.drawString(mem(), 0 ,205); //memmory
-    g.setFont("Vector",40);
-    g.drawString(d[2]+" "+d[0], (79-(g.stringWidth(d[2]+" "+d[0]))/2) ,3); //date
+    g.drawString("EUC", 163 ,205); //euc
+    g.setFont("Vector",35);
+    g.drawString(d[2]+" "+d[0], (79-(g.stringWidth(d[2]+" "+d[0]))/2) ,5); //date
     g.setFont("7x11Numeric7Seg",4);
-    g.drawString(this.v,240-(g.stringWidth(this.v)),3); 
+    g.drawString(this.v,240-(g.stringWidth(this.v)),3); //batt
     g.flip();
-    
-    if (euc.val.lock==1) {
-      g.setColor(13);
-      g.fillRect(162,200,239,239);
-      g.flip();
-    }else if (euc.val.conn=="READY") {
-      g.setColor(9);
-      g.fillRect(162,200,239,239);
-      g.flip();
-    }
-    g.setColor(0);
-    g.setFont("Vector",28);
-    g.drawString("EUC", 163 ,205); 
-    g.flip();
-
     if(!g.isOn) g.on();
-
-
     this.run=true;
   },
   clear : function(o){
@@ -100,8 +104,6 @@ var clockFace = {
     this.clear(o);
   }
 };
-
-
 //Euc main face
 var EucMain = {
   offms: 15000, //15 sec timeout
@@ -158,7 +160,6 @@ var EucMain = {
           g.flip();
         }    
     }
-    
     //Temp
     if (euc.val.temp!=euc.tmp.temp) {
       euc.tmp.temp=euc.val.temp;
@@ -184,7 +185,7 @@ var EucMain = {
 	  euc.tmp.tripNow=euc.val.tripNow;
 	  g.setColor(0);
 	  g.fillRect(0,194,239,239);
-	  g.setColor(9);
+      g.setColor(11);
 	  g.setFont("7x11Numeric7Seg",3);
    	  g.drawString(euc.val.tripNow,0,205); 
 	  g.drawString(euc.val.tripTotal,(240-(g.stringWidth(euc.val.tripTotal)))/2,205); 
@@ -201,15 +202,18 @@ var EucMain = {
     g.setFont("7x11Numeric7Seg",5);
     g.drawString(euc.val.aver,(139-(g.stringWidth(euc.val.aver)))/2,90); 
     g.flip();
-    if (euc.val.lock==1) {
-      g.setColor(7);
-      g.fillRect(139,54,239,154); 
-      g.setColor(0); 
-	  g.setFontVector(18);
-	  g.drawString("RunTIME",141,60);
-	  g.setFont("7x11Numeric7Seg",5);
-  	  g.drawString(euc.val.time,192-(g.stringWidth(euc.val.time)/2),90); 
-      g.flip();
+    if (euc.val.lock==1) g.setColor(13);
+    else  g.setColor(7);
+    g.fillRect(139,54,239,154); 
+    g.setColor(0); 
+	g.setFontVector(18);
+	g.drawString("RunTIME",141,60);
+	g.setFont("7x11Numeric7Seg",5);
+  	g.drawString(euc.val.time,192-(g.stringWidth(euc.val.time)/2),90); 
+    g.flip();
+  
+      
+/*      
     }else {
       g.setColor(0);
       g.fillRect(139,54,239,154); 
@@ -218,6 +222,7 @@ var EucMain = {
       g.drawString("OFF",142,85);
       g.flip();
     }  
+*/
   // rest
   } else  {
     g.setColor(7);
@@ -248,7 +253,6 @@ var EucMain = {
       t.show(o);
     },100,this,o);
   },
-  
   tid:-1,
   run:false,
   clear : function(o){
@@ -256,7 +260,6 @@ var EucMain = {
     this.exit(o);
     return true;
   },
-
   exit: function(o){
 
     this.run=false;
@@ -264,73 +267,45 @@ var EucMain = {
     this.tid=-1;
     return true;
   },
-
   off: function(o){
     g.off();
     this.clear(o);
   }, 
-  
   init: function(){
-    // refresh
-    euc.tmp.speed[0]="-1";
-    euc.tmp.speed[1]="-1";
-    euc.tmp.amp="-1";
-    euc.tmp.temp="-1";
-    euc.tmp.batt="-1";
-    euc.tmp.tripNow="-1";
-    //Temp
-    if (euc.val.temp!=euc.tmp.temp) {
-      euc.tmp.temp=euc.val.temp;
-      g.setColor(7);
-      g.fillRect(0,0,135,50);       
-      g.setColor(0);
-      g.setFont("7x11Numeric7Seg",4);
-      g.drawString(euc.val.temp, 10,3); //temp
-      g.flip();
-    }
-    //Battery
-    if (euc.val.batt!=euc.tmp.batt) {
-   		euc.tmp.batt=euc.val.batt;
-        g.setColor(7);
-        g.fillRect(139,0,239,50);
-        g.setColor(0);
-        g.setFont("7x11Numeric7Seg",4);
-        g.drawString(euc.val.batt,240-(g.stringWidth(euc.val.batt)+10),3); //fixed bat
-       g.flip();
-    }
-    //Mileage
-  if (euc.val.tripNow!=euc.tmp.tripNow) {
-      euc.tmp.tripNow=euc.val.tripNow;
-      g.setColor(7);
-      g.fillRect(0,158,239,193);
-      g.setColor(0);
-      g.setFontVector(20);
-      g.drawString("TRIP",1,164); 
-      g.drawString("TOTAL",80,164); 
-      g.drawString("LEFT",176,164); 
-      g.flip();
-      g.fillRect(0,194,239,239);
-      g.setColor(9);
-      g.setFont("7x11Numeric7Seg",3);
-      g.drawString(euc.val.tripNow,0,205); 
-      g.drawString(euc.val.tripTotal,(240-(g.stringWidth(euc.val.tripTotal)))/2,205); 
-      g.drawString(euc.val.tripLeft,240-(g.stringWidth(euc.val.tripLeft)+1),205); 
-      g.flip();
-    }   
-  
-    euc.tmp.speed[0]="-1";
-    euc.tmp.speed[1]="-1";
-    euc.tmp.amp="-1";
-    euc.tmp.temp="-1";
-    euc.tmp.batt="-1";
-    euc.tmp.tripNow="-1";
+    
+    g.setColor(7);
+    g.fillRect(0,0,135,50); //temp
+    g.fillRect(139,0,239,50); //batt      
+    g.fillRect(0,158,239,193); //mileage
+    g.setColor(0);
+    g.setFont("7x11Numeric7Seg",4);
+    g.drawString(euc.val.temp, 10,3); //temp
+    g.drawString(euc.val.batt,240-(g.stringWidth(euc.val.batt)+10),3); //fixed bat
+    g.setFontVector(20); //mileage
+    g.drawString("TRIP",1,164); 
+    g.drawString("TOTAL",80,164); 
+    g.drawString("LEFT",176,164); 
+    g.flip();
+    //mileage
+    g.fillRect(0,194,239,239);
+    if (euc.val.conn=="READY") g.setColor(11);
+	else g.setColor(7);    
+    g.setFont("7x11Numeric7Seg",3);
+    g.drawString(euc.val.tripNow,0,205); 
+    g.drawString(euc.val.tripTotal,(240-(g.stringWidth(euc.val.tripTotal)))/2,205); 
+    g.drawString(euc.val.tripLeft,240-(g.stringWidth(euc.val.tripLeft)+1),205); 
+    g.flip();
 
+    euc.tmp.speed[0]="-1";
+    euc.tmp.speed[1]="-1";
+    euc.tmp.amp="-1";
+    euc.tmp.temp="-1";
+    euc.tmp.batt="-1";
+    euc.tmp.tripNow="-1";
     if(!g.isOn) g.on();
-
     this.run=true;
    }
 };
-
 var w_up=false;
 var press=true;
 var dbl=0;
@@ -342,32 +317,22 @@ var faces = [
   clockFace,
   EucMain,
 //  nb_Info,
-
-  
-  
-  
-  
-  
-  
-  
 ];
-  
-  
-  
 function buttonHandler(s){
-  console.log("button in");
-  console.log("state :", s.state);
+//  console.log("button in");
+//  console.log("state :", s.state);
   clearWatch(button);
-
-  if (s.state==true) { 
+  // button down
+if (s.state==true) { 
     if (typeof l2 !== "undefined") {clearTimeout(l2);}
     if (typeof l3 !== "undefined") {clearTimeout(l3);}
     if (typeof offid !== "undefined") {clearTimeout(offid);}
-    console.log("button down");
+//    console.log("button down");
     press=true;
 	if ( fcurr!=-1) {
     //reset on long press
 	l2=setTimeout(() => {
+		console.log("l2",l2);
         if (digitalRead(BTN)==1) {
         console.log("reseting");
         w.vibrate(0.85,2,80,200); 
@@ -380,6 +345,7 @@ function buttonHandler(s){
     if ( fcurr==1) {
     //reset milleage long press
 	l3=setTimeout(() => {
+    	console.log("l3",l3);
         if (digitalRead(BTN)==1) {
         console.log("reset mileage");
         w.vibrate(0.85,1,200,50); 
@@ -389,10 +355,9 @@ function buttonHandler(s){
 	}
     offid=setTimeout(() => {
       //euc off
-      if (euc.tmp.gatt.connected || euc.val.conn=="SCAN" || euc.val.conn=="LOST") {
-        w.vib(90); setTimeout(w.vib,150,90);
+      if (euc.tmp.gatt.connected || euc.val.conn!="OFF" ) {
+        w.vib(90); 
         euc.off();
-		if (typeof nb_rec_tmr !== "undefined") {clearTimeout(nb_rec_tmr); console.log("clear tmr");}
         if (fcurr!=-1){
           if (fcurr==1) faces[fcurr].exit();
           else faces[fcurr].clear();
@@ -419,24 +384,19 @@ function buttonHandler(s){
     }, 1000);
     button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:-1});
     return;
-  
-    }else if (press==true && s.state==false)  { 
-      if (typeof l2 !== "undefined") {clearTimeout(l2);}
-      if (typeof l3 !== "undefined") {clearTimeout(l3);}
-      if (typeof offid !== "undefined") {clearTimeout(offid);}
-      console.log("button up");
+}else if (press==true && s.state==false)  { 
+    if (typeof l2 !== "undefined") {clearTimeout(l2);}
+    if (typeof l3 !== "undefined") {clearTimeout(l3);}
+    if (typeof offid !== "undefined") {clearTimeout(offid);}
       press=false;
 	  var fshow=1;
       if (fcurr<0){
-        // nothing active, make first one
         fprev=fcurr;
         fcurr=0;
         if (euc.val.conn!="OFF") fcurr=1;  
         if (faces[fcurr].init) faces[fcurr].init();
       } else {
-        // ask active one to exit
         if (!faces[fcurr].clear || faces[fcurr].clear()){
-          // ok exit from current face allowed
           fprev=fcurr;
           if(g.isOn) {
             fcurr++; 
@@ -454,17 +414,16 @@ function buttonHandler(s){
       if (fshow) {
       faces[fcurr].show(); 
       }
-    }
-    console.log("button out");
+} else {
+	delete global["\xFF"].timers[l2];
+    delete global["\xFF"].timers[l3];
+    delete global["\xFF"].timers[offid];
+}	
     button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:1});
-
 }
 
 button=setWatch(buttonHandler,BTN1, {repeat:false, debounce:10,edge:1});
-
 //eval(require('Storage').read('face'));
-
-
 //  g.setColor(1); //
 //  g.setColor(2);// Dgreen
 //  g.setColor(3);// Dgrey
@@ -480,5 +439,4 @@ button=setWatch(buttonHandler,BTN1, {repeat:false, debounce:10,edge:1});
 //  g.setColor(13);// purple
 //  g.setColor(14);// yellow
 //  g.setColor(15);// white
-
 console.log("face end");
