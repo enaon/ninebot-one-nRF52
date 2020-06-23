@@ -61,7 +61,7 @@ const chargerVoltage=function(s){
 	poke32(hexString,2); // disconnect pin for power saving, otherwise it draws 70uA more
   return c;
 };
-
+/*
 //touch enable
 var i2c=new I2C();
 function touchInit() {
@@ -70,6 +70,7 @@ function touchInit() {
 }
 function touchRead(){return i2c.readFrom(0x15,8);}
 function touchWrite(reg,data){i2c.writeTo(0x15,reg,data);}
+*/
 //screen driver
 var SPI2 = (function(){
   var bin=atob("AAAAAAAAAAAAAAAA/////////////////////wAAAAAAAAAAELUDTHxEIoBggKGA44AQvdT///8HS3tEm2hDsQRKE2gAK/zQACMTYANKekSTYHBHGDECQML///+u////LenwR5BGGUwZTv/35f8ZSt/4ZMAAIwElE2BP8P8OU2CpRiNgEDIfRv8pAOsDCsL4AKCLv/8zMWDG+ADgACGIv/85zPgAkLjxAA8G0Cm5C0t7RJ1gACC96PCH1PgAoLrxAA/60CdgACne0fPnGDECQEg1AkA0NQJAEDACQEz///8t6fBPmbDN6QASBJNDS3tEBkaT+ACQACh90AApe9AJ8f8yByp32AEiAvoJ8gE60rIEeAKSQniT+ASwBZNE6gIkAZqHHAirEKgUQc3pBjBP6kkC0rJP8AAIpLIDkkFGBZsBnZP4AqACmwCaI0BE+gn0MvgTwAKbI0BE+gn0MvgTIAObHUTtsgctgb8IPRf4ATvtssXxCA6EvwP6DvMcQ0/qLBNDVBMSAfECDkPqDBxDGAMxqvECCh0pg/gBwKSyAPgOIF/6ivoJ3QEi//dZ/9jxAQgLvweYBphBRgAhuvEAD8HRD0t7RNuIHkS3HHN4NHhE6gMkAZscQQvx/zMT8P8LpLKs0RmxBJr/9zr/WUYIRhmwvejwj0/w/zH45w7///84/v//H7XDssDzBxIACkDqAxDAsgApjfgFAI34CACN+AsAjfgOAAhGuL/IHY34BCCN+AYwjfgHII34CTCN+AogjfgMMI34DSCN+A8wwBD/9/P+EksSTAAiGmBaYKPyHEMPKRpgAaoiYA5KT/AMBBRgwr+i9VJyT/QAMRFgCkoBIRFgCkkAIhxoACz80AIoGmDYvwpgATj20QSwEL00NQJARDUCQEg1AkAQMAJAADICQP/3wr4YsRGxASL/99G+T/D/MHBHGLERsQAi//fJvk/w/zBwR/i1Ek5+RAdG82gAKw1GFdsBJAxKBPoD8xNgIUYAIv/3tf7zaJxACEsBLRxgBN0AImkeeBz/96r+ACAB4E/w/zD4vQC/DAUAUAgFAFAk/f//Ckp6RBC10mgAKgrbSLFBsQEjk0AEShNgACL/94/+ACAQvU/w/zD75wgFAFDW/P//MLUVTANGIGgQuxlKekQVaQAtHNtVaQAtAtqSaQAqFtsOShBoUGATSg1IekQbBhVpBWCVaUVgUGkKShBgU2EKS0kAGWAHIyNgCEsBIBhgML1P8P8w++cAvwA1AkAEMwJACDUCQBA1AkBUNQJAFDACQJz8//9+/P//BUsbaAuxBUoTYAVKACMTYKL1fnITYHBHBDMCQAgzAkAANQJABUsGSQAiGmAFSnpE0GkIYBJqGmBwRwC/ADUCQAQzAkAC/P//BEsaaAVLe0TaYQNKEmgaYnBHAL8EMwJAADUCQOL7//8QtQNMfETE6QUhIGHjYBC9xPv//w==");
@@ -206,9 +207,9 @@ g.flip=function(){
 };
 module.exports = {
   pin: pin,
-  touchInit:touchInit,
-  touchRead:touchRead,
-  touchWrite:touchWrite,
+//  touchInit:touchInit,
+//  touchRead:touchRead,
+//  touchWrite:touchWrite,
   battery: battery,
   charging: charging,
   battVoltage: battVoltage,
