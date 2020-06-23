@@ -76,7 +76,7 @@ var clockFace = {
   run:false,
   init: function(){
     var d=(Date()).toString().split(' ');
-    this.v=(w.battVoltage(1);
+    this.v=w.battVoltage(1);
     g.setColor(7);
     g.fillRect(0,0,158,50); //date
     g.fillRect(162,0,239,50);//batt
