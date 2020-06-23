@@ -1,0 +1,293 @@
+//inputs
+var button;
+var w_up=false;
+var press=true;
+var dbl=0;
+var offid=-1;
+var offms=5000;
+var fcurr=-1;
+var fprev=-1;
+var faces = [
+  clockFace,
+  eucMain,
+  eucSet,
+//  nb_Info,
+];
+
+
+function buttonHandler(s){
+//  console.log("button in");
+//  console.log("state :", s.state);
+  clearWatch(button);
+  var p=w.pin.MOTOR;
+
+  // button down
+if (s.state==true) { 
+    if (typeof l1 !== "undefined") {clearTimeout(l1);}
+    if (typeof l2 !== "undefined") {clearTimeout(l2);}
+    if (typeof l3 !== "undefined") {clearTimeout(l3);}
+    if (typeof offid !== "undefined") {clearTimeout(offid);}
+//    console.log("button down");
+    press=true;
+	if ( fcurr!=-1) {
+    //reset on long press
+	l2=setTimeout(() => {
+		console.log("l2",l2);
+        if (digitalRead(BTN)==1) {
+        console.log("reseting");
+        NRF.setServices({},{uart:false});
+        NRF.setServices({},{uart:true});  
+		l2=setTimeout(() => {reset();}, 1000);
+	    }
+    }, 8000);
+	}
+    if ( fcurr==1 && euc.val.conn!="OFF") {
+    //reset milleage long press
+	l3=setTimeout(() => {
+    	console.log("l3",l3);
+        if (digitalRead(BTN)==1) {
+        console.log("reset mileage");
+        digitalPulse(p,0,300);  
+        euc.val.tripLast=0;
+	    }
+    }, 4000);
+	}
+    l1=setTimeout(() => {
+      //euc off
+      if (euc.tmp.gatt.connected || euc.val.conn!="OFF" ) {
+        digitalPulse(p,0,[90,60,90]);  
+        euc.off();
+        if (fcurr!=-1){
+          if (fcurr==1) faces[fcurr].exit();
+          else faces[fcurr].clear();
+        }
+          fcurr=1;
+        faces[fcurr].init();
+        faces[fcurr].show(g);
+        offid=setTimeout(() => { faces[fcurr].off();fcurr=-1; }, 2500);
+        NRF.setTxPower(0);
+        //euc on
+      } else if (!euc.tmp.gatt.connected && euc.val.conn=="OFF") {
+        digitalPulse(p,0,100);   
+        euc.on();  
+        if (fcurr!=-1){
+          if (fcurr==1) faces[fcurr].exit();
+          else faces[fcurr].clear();
+        }
+        fcurr=1;
+        faces[fcurr].init();
+        faces[fcurr].show(g);
+        offid=setTimeout(() => { faces[fcurr].off();fcurr=-1; }, 8000);
+      }
+      press=false;
+    }, 1000);
+   button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:-1});
+    return;
+}else if (press==true && s.state==false)  { 
+   if (typeof l1 !== "undefined") {clearTimeout(l1);}
+   if (typeof l2 !== "undefined") {clearTimeout(l2);}
+   if (typeof l3 !== "undefined") {clearTimeout(l3);}
+   if (typeof offid !== "undefined") {clearTimeout(offid);}
+
+	press=false;
+	var fshow=1;
+      if (fcurr<0){
+        fprev=fcurr;
+        fcurr=0;
+        if (euc.val.conn!="OFF") fcurr=1;  
+        if (faces[fcurr].init) faces[fcurr].init();
+      } else {
+        if (!faces[fcurr].clear || faces[fcurr].clear()){
+          fprev=fcurr;
+          if(g.isOn) {
+            fcurr++; 
+ //           if (fcurr >= faces.length) fcurr=0;
+            if (fcurr >= 2) fcurr=0;
+          } else fcurr=0;
+            if (faces[fcurr].init) faces[fcurr].init();
+          } else fshow=0;
+      }
+      if (offid>=0) clearTimeout(offid);
+      var foffms=faces[fcurr].offms;
+      offid=setTimeout((f)=>{
+        if (f>=0 && faces[f].off) faces[f].off();
+        g.off();offid=-1;fcurr=-1;
+      },(foffms>0)?foffms:offms,fcurr);
+      if (fshow) {faces[fcurr].show();}
+} else {
+   if (typeof l1 !== "undefined") {clearTimeout(l1);}
+   if (typeof l2 !== "undefined") {clearTimeout(l2);}
+   if (typeof l3 !== "undefined") {clearTimeout(l3);}
+}	
+  button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:1});
+}
+//button=setWatch(buttonHandler,BTN1, {repeat:true, debounce:10,edge:0});
+button=setWatch(buttonHandler,BTN1, {repeat:false, debounce:10,edge:0});
+//touch notify
+//w.touchInit();
+
+var touchHandler = {
+  timeout: function(){
+    if (offid>=0) clearTimeout(offid);
+    if (this.foffnow) this.foffms=1;
+    else this.foffms=faces[fcurr].offms;
+
+    if (this.fto==-1) { 
+      offid=setTimeout((f)=>{
+        if (f>=0 && faces[f].off) faces[f].off();
+        offid=-1;fcurr=-1;
+      },(this.foffms>0)?this.foffms:offms,fcurr);
+    }else {
+	  offid=setTimeout((f)=>{
+		if (f>=0 && faces[f].clear) faces[f].clear();
+        fcurr=this.fto;
+        faces[fcurr].init();	
+		faces[fcurr].show();
+        offid=setTimeout((f)=>{
+          if (f>=0 && faces[f].off) faces[f].off();
+          offid=-1;fcurr=-1;
+        },faces[fcurr].offms,fcurr);
+      },(this.foffms>0)?this.foffms:offms,fcurr); 
+    }
+    this.foffnow=false;
+  },
+  0: function(){
+    this.fto=-1;
+    var p=w.pin.MOTOR;
+    if (ev[1]==5){ 
+	  digitalPulse(p,0,40);
+      console.log("touch: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==1){
+      this.foffnow=true;
+      this.fto=-1;
+      console.log("slide down: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==2){
+      digitalPulse(p,0,40);
+	  console.log("slide up: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==3){
+      this.foffnow=true;
+      this.fto=1;
+      console.log("slide left: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==4){
+      digitalPulse(p,0,40);
+	  console.log("slide right: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==12){
+      digitalPulse(p,0,40);
+	  console.log("long touch: x=",ev[4],",y=",ev[6] );
+    }
+   this.timeout();
+  },
+  1: function(){
+    this.fto=-1;
+    var p=w.pin.MOTOR;
+    if (ev[1]==5){ 
+	  digitalPulse(p,0,40);
+      console.log("touch: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==1){
+	  digitalPulse(p,0,40);
+      console.log("slide down: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==2){
+      digitalPulse(p,0,40);
+	  console.log("slide up: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==3){
+      digitalPulse(p,0,40);
+	  console.log("slide left: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==4){
+      this.foffnow=true;
+      this.fto=0;
+      console.log("slide right: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==12){
+      if(euc.val.conn==="READY") {
+          digitalPulse(p,0,140);
+ 	      euc.tmp.count=23;
+          this.foffnow=true;
+          this.fto=2;
+      }else digitalPulse(p,0,80);
+    console.log("long touch: x=",ev[4],",y=",ev[6] );
+    }
+    this.timeout();
+  },
+  2: function(){
+    this.fto=1;
+    var p=w.pin.MOTOR;
+    if (offid>=0) clearTimeout(offid);
+    if (ev[1]==5){ 
+	  digitalPulse(p,0,40);
+      console.log("touch: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==1){
+      if  (ev[4]>=120) {
+        euc.val.ridemode--;
+        if (euc.val.ridemode <0) {euc.val.ridemode=0; digitalPulse(p,0,40);}
+      }else digitalPulse(p,0,40);
+      console.log("slide down: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==2){
+      if  (ev[4]>=120) {
+        euc.val.ridemode++;
+        if (euc.val.ridemode >9) {euc.val.ridemode=9; digitalPulse(p,0,40);}
+      }else digitalPulse(p,0,40);
+      console.log("slide up: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==3){
+      digitalPulse(p,0,40);
+      console.log("slide left: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==4){
+      this.foffnow=true;
+      console.log("slide right: x=",ev[4],",y=",ev[6] );
+    }else if  (ev[1]==12){
+      if  (ev[4]>=120) {
+        euc.tmp.count=euc.val.ridemode+24;
+      }else digitalPulse(p,0,40);
+      console.log("long touch: x=",ev[4],",y=",ev[6] );
+    }
+    this.timeout();
+/*
+    if (this.back==true) this.foffms=1;
+    else this.foffms=faces[fcurr].offms;
+    clearTimeout(offid);
+	offid=setTimeout((f)=>{
+		if (f>=0 && faces[f].off)
+		faces[f].clear();
+        fcurr=1;
+        faces[fcurr].init();	
+		faces[fcurr].show();
+    },(this.foffms>0)?this.foffms:offms,fcurr); 
+    this.back=false;
+*/
+  }
+};
+var i2c=new I2C();
+
+//var i2c=I2C1;
+i2c.setup({scl:w.pin.TP_SCL, sda:w.pin.TP_SDA, bitrate:100000});
+digitalPulse(w.pin.TP_RESET,1,[5,50]);
+
+var ev;
+setWatch(function(s){
+  ev=i2c.readFrom(0x15,7);
+  if (fcurr>=0) touchHandler[fcurr]();
+  //console.log(ev);
+},w.pin.TP_INT,{repeat:true, edge:"rising"}); 
+
+/*
+var ev;
+setWatch(function(s){
+  ev=w.touchRead();
+  if (fcurr>=0) touchHandler[fcurr]();
+  console.log(w.touchRead());
+},w.pin.TP_INT,{repeat:true, edge:"falling"}); 
+
+
+
+
+
+var ev;
+function gi2(s){
+   "compiled";
+  ev=i2c.readFrom(0x15,7);
+  if (fcurr>=0) touchHandler[fcurr]();
+  console.log(ev);
+ // console.log(w.touchRead());
+}
+button=setWatch(gi2,w.pin.TP_INT, {repeat:false,edge:0,irq:true});
+*/
+
+//eval(require('Storage').read('inputs'));

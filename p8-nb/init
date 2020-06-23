@@ -4,7 +4,7 @@ function P8KickWd(){
   if(!D17.read())E.kickWatchdog();
 }
 var wdint=setInterval(P8KickWd,1000);
-E.enableWatchdog(10, false);
+E.enableWatchdog(15, false);
 
 E.setTimeZone(3);
 var mem = () => {
@@ -42,29 +42,14 @@ const pin = {
 //require("Font8x16").add(Graphics);
 //require('FontTeletext10x18Ascii').add(Graphics);	
 require('Font7x11Numeric7Seg').add(Graphics);
-const vibrate = ms => {
-	digitalPulse(pin.MOTOR, 0, ms); //sd11 
-//	let hexString = ("0x"+(0x50000700+(pin.MOTOR*4)).toString(16));
-//	poke32(hexString,2); // disconnect pin for power saving, otherwise it draws 70uA more
-	};
 //pin.CHARGING.mode('input_pullup');
 pin.BATTERY.mode('analog');
 const battery = () => 7.1 * (analogRead(pin.BATTERY));
 const charging = () => pin.CHARGING.read();
-function vibon(vib){
- if(vib.i>=0.1)pin.MOTOR.reset();else analogWrite(pin.MOTOR,vib.i);
- setTimeout(viboff,vib.on,vib);
-}
-function viboff(vib){
- pin.MOTOR.set();
- if (vib.c>1){vib.c=vib.c-1;setTimeout(vibon,vib.off,vib);}
-}
-const vibrate1=function(intensity,count,onms,offms){
- vibon({i:intensity,c:count,on:onms,off:offms});
-};
 const battVoltage=function(s){
 	let v=7.1*analogRead(pin.BATTERY);
-	if (s) { v=(v*100-365)*2|0; if (v>=100) v=100;	}
+	if (s) { v=(v*100-345)*1.43|0; //if (v>=100) v=100;
+	}
     let hexString = ("0x"+(0x50000700+(pin.BATTERY*4)).toString(16));
 	poke32(hexString,2); // disconnect pin for power saving, otherwise it draws 70uA more 
 	return v;
@@ -76,6 +61,15 @@ const chargerVoltage=function(s){
 	poke32(hexString,2); // disconnect pin for power saving, otherwise it draws 70uA more
   return c;
 };
+
+//touch enable
+var i2c=new I2C();
+function touchInit() {
+	i2c.setup({scl:pin.TP_SCL, sda:pin.TP_SDA, bitrate:400000});
+	digitalPulse(pin.TP_RESET,1,[5,50]);
+}
+function touchRead(){return i2c.readFrom(0x15,8);}
+function touchWrite(reg,data){i2c.writeTo(0x15,reg,data);}
 //screen driver
 var SPI2 = (function(){
   var bin=atob("AAAAAAAAAAAAAAAA/////////////////////wAAAAAAAAAAELUDTHxEIoBggKGA44AQvdT///8HS3tEm2hDsQRKE2gAK/zQACMTYANKekSTYHBHGDECQML///+u////LenwR5BGGUwZTv/35f8ZSt/4ZMAAIwElE2BP8P8OU2CpRiNgEDIfRv8pAOsDCsL4AKCLv/8zMWDG+ADgACGIv/85zPgAkLjxAA8G0Cm5C0t7RJ1gACC96PCH1PgAoLrxAA/60CdgACne0fPnGDECQEg1AkA0NQJAEDACQEz///8t6fBPmbDN6QASBJNDS3tEBkaT+ACQACh90AApe9AJ8f8yByp32AEiAvoJ8gE60rIEeAKSQniT+ASwBZNE6gIkAZqHHAirEKgUQc3pBjBP6kkC0rJP8AAIpLIDkkFGBZsBnZP4AqACmwCaI0BE+gn0MvgTwAKbI0BE+gn0MvgTIAObHUTtsgctgb8IPRf4ATvtssXxCA6EvwP6DvMcQ0/qLBNDVBMSAfECDkPqDBxDGAMxqvECCh0pg/gBwKSyAPgOIF/6ivoJ3QEi//dZ/9jxAQgLvweYBphBRgAhuvEAD8HRD0t7RNuIHkS3HHN4NHhE6gMkAZscQQvx/zMT8P8LpLKs0RmxBJr/9zr/WUYIRhmwvejwj0/w/zH45w7///84/v//H7XDssDzBxIACkDqAxDAsgApjfgFAI34CACN+AsAjfgOAAhGuL/IHY34BCCN+AYwjfgHII34CTCN+AogjfgMMI34DSCN+A8wwBD/9/P+EksSTAAiGmBaYKPyHEMPKRpgAaoiYA5KT/AMBBRgwr+i9VJyT/QAMRFgCkoBIRFgCkkAIhxoACz80AIoGmDYvwpgATj20QSwEL00NQJARDUCQEg1AkAQMAJAADICQP/3wr4YsRGxASL/99G+T/D/MHBHGLERsQAi//fJvk/w/zBwR/i1Ek5+RAdG82gAKw1GFdsBJAxKBPoD8xNgIUYAIv/3tf7zaJxACEsBLRxgBN0AImkeeBz/96r+ACAB4E/w/zD4vQC/DAUAUAgFAFAk/f//Ckp6RBC10mgAKgrbSLFBsQEjk0AEShNgACL/94/+ACAQvU/w/zD75wgFAFDW/P//MLUVTANGIGgQuxlKekQVaQAtHNtVaQAtAtqSaQAqFtsOShBoUGATSg1IekQbBhVpBWCVaUVgUGkKShBgU2EKS0kAGWAHIyNgCEsBIBhgML1P8P8w++cAvwA1AkAEMwJACDUCQBA1AkBUNQJAFDACQJz8//9+/P//BUsbaAuxBUoTYAVKACMTYKL1fnITYHBHBDMCQAgzAkAANQJABUsGSQAiGmAFSnpE0GkIYBJqGmBwRwC/ADUCQAQzAkAC/P//BEsaaAVLe0TaYQNKEmgaYnBHAL8EMwJAADUCQOL7//8QtQNMfETE6QUhIGHjYBC9xPv//w==");
@@ -212,8 +206,9 @@ g.flip=function(){
 };
 module.exports = {
   pin: pin,
-  vibrate: vibrate1,
-  vib: vibrate,
+  touchInit:touchInit,
+  touchRead:touchRead,
+  touchWrite:touchWrite,
   battery: battery,
   charging: charging,
   battVoltage: battVoltage,
@@ -224,13 +219,15 @@ module.exports = {
 w=require("P8");
 //charging notify
 setWatch(function(s){
-  if (digitalRead(w.pin.CHARGING)==0) //inverce for sdk11
-  w.vibrate(0.85,1,200,600);
+  if (s.state==0) //inverce for sdk11
+  digitalPulse(w.pin.MOTOR,0,200);  
   else
-  w.vibrate(0.85,2,100,100);
+  digitalPulse(w.pin.MOTOR,0,[100,80,100]);
 },w.pin.CHARGING,true);  
 //start
 w.gfx.init();
+digitalPulse(w.pin.MOTOR,0,[100,30,100,30,100]);
 eval(require('Storage').read('euc'));
 eval(require('Storage').read('face'));
+eval(require('Storage').read('inputs'));
 //},3000);
