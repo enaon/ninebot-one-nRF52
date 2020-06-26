@@ -21,7 +21,7 @@ const val = {
   lock: -1,
   alarm: 0,
   conn: "OFF",
-  alock: true,
+  alock: 1,
   far: 83,
   near: 65,
   mac: "20:91:48:4c:49:d1 public", //enaon
@@ -44,7 +44,7 @@ const tmp = {
   speed: ["0","0"], 
   amp: "0", 
   temp: "0", 
-  count:"0",
+  count:0,
   batt: "0", 
   tripNow: "0",
   cmd: false,
@@ -55,47 +55,6 @@ const tmp = {
   service:0,
   characteristic:0,
 };
-
-/*
-const cmd= {
-	
-    0:'[85,170,3,9,1,80,2,160,255]', //Current Amperage with sign if v[80] > 32768 I = v[80] - 65536 else I = v[80] in Amperes * 100
-    1:'[85,170,3,9,1,38,2,202,255]', //Current Speed in Km/h*1000d
-    2:'[85,170,3,9,1,62,2,178,255]', //Temperature numeric positive ยบC * 10
-    3:'[85,170,3,9,1,80,2,160,255]', //amp
-    4:'[85,170,3,9,1,38,2,202,255]', //speed
-    5:'[85,170,3,9,1,71,2,169,255]', //Voltage numeric positive V * 100
-    6:'[85,170,3,9,1,80,2,160,255]', //amp
-    7:'[85,170,3,9,1,38,2,202,255]', //speed
-   	8:'[85,170,3,9,1,185,2,55,255]', //Single Mileage numeric positive in meters
-    9:'[85,170,3,9,1,80,2,160,255]', //amp 
-    10:'[85,170,3,9,1,38,2,202,255]', //speed
-	11:'[85,170,3,9,1,58,2,182,255]', //Single Runtime numeric positive seconds
-	12:'[85,170,3,9,1,80,2,160,255]', //amp 
-    13:'[85,170,3,9,1,38,2,202,255]', //speed
-	14:'[85,170,3,9,1,37,2,203,255]', //remaining mileage in Km*100
-	15:'[85,170,3,9,1,80,2,160,255]', //amp 
-    16:'[85,170,3,9,1,38,2,202,255]', //speed
-	17:'[85,170,3,9,1,1822,58,255]', //Average speed numeric positive m/h
-	18:'[85,170,3,9,1,80,2,160,255]', //18-amp 
-    19:'[85,170,3,9,1,38,2,202,255]', //19-speed
-	20:'[85,170,3,9,1,112,2,128,255]', //Lock status
-//	'[85,170,3,9,1,178,1,63,255]', //20-Flags bit 0 -> Limit Speed, bit 1 -> Lock , bit 2 -> Beep, bit 11 -> Activation. Bits from lower significance
-	21:'[85,170,3,9,3,112,1,127,255]', //21- lock
-    22:'[85,170,3,9,3,112,0,128,255]',  //22- unlock
-	23:'[85,170,3,9,1,210,2,30,255]', //23 get Riding Mode
-	24:'[85,170,4,9,2,210,0,0,30,255]', //24 set Riding Mode 0
-	25:'[85,170,4,9,2,210,0,0,30,255]', //25 set Riding Mode 1
-	26:'[85,170,4,9,2,210,0,0,30,255]', //26 set Riding Mode 2
-	27:'[85,170,4,9,2,210,0,0,30,255]', //27 set Riding Mode 3
-	28:'[85,170,4,9,2,210,0,0,30,255]', //28 set Riding Mode 4
-	29:'[85,170,4,9,2,210,0,0,30,255]', //29 set Riding Mode 5
-	30:'[85,170,4,9,2,210,0,0,30,255]', //30 set Riding Mode 6
-	31:'[85,170,4,9,2,210,0,0,30,255]', //31 set Riding Mode 7
-	32:'[85,170,4,9,2,210,0,0,30,255]', //32 set Riding Mode 8
-	33:'[85,170,4,9,2,210,0,0,30,255]' //33 set Riding Mode 8
-};
-*/ 
 
 const cmd = [
     '[85,170,3,9,1,80,2,160,255]', //Current Amperage with sign if v[80] > 32768 I = v[80] - 65536 else I = v[80] in Amperes * 100
@@ -134,33 +93,32 @@ const cmd = [
 	'[85,170,3,9,2,210,8,23,255]', //32 set Riding Mode 8
 	'[85,170,3,9,2,210,9,22,255]'  //33 set Riding Mode 9
 ];
-
-function stop(){ 
+function tgl(){ 
+  var p=w.pin.MOTOR;
+  //euc off
+  if (euc.val.conn!="OFF" ) {
+    digitalPulse(p,0,[90,60,90]);  
 	if (global["\xFF"].timers[tmp.reconnect] != "undefined" ||  val.conn=="WAIT" || val.conn=="ON") {
-      clearInterval(tmp.loop);
-      clearTimeout(tmp.reconnect);
-      delete global["\xFF"].bleHdl;
-	  delete tmp.characteristic;
-	  delete tmp.service;
-      delete tmp.gatt.device;
-   	  if (tmp.rssi != "") {delete euc.tmp.gatt["#onblerssi"];} 
-	  delete global.BluetoothRemoteGATTCharacteristic;
-   	  delete global.BluetoothRemoteGATTService;    
-      delete global.BluetoothRemoteGATTServer;    
-      delete global.BluetoothDevice;       
-      delete global.DataView;       
-      delete global.Promise;    }
+    clearTimeout(tmp.reconnect);
+    }
   	val.conn="OFF";
-
+    NRF.setTxPower(0);
+  //euc on
+  }else {
+    digitalPulse(p,0,100);   
+    NRF.setTxPower(4);
+	if (val.conn == "OFF") tmp.count=22; else tmp.count=0;  //unlock
+	val.conn="ON";
+	connect();  
+  } 
+  if (fcurr!=-1){
+      if (fcurr==1) faces[fcurr].exit();
+      else faces[fcurr].clear();
+  }
+  fcurr=1;
+  faces[fcurr].init();
+  faces[fcurr].show();
 }
-
-function start(){ 
-  NRF.setTxPower(4);
-  if (val.conn == "OFF") tmp.count=22; else tmp.count=0;  //unlock
-  val.conn="ON";
-  connect();
-}
-  
 function connect(){
 var euc_var;
 var euc_al;
@@ -183,28 +141,23 @@ tmp.temp="-1";
 tmp.batt="-1";
 tmp.tripNow="-1";  
 val.speedCol=0;
-tmp.rssi="";
+tmp.rssi="-70";
 
-
-if (tmp.gatt.connected) {console.log("already running"); return;} 
+if ( global["\xFF"].BLE_GATTS!="undefined") {global["\xFF"].BLE_GATTS.disconnect(); console.log("error"); return;}
 NRF.connect(val.mac,{minInterval:7.5, maxInterval:7.5})
 .then(function(g) {
-  tmp.gatt = g;
-  return tmp.gatt.getPrimaryService(0xffe0);
-}).then(function(service) {
-  tmp.service=service;
-  return tmp.service.getCharacteristic(0xffe1);
-}).then(function(characteristic) {
-  tmp.characteristic=characteristic;
-  tmp.characteristic.on('characteristicvaluechanged', function(event) {
+   return g.getPrimaryService(0xffe0);
+}).then(function(s) {
+  return s.getCharacteristic(0xffe1);
+}).then(function(c) {
+  tmp.characteristic=c;
+  c.on('characteristicvaluechanged', function(event) {
   euc_var = event.target.value.getUint8(5, true);
   // if off button is pressed on euc
   if (euc_var==0) {
-      //console.log("EUC_switched off");
 	  val.conn="WAIT";
 	  digitalPulse(w.pin.MOTOR,0,200);
-//      setTimeout(() => { connect();}, 2500);
-      return;
+      //return;
   //alarm
   }else if (euc_var==178) {
 	  tmp[euc_var] = event.target.value.getUint8(6, true);
@@ -346,32 +299,24 @@ NRF.connect(val.mac,{minInterval:7.5, maxInterval:7.5})
       }
     }
 	});
-  return tmp.characteristic.startNotifications();
+//  return tmp.characteristic.startNotifications();
+return  c.startNotifications();
 }).then(function() {
-  tmp.gatt.device.on('gattserverdisconnected', function(reason) {
+	global["\u00ff"].BLE_GATTS.device.on('gattserverdisconnected', function(reason) {
     console.log("Disconnected :",reason);
     if (val.conn!="OFF") {  
 	 console.log("restarting");
      val.conn="WAIT"; 
      setTimeout(() => {  connect(); }, 1000);
     }else {
-            delete global["\xFF"].bleHdl;
 	  delete euc.tmp.characteristic;
-	  delete euc.tmp.service;
-      delete euc.tmp.gatt.device;
-   	  delete euc.tmp.gatt["#onblerssi"]; 
-	  delete global.BluetoothRemoteGATTCharacteristic;
-   	  delete global.BluetoothRemoteGATTService;    
-      delete global.BluetoothRemoteGATTServer;    
-      delete global.BluetoothDevice;       
-      delete global.DataView;       
-      delete global.Promise;
+      delete global["\xFF"].bleHdl;
     }
   });
 //connected 
   console.log("EUC connected"); 
   val.conn="READY"; //connected
-  digitalPulse(w.pin.MOTOR,0,150);
+  digitalPulse(w.pin.MOTOR,0,[90,40,150,40,90]);
   startWriting();
 //reconect
 }).catch(function(err)  {
@@ -410,33 +355,23 @@ function startWriting() {
   var busy = false;
   var euc_near=0;
   var euc_far=0;
-//  tmp.gatt.setRSSIHandler(function(rssi) { tmp.rssi=rssi; });
   //gatt.setRSSIHandler();
   if (typeof tmp.loop !== "undefined") {clearTimeout(tmp.loop);}
   tmp.loop = setInterval(function() {
     if (busy  ) return;
     if (val.conn!="READY") {
-      //setTimeout(clearInterval,10,tmp.loop);
 	  busy = true;
       if (val.conn=="OFF"){
+	  console.log("EUCstartOff");
+      clearInterval(tmp.loop);
 	  tmp.characteristic.writeValue(eval(cmd[21])).then(function() {
    		val.lock=1;
+		console.log("EUCendOff");
         digitalPulse(w.pin.MOTOR,0,120);
-        tmp.gatt.disconnect();
-      delete global["\xFF"].bleHdl;
-	  delete euc.tmp.characteristic;
-	  delete euc.tmp.service;
-      delete euc.tmp.gatt.device;
-   	  delete euc.tmp.gatt["#onblerssi"]; 
-	  delete global.BluetoothRemoteGATTCharacteristic;
-   	  delete global.BluetoothRemoteGATTService;    
-      delete global.BluetoothRemoteGATTServer;    
-      delete global.BluetoothDevice;       
-      delete global.DataView;       
-      delete global.Promise;
+//	    delete euc.tmp.characteristic;
+        global["\xFF"].BLE_GATTS.disconnect();
+//        delete global["\xFF"].bleHdl;
       });
-      clearInterval(tmp.loop);
-      //setTimeout(tmp.gatt.disconnect,1000);  
       return;
       }  
     }
@@ -454,8 +389,8 @@ function startWriting() {
       changeInterval(tmp.loop,100); 
     }
 	//proximity auto lock 
-    if (val.alock) {
-    tmp.gatt.setRSSIHandler(function(rssi) {tmp.rssi=rssi; });
+    if (val.alock===1) {
+    global["\xFF"].BLE_GATTS.setRSSIHandler(function(rssi) {tmp.rssi=rssi; });
     if (tmp.rssi< -(val.far) && euc_still==true && val.lock==0) {
 //      console.log("far start");
 	  euc_far++;
@@ -512,11 +447,12 @@ function startWriting() {
     else if  ( euc_still!=true && val.speed[0]<=2)  {changeInterval(tmp.loop,200);	}
 	else if  (val.speed[0]>2 && fcurr==1)  {changeInterval(tmp.loop,50);}
     else if  (val.speed[0]>2 && fcurr!=1)  {changeInterval(tmp.loop,100);}
-    console.log("l :"+tmp.count);
+//    console.log("l :"+tmp.count);
     busy = true;
 //	if (tmp.cmd!=false) {
 	tmp.characteristic.writeValue(eval(cmd[tmp.count])).then(function() {
-      tmp.count++;
+
+    tmp.count++;
       if (tmp.count>=21) tmp.count=0;
       busy = false;
     });
@@ -525,8 +461,9 @@ function startWriting() {
   
 }  
 //exports
-exports.on=start;
-exports.off=stop;
+//exports.on=on;
+//exports.off=off;
+exports.tgl=tgl; 
 exports.val=val;
 exports.tmp=tmp;
 exports.alert=alert;
