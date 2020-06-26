@@ -1,6 +1,6 @@
 //face
 //E.setFlags({pretokenise:1});
-console.log("face start");
+//console.log("face start");
 
 //clock
 var clockFace = {
@@ -434,15 +434,27 @@ var alrm ={
 //Alarm
 var alarm = {
   offms: 5000,
+  pad:function pad(n) {
+    return (n < 10) ? ("0" + n) : n;
+  }, 
   init: function(){
     var g=w.gfx;
     var d=(Date()).toString().split(' ');
     var t=(d[4]).toString().split(':');
-    g.setColor(15);
+    g.setColor(7);
+      g.fillRect(0,39,239,103); //1
+      g.fillRect(0,107,239,171); //2
+      g.fillRect(0,175,239,239); //3
+    g.flip();
+    g.setColor(8);
+    g.fillRect(0,0,239,35); 
+    g.setColor(0);
     g.setFont("Vector",30);
 	g.drawString("Alarms",0,2); 
   	g.drawString(t[0]+":"+t[1],239-(g.stringWidth(t[0]+":"+t[1])),2); 
     g.flip();
+
+    
 	this.al1=-1;
 	this.al2=-1;
 	this.al3=-1;
@@ -458,16 +470,16 @@ var alarm = {
       else g.setColor(7);  
       g.fillRect(0,39,239,103); //1
       g.setColor(0);
-      g.drawString(alrm[1].hour+":"+alrm[1].min,120-(g.stringWidth(alrm[1].hour+":"+alrm[1].min))/2,42); 
+      g.drawString(this.pad(alrm[1].hour)+":"+this.pad(alrm[1].min),120-(g.stringWidth(this.pad(alrm[1].hour)+":"+this.pad(alrm[1].min)))/2,42); 
   	  g.flip();
     }
     if (alrm[2].on!=this.al2) {
       this.al2=alrm[2].on;
       if (this.al2==1) g.setColor(9);
-      else g.setColor(7);  
+      else g.setColor(3);  
       g.fillRect(0,107,239,171); //2
       g.setColor(0);
-      g.drawString(alrm[2].hour+":"+alrm[2].min,120-(g.stringWidth(alrm[2].hour+":"+alrm[2].min))/2,109); 
+     g.drawString(this.pad(alrm[2].hour)+":"+this.pad(alrm[2].min),120-(g.stringWidth(this.pad(alrm[2].hour)+":"+this.pad(alrm[2].min)))/2,109); 
   	  g.flip();
     } 
     if (alrm[3].on!=this.al3) {
@@ -476,7 +488,7 @@ var alarm = {
       else g.setColor(7);  
       g.fillRect(0,175,239,239); //3
       g.setColor(0);
-      g.drawString(alrm[3].hour+":"+alrm[3].min,120-(g.stringWidth(alrm[3].hour+":"+alrm[3].min))/2,178); 
+      g.drawString(this.pad(alrm[3].hour)+":"+this.pad(alrm[3].min),120-(g.stringWidth(this.pad(alrm[3].hour)+":"+this.pad(alrm[3].min)))/2,178); 
   	  g.flip();
     }
 
@@ -518,46 +530,61 @@ var aSet = {
   2:{hour:0,min:0,rep:0,snz:0,on:0,set:0},
   3:{hour:0,min:0,rep:0,snz:0,on:0,set:0}
   },
+  pad:function pad(n) {
+    return (n < 10) ? ("0" + n) : n;
+  }, 
   init: function(o){
     console.log("ll",o);
     var g=w.gfx;
     var d=(Date()).toString().split(' ');
     var t=(d[4]).toString().split(':');
-    g.setColor(15);
+    g.setColor(8);
+    g.fillRect(0,0,239,35); 
+    g.fillRect(0,185,239,239); //rest
+    g.setColor(0);
     g.setFont("Vector",30);
 	g.drawString("Alarms",0,2); 
   	g.drawString(t[0]+":"+t[1],239-(g.stringWidth(t[0]+":"+t[1])),2); 
     g.flip();
     g.setColor(7);
-    g.fillRect(0,39,118,180); //hour
-    g.fillRect(122,39,239,180); //hour
-    g.fillRect(0,185,239,239); //hour
+    //g.fillRect(0,39,118,180); //hour
+    g.fillRect(122,39,239,180); //min
+    //
     g.flip();
     this.al[o].hour=-1;
     this.al[o].min=-1;
     this.al[o].rep=-1;
     this.al[o].snz=-1;
+    this.al.curr=o;
   	this.run=true;
   },
   show : function(o){
     if (!this.run) return;
     var g=w.gfx;
-    g.setFont("Vector",55);  
     if (alrm[o].hour!=this.al[o].hour) {
+      g.setColor(3);
+      g.fillRect(0,39,119,180); //hour
       this.al[o].hour=alrm[o].hour;
-
-      if (this.al1==1) g.setColor(9);
-      else g.setColor(7);  
-      g.fillRect(0,39,239,103); //1
       g.setColor(0);
-      g.drawString("08:05",120-(g.stringWidth("08:05"))/2,37); 
+      g.setFont("Vector",80);  
+      g.drawString(this.pad(this.al[o].hour),60-(g.stringWidth(this.pad(this.al[o].hour)))/2,60); 
+  	  g.flip();
+    }
+    if (alrm[o].min!=this.al[o].min) {
+      this.al[o].min=alrm[o].min;
+      g.setColor(7);
+      g.fillRect(121,39,239,180); //min
+      this.al[o].min=alrm[o].min;
+      g.setColor(0);
+      g.setFont("Vector",80);  
+      g.drawString(this.pad(this.al[o].min),180-(g.stringWidth(this.pad(this.al[o].min)))/2,60); 
   	  g.flip();
     }
    
   //loop
     this.tid=setTimeout(function(t){
       t.tid=-1;
-      t.show();
+      t.show(o);
     },100,this);
   },
   tid:-1,
