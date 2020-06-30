@@ -4,5 +4,4 @@ https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v06.9_p8_
 
 wip
 
-demo video:
-[![Watch the video](https://img.youtube.com/vi/rTwBT3rJp6w/maxresdefault.jpg)](https://youtu.be/rTwBT3rJp6w)
+[![Watch the video](https://img.youtube.com/vi/4hs8I65Fz5g/maxresdefault.jpg)](https://youtu.be/4hs8I65Fz5g)
