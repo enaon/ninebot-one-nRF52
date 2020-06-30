@@ -10,7 +10,6 @@ https://github.com/fanoush/ds-d6
 
 nRF5 based bands/watches and custom Arduino firmware.
 https://github.com/atc1441/D6-arduino-nRF5
-
 https://github.com/atc1441/ATCwatch
 
 Over the air change of watch/band firmware:
