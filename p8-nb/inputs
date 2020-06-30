@@ -1,0 +1,354 @@
+//inputs
+var button;
+var w_up=false;
+var press=true;
+var dbl=0;
+var offid=-1;
+var offms=5000;
+var fcurr=-1;
+var fprev=-1;
+var l1=-1;
+var l2=-1;
+
+
+function buttonHandler(s){
+  if (global["\xFF"].watches[button]!="undefined") clearWatch(button);
+  var p=w.pin.MOTOR;
+  // button down
+if (s.state==true) { 
+    if ( l1 >=0) {clearTimeout(l1); l1=-1;}
+    if ( l2 >=0) {clearTimeout(l2);l2=-1;}
+    if ( offid >=0) {clearTimeout(offid);offid=-1;}
+    press=true;
+    //reset on long press
+	l2=setTimeout(() => {
+        if (digitalRead(BTN)==1) {
+        NRF.setServices({},{uart:false});
+        NRF.setServices({},{uart:true});  
+		l2=setTimeout(() => {reset();}, 1000);
+	    }
+    }, 8000);
+    l1=setTimeout(() => {
+      euc.tgl();
+	  offid=setTimeout(() => { faces[fcurr].off();fcurr=-1; }, 8000);
+      press=false;
+    }, 1000);
+    button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:-1});
+    return;
+}else if (press==true && s.state==false)  { 
+    if (l1 >=0) {clearTimeout(l1); l1=-1;}
+    if ( l2 >=0) {clearTimeout(l2);l2=-1;}
+	press=false;
+	var fshow=1;
+      if (fcurr<0){
+        fprev=fcurr;
+        fcurr=0;
+        if (euc.val.conn!="OFF") fcurr=1;  
+        if (faces[fcurr].init) faces[fcurr].init();
+      } else {
+        if (!faces[fcurr].clear || faces[fcurr].clear()){
+          fprev=fcurr;
+            fcurr++; 
+ //           if (fcurr >= faces.length) fcurr=0;
+            if (fcurr >= 2) fcurr=0;
+            if (faces[fcurr].init) faces[fcurr].init();
+        } else fshow=0;
+      }
+      if (offid>=0) clearTimeout(offid);
+      var foffms=faces[fcurr].offms;
+      offid=setTimeout((f)=>{
+        if (f>=0 && faces[f].off) faces[f].off();
+        offid=-1;fcurr=-1;
+      },(foffms>0)?foffms:offms,fcurr);
+      if (fshow) {faces[fcurr].show();}
+} else {
+    if ( l1 >=0) {clearTimeout(l1); l1=-1;}
+    if ( l2 >=0) {clearTimeout(l2); l2=-1;}
+}	
+  button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:1});
+}
+button=setWatch(buttonHandler,BTN1, {repeat:false, debounce:10,edge:0});
+
+//touch handler
+var touchHandler = {
+  foffnow:false,
+  timeout: function(){
+    if (this.fnow) this.foffms=1;
+    else this.foffms=faces[fcurr].offms;
+    if (this.fto==-1) { 
+      if (offid>=0) {clearTimeout(offid); offid=-1;}
+      offid=setTimeout((f)=>{
+        if (f>=0 && faces[f].off) faces[f].off();
+        offid=-1;fcurr=-1;
+      },(this.foffms>0)?this.foffms:offms,fcurr);
+    }else {
+      if (offid>=0) {clearTimeout(offid); offid=-1;}
+      offid=setTimeout((f)=>{
+		if (f>=0 && faces[f].clear) faces[f].clear();
+        fcurr=this.fto;
+        if (this.farg!=-1){
+          faces[fcurr].init(this.farg);	
+		  faces[fcurr].show(this.farg);
+        }else{
+          faces[fcurr].init();	
+		  faces[fcurr].show();
+        }
+        offid=setTimeout((f)=>{
+          if (f>=0 && faces[f].off) faces[f].off();
+          offid=-1;fcurr=-1;
+        },faces[fcurr].offms,fcurr);
+      },(this.foffms>0)?this.foffms:offms,fcurr); 	  
+    }
+    this.fnow=false;
+  },
+  0: function(e,x,y){
+    this.fto=-1;
+    this.farg=-1;
+    var p=w.pin.MOTOR;
+    if (e==5){
+	  //alarms
+	  if ((82<x&&x<158) && y>200){ 
+		this.fto=3;
+		this.fnow=true;
+        digitalPulse(p,1,[30,50,30]);
+	  //EUC
+	  }else if (x>162 && y>200){ 
+	  this.fto=1;
+	  this.fnow=true;
+      digitalPulse(p,1,[30,50,30]);
+	  }else digitalPulse(p,1,40);
+    }else if  (e==1){
+      this.fnow=true;
+      this.fto=-1;
+    }else if  (e==2){
+      digitalPulse(p,1,40);
+    }else if  (e==3){
+      this.fnow=true;
+      this.fto=1;
+    }else if  (e==4){
+      digitalPulse(p,1,40);
+    }else if  (e==12){
+	 // euc on/off
+	 if (x>162 && y>200){ 
+	  this.fto=0;
+      euc.tgl();
+	 // alarms
+     }else if ((82<x&&x<158) && y>200){ 
+	   if (alrm.buzz!=-1) {
+		alrm.stop(alrm.now); digitalPulse(p,1,[80,40,80]);
+	   }else {
+		this.fto=3;
+		this.fnow=true;
+        digitalPulse(p,1,[30,50,30]);
+	  }	  
+     }else digitalPulse(p,1,40);
+    }
+   this.timeout();
+  },
+  1: function(e,x,y){
+    this.fto=-1;
+    this.farg=-1;
+    var p=w.pin.MOTOR;
+    if (e==5){ 
+	  digitalPulse(p,1,40);
+    }else if  (e==1){
+      this.fnow=true;
+	  if (euc.val.conn=="READY") this.fto=-1;
+	  else this.fto=0;
+    }else if  (e==2){
+      digitalPulse(p,1,40);
+    }else if  (e==3){
+      digitalPulse(p,1,40);
+    }else if  (e==4){
+      this.fnow=true;
+      this.fto=0;
+    }else if  (e==12){
+	  //euc on/off
+	  if  (y<158) {
+	    euc.tgl();
+	  //euc settings
+	  } else if(euc.val.conn!=="WAIT") {
+          digitalPulse(p,1,140);
+ 	      euc.tmp.count=23;
+          this.fnow=true;
+          this.fto=2;
+      }else digitalPulse(p,1,80);
+    }
+    this.timeout();
+  },
+  2: function(e,x,y){
+    this.fto=1;
+    this.farg=-1;
+    var p=w.pin.MOTOR;
+    if (e==5){ 
+	  digitalPulse(p,1,40);
+    }else if  (e==1){
+      if  (x>=120) {
+        euc.val.ridemode++;
+        if (euc.val.ridemode >9) {euc.val.ridemode=9; digitalPulse(p,1,40);}
+      }else digitalPulse(p,1,40);
+    }else if  (e==2){
+      if  (x>=120) {
+        euc.val.ridemode--;
+        if (euc.val.ridemode <0) {euc.val.ridemode=0; digitalPulse(p,1,40);}
+      }else digitalPulse(p,1,40);
+    }else if  (e==3){
+      digitalPulse(p,1,40);
+    }else if  (e==4){
+      this.fnow=true;
+    }else if  (e==12){
+      //ride mode
+      if  (x>120) { 
+        euc.tmp.count=euc.val.ridemode+24;
+      //reset mileage
+      }else if (x<115 && y>145) {
+        console.log("reset mileage");
+        digitalPulse(p,1,300);  
+        euc.val.tripLast="0.0";
+	  //toggle EUC auto lock
+	  }else if (x<115 && (80<y&&y<145)) {
+        console.log("toggle alock");
+        digitalPulse(p,1,300);  
+        euc.val.alock=1-euc.val.alock;
+      }else digitalPulse(p,1,40);
+    }
+    this.timeout();
+  },
+  //alarms
+  3: function(e,x,y){
+    this.fto=0;
+    this.farg=-1;
+    var p=w.pin.MOTOR;
+    if (e==5){
+	   if(39<y&&y<105&&alrm[1].on!==1) {
+		 if (alrm[1].tmr===-1) alrm.set(1); else alrm.clear(1);
+		 digitalPulse(p,1,[30,50,30]);
+	   }else if(105<y&&y<174&&alrm[2].on!==1) {
+		 if (alrm[2].tmr===-1) alrm.set(2); else alrm.clear(2);
+	     digitalPulse(p,1,[30,50,30]);
+	   }else if(174<y&&y<239&&alrm[3].on!==1) {
+		 if (alrm[3].tmr===-1) alrm.set(3); else alrm.clear(3);
+	     digitalPulse(p,1,[30,50,30]);
+	   }else digitalPulse(p,1,40);
+    }else if  (e==1){
+	  this.fnow=true;
+    }else if  (e==2){
+      digitalPulse(p,1,40);
+    }else if  (e==3){
+      digitalPulse(p,1,40);
+    }else if  (e==4){
+      this.fnow=true;
+    }else if  (e==12){		
+	  if(39<y&&y<105) {
+		if(alrm[1].on===1)  {alrm.stop(1); digitalPulse(p,1,[80,40,80]);alarm.al1=-2;}
+		else {this.fnow=true;this.fto=4;this.farg=1; }//alarms setup
+	  }else if(105<y&&y<174) {
+		if(alrm[2].on===1) {alrm.stop(2); digitalPulse(p,1,[80,40,80]);alarm.al2=-2;}
+		else {this.fnow=true;this.fto=4;this.farg=2; }
+      }else if(174<y&&y<239) {
+		if(alrm[3].on===1) {alrm.stop(3); digitalPulse(p,1,[80,40,80]);alarm.al3=-2;}
+		else {this.fnow=true;this.fto=4;this.farg=3; }
+	  }else digitalPulse(p,1,40);    
+    }
+    this.timeout();
+  },
+  //alarms set
+  4: function(e,x,y){
+    this.fto=3;
+    this.farg=-1;
+    var p=w.pin.MOTOR;
+	var a=aSet.al.curr;
+    if (e==5){
+		/*if (y>185){
+		  if(0<x&&x<120) alrm[a].snz=1-alrm[a].snz;	
+		  else if(121<x&&x<239) alrm[a].rep=1-alrm[a].rep;
+		  digitalPulse(p,1,[30,50,30]);		
+        }else if(x<120&&35<y&&y<110) { 
+   		  alrm[a].hour++;
+		  if (alrm[a].hour>23) alrm[a].hour=alrm[a].hour-24;
+        } else if(x>120&&35<y&&y<110){ 
+		  alrm[a].min++;
+		  if (alrm[a].min>59) alrm[a].min=alrm[a].min-60;
+        } else if(x<120&&110<y&&y<185) { 
+   		  alrm[a].hour--;
+		  if (alrm[a].hour<0) alrm[a].hour=alrm[a].hour+24;
+        }else if(x>120&&110<y&&y<185){ 
+          alrm[a].min--;
+		  if (alrm[a].min<0) alrm[a].min=alrm[a].min+60;
+        }else	*/digitalPulse(p,1,40);	
+    }else if (e==2){
+      if(x<30&&y<185) { 
+   		alrm[a].hour=alrm[a].hour+3;
+		if (alrm[a].hour>23) alrm[a].hour=alrm[a].hour-24;
+      }else  if(30<x&&x<120&&y<185) { 
+   		alrm[a].hour++;
+		if (alrm[a].hour>23) alrm[a].hour=alrm[a].hour-24;
+      }else if(120<x&&x<210&&y<185){ 
+        alrm[a].min=alrm[a].min+10;
+		if (alrm[a].min>59) alrm[a].min=alrm[a].min-60;
+      } else if(x>210&&y<185){ 
+		alrm[a].min++;
+		if (alrm[a].min>59) alrm[a].min=alrm[a].min-60;
+      /*
+      if(x<120&&y<185) { 
+   		alrm[a].hour++;
+		if (alrm[a].hour>23) alrm[a].hour=alrm[a].hour-24;
+      }else if(x>120&&y<185){ 
+		alrm[a].min=alrm[a].min+10;
+		if (alrm[a].min>59) alrm[a].min=alrm[a].min-60;
+      */
+      }else	digitalPulse(p,1,40);	
+    }else if  (e==1){
+	  if(x<30&&y<185) { 
+   		alrm[a].hour=alrm[a].hour-3;
+		if (alrm[a].hour<0) alrm[a].hour=alrm[a].hour+24;
+      }else  if(30<x&&x<120&&y<185) { 
+   		alrm[a].hour--;
+		if (alrm[a].hour<0) alrm[a].hour=alrm[a].hour+24;
+      }else if(120<x&&x<210&&y<185){ 
+        alrm[a].min=alrm[a].min-10;
+		if (alrm[a].min<0) alrm[a].min=alrm[a].min+60;
+      } else if(x>210&&y<185){ 
+		alrm[a].min--;
+		if (alrm[a].min<0) alrm[a].min=alrm[a].min+60;
+      
+      /*if(x<120&&y<185) { 
+   		alrm[a].hour--;
+		if (alrm[a].hour<0) alrm[a].hour=alrm[a].hour+24;
+      } else if(x>120&&y<185){ 
+		alrm[a].min=alrm[a].min-10;
+		if (alrm[a].min<0) alrm[a].min=alrm[a].min+60;
+     */
+      }else	digitalPulse(p,1,40);	
+    }else if  (e==3){
+      digitalPulse(p,1,40);
+    }else if  (e==4){
+      this.fnow=true;
+    }else if  (e==12){
+      digitalPulse(p,1,40); 
+    }
+	if (alrm[a].tmr!==-1){alrm.clear(a); alrm.set(a);console.log("alarm reset");}
+    this.timeout();
+  }
+  
+};
+var i2c=new I2C();
+
+//var i2c=I2C1;
+i2c.setup({scl:w.pin.TP_SCL, sda:w.pin.TP_SDA, bitrate:100000});
+digitalPulse(w.pin.TP_RESET,1,[5,50]);
+
+var c=0;
+setWatch(function(s){
+  var tp=i2c.readFrom(0x15,7);
+//  digitalPulse(w.pin.TP_RESET,1,[5,50]);
+  if (fcurr>=0) touchHandler[fcurr](tp[1],tp[4],tp[6]);
+  else if (tp[1]==5) {
+    //digitalPulse(w.pin.MOTOR,1,30);
+    if (s.time-c<0.25){buttonHandler({state:true}); buttonHandler({state:false});}
+    c=s.time;
+  }else if (tp[1]==1) {buttonHandler({state:true}); buttonHandler({state:false});}
+  
+},w.pin.TP_INT,{repeat:true, edge:"rising"}); 
+
+//eval(require('Storage').read('inputs'));
