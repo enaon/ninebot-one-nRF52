@@ -18,5 +18,5 @@ The battery percentage is not the one reported by ninebot but a "fixed" one, mea
 
 The BLE antenna of the dsd6 is bad, it will loose connection to the ninebot when raised at face level, it must be replaced by a piece of copper wire.
 
-A small video here. https://www.youtube.com/watch?v=rTwBT3rJp6w
+[![Watch the video](https://img.youtube.com/vi/rTwBT3rJp6w/maxresdefault.jpg)](https://youtu.be/rTwBT3rJp6w)
 
