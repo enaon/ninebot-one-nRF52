@@ -1,0 +1,374 @@
+var gatt=0;
+var service;
+var characteristic;
+var nb_conn=0;
+var ninebot_38=0;
+var ninebot_80=0;
+var ninebot_185=0;
+var ninebot_185_temp=0;
+var ninebot_62=0;
+var ninebot_71=5150;
+var ninebot_trip=0;
+var nb_count=21;
+var ninebot_lock=false;
+var nb_rec_tmr;
+//var o=w;
+function ninebot(){
+var o=w.OLED;
+//NRF.wake();
+if (gatt.connected)  return; 
+NRF.connect(nb_mac,{minInterval:7.5, maxInterval:7.5})
+.then(function(g) {
+  gatt = g;  
+  return gatt.getPrimaryService(0xffe0);
+}).then(function(_service) {
+  service=_service;
+  return service.getCharacteristic(0xffe1);
+}).then(function(_characteristic) {
+  characteristic=_characteristic;
+  characteristic.on('characteristicvaluechanged', function(event) {
+  nb_var = event.target.value.getUint8(5, true);
+//console.log("l :"+nb_var+"-"+nb_val);
+  if (nb_var==0) {
+    if (fcurr==-1) {
+		o.gfx.clear();	
+		o.gfx.drawCircle(15,70,15);
+		o.gfx.drawCircle(15,70,16);
+		o.gfx.drawRect(7,70,23,81);
+        o.gfx.setFontVector(10);
+        o.gfx.drawString("OFF",3, 30);
+		o.flip();o.on();
+		offid=setTimeout(() => {o.off();}, 2000);
+	} 
+      //console.log("ninebot_switched off");
+      nb_conn=0; //off
+      w.vibrate(0.85,2,100,30);
+      setTimeout(() => { nb_conn=2; ninebot();}, 2500);
+      return;
+  }else if (nb_var==178) {
+	  nb_val = event.target.value.getUint8(6, true);
+	  eval("ninebot_"+nb_var+"="+nb_val+";");
+	  if (Number(nb_val).toString(2)[2]==1) ninebot_lock=true; else ninebot_lock=false; //lock state
+      if (Number(nb_val).toString(2)[1]==1 &&  nb_alert==0) {
+        nb_alert=1; 
+        //console.log("ninebot_alarm :",nb_val);
+        w.vibrate(0.85,3,250,50);
+		if (fcurr==-1) {
+			o.gfx.clear();	
+            o.gfx.setFontVector(30);
+			o.gfx.drawString("!",9, 30);
+			o.flip();o.on();
+			offid=setTimeout(() => {o.off();}, 2000);
+		}
+	    setTimeout(() => { nb_alert=0; }, 100);
+      }
+  }else if (nb_var==185) {  
+    eval("ninebot_"+nb_var+"="+event.target.value.getUint16(6, true)+";");
+    //console.log("ninebot_trip",nb_val);
+    if (ninebot_185_temp > ninebot_185) {
+      ninebot_trip=ninebot_trip+ninebot_185_temp;
+      //console.log("ninebot_trip new ",ninebot_trip);
+    }
+    ninebot_185_temp=ninebot_185;
+    
+  }else {
+    eval("ninebot_"+nb_var+"="+event.target.value.getUint16(6, true)+";");
+    nb_al=0;nb_al_s=false;nb_al_a=false;nb_al_t=false;
+    
+    if (ninebot_80>32768) nb_a=((ninebot_80-65536)/100).toFixed(1); 
+      else nb_a=(ninebot_80/100).toFixed(1);
+	if ((ninebot_38/1000)>=nb_als) {
+      nb_al=(1+(ninebot_38/1000-nb_als))|0;
+      nb_al_s=true;
+    }
+    if (nb_a>=nb_alah ) {
+      nb_al=(nb_al+1+(nb_a-nb_alah))|0;
+      nb_al_a=true;
+    }
+    if ( nb_a<=nb_alal ) {
+      nb_al=(nb_al+1+(-(nb_a-nb_alal)))|0;      
+      nb_al_a=true;
+    }
+    if (ninebot_62/10>=nb_alt ) {
+      nb_al++;
+      nb_al_t=true;
+    }
+    if (nb_al!=0) {
+      if (typeof alarm == "undefined") {
+         alarm=true;
+         w.vibrate(0.85,nb_al,150,100);  
+         setTimeout(() => {alarm=(); }, 1500);
+      }
+/* 
+	if (fcurr==-1) {
+        //if (typeof nb_al_tmr !== "undefined") {clearTimeout(nb_al_tmr);}
+        o.gfx.clear();
+        if (nb_al_s==true) {
+          o.gfx.setFontDylex7x13();
+          o.gfx.drawString("KMH",(o.gfx.getWidth()-o.gfx.stringWidth("KMH"))/2, 45);
+          o.gfx.setFontVector(23);
+          o.gfx.drawString(ninebot_38/1000|0,(o.gfx.getWidth()-o.gfx.stringWidth(ninebot_38/1000|0))/2, 60);
+        }
+        if (nb_al_a==true) {
+          o.gfx.setFontDylex7x13();
+          o.gfx.drawString("AMP",(o.gfx.getWidth()-o.gfx.stringWidth("AMP"))/2, 90);
+          o.gfx.setFontVector(16);
+          o.gfx.drawString(nb_a,(o.gfx.getWidth()-o.gfx.stringWidth(nb_a))/2, 100);
+        }      
+        if (nb_al_t==true) {
+          o.gfx.setFontDylex7x13();
+          o.gfx.drawString("TEMP",(o.gfx.getWidth()-o.gfx.stringWidth("TEMP"))/2, 0);
+          o.gfx.setFontVector(14);
+          o.gfx.drawString(ninebot_62/10,(o.gfx.getWidth()-o.gfx.stringWidth(ninebot_62/10))/2, 15);
+        }      
+        o.flip();o.on();
+		offid=setTimeout(() => {o.off();}, 2000);
+      }
+      
+*/
+    }
+  }
+
+});
+  return characteristic.startNotifications();
+}).then(function() {
+  gatt.device.on('gattserverdisconnected', function(reason) {
+    console.log("Disconnected :",reason);
+    if (reason==8) { setTimeout(() => {  ninebot(); }, 500);} 
+  });
+  //console.log("ninebot connected!"); 
+  nb_conn=1; //connected
+  nb_count=22; //unlock
+  w.vibrate(0.85,1,200,200);
+  startWriting();
+}).catch(function(err)  {
+  last_error = err;
+  console.log("ninebot dis", err);
+  if (nb_conn!=0) {
+    if ( err==="Connection Timeout"  )  {
+	ninebot_38=0;
+    nb_s=["LOST",""];
+    nb_rec_tmr=setTimeout(() => {
+	ninebot(); 
+    if (fcurr==-1) {
+		o.gfx.clear();	
+		o.gfx.drawCircle(15,70,15);
+		o.gfx.drawCircle(15,70,16);
+		o.gfx.drawRect(7,70,23,81);
+        o.gfx.setFontVector(9);
+        o.gfx.drawString("LOST",0, 30);
+  		o.gfx.setFontVector(18);
+		if (ninebot_lock) {
+			o.gfx.drawString("L",10, 95); 
+			w.vibrate(0.85,1,200,60);
+       		offid=setTimeout(() => {o.off();}, 2000);
+		}else {
+			o.gfx.drawString("?",10, 95); 
+			w.vibrate(0.85,3,1000,200);
+       		offid=setTimeout(() => {o.off();}, 4000);
+		}
+   		o.flip();o.on();
+    }
+    }, 10000);
+
+    }else if ( err==="Disconnected"|| err==="Not connected")  {
+	  ninebot_38=0;
+	  nb_s=["FAR",""];
+      nb_rec_tmr=setTimeout(() => {
+	  ninebot(); 
+      if (fcurr==-1) {
+		o.gfx.clear();	
+		o.gfx.drawCircle(15,70,15);
+		o.gfx.drawCircle(15,70,16);
+		o.gfx.drawRect(7,70,23,81);
+        o.gfx.setFontVector(11);
+        o.gfx.drawString("FAR",1, 30);
+  		o.gfx.setFontVector(18);
+		if (ninebot_lock) {
+			o.gfx.drawString("L",10, 95); 
+			w.vibrate(0.85,1,100,60);
+		}else {
+			o.gfx.drawString("?",10, 95); 
+			w.vibrate(0.85,3,500,300);
+		}
+   		offid=setTimeout(() => {o.off();}, 2000);
+		o.flip();o.on();66
+      }
+    }, 5000);
+    }
+  nb_conn=3; //scan
+  }
+});
+}
+
+var nb_table = [
+    [85, 170, 3, 9, 1, 80, 2, 160, 255], //Current Amperage with sign if v[80] > 32768 I = v[80] - 65536 else I = v[80] in Amperes * 100
+    [85, 170, 3, 9, 1, 38, 2, 202, 255], //Current Speed in Km/h*1000d
+    [85, 170, 3, 9, 1, 62, 2, 178, 255], //Temperature numeric positive ºC * 10
+    [85, 170, 3, 9, 1, 80, 2, 160, 255], //amp
+    [85, 170, 3, 9, 1, 38, 2, 202, 255], //speed
+    [85, 170, 3, 9, 1, 71, 2, 169, 255], //Voltage numeric positive V * 100
+    [85, 170, 3, 9, 1, 80, 2, 160, 255], //amp
+    [85, 170, 3, 9, 1, 38, 2, 202, 255], //speed
+   	[85, 170, 3, 9, 1, 185, 2, 55, 255], //Single Mileage numeric positive in meters
+    [85, 170, 3, 9, 1, 80, 2, 160, 255], //amp 
+    [85, 170, 3, 9, 1, 38, 2, 202, 255], //speed
+	[85, 170, 3, 9, 1, 58, 2 ,182, 255], //Single Runtime numeric positive seconds
+	[85, 170, 3, 9, 1, 80, 2, 160, 255], //amp 
+    [85, 170, 3, 9, 1, 38, 2, 202, 255], //speed
+	[85, 170, 3, 9, 1, 37, 2, 203, 255], //remaining mileage in Km*100
+	[85, 170, 3, 9, 1, 80, 2, 160, 255], //amp 
+    [85, 170, 3, 9, 1, 38, 2, 202, 255], //speed
+	[85, 170, 3, 9, 1, 182, 2, 58, 255], //Average speed numeric positive m/h
+	[85, 170, 3, 9, 1, 80, 2, 160, 255], //18-amp 
+    [85, 170, 3, 9, 1, 38, 2, 202, 255], //19-speed
+	[85, 170, 3, 9, 1, 178, 1, 63, 255], //20-Flags bit 0 -> Limit Speed, bit 1 -> Lock , bit 2 -> Beep, bit 11 -> Activation. Bits from lower significance
+	[85, 170, 3, 9, 3, 112, 1,127, 255], //21- lock
+    [85, 170, 3, 9, 3, 112, 0,128, 255]  //22- unlock
+];
+
+function startWriting() {
+  var busy = false;
+  var nb_still=false;
+  var nb_near=0;
+  var nb_far=0;
+  gatt.setRSSIHandler(function(rssi) {nb_rssi=rssi; });
+  //gatt.setRSSIHandler();
+  if (fcurr==-1) {
+		o.gfx.clear();	
+		o.gfx.drawCircle(15,70,15);
+		o.gfx.drawCircle(15,70,16);
+		o.gfx.drawRect(7,70,23,81);
+        o.gfx.setFontVector(10);
+        o.gfx.drawString("ON",5, 30);
+		o.flip();o.on();
+		setTimeout(() => {o.off();}, 2000);
+	}  
+
+  var i = setInterval(function() {
+    if (busy  ) return;
+   // console.log(nb_rssi);
+    
+    if (nb_conn==0) {
+    clearInterval(i);
+      console.log("ninebot disconnected switch off");
+      //nb_conn=0;
+	  busy = true;
+      var to=setTimeout(() => {gatt.disconnect();}, 500);
+	  characteristic.writeValue(nb_table[21]).then(function() {
+		ninebot_lock=true;
+	    clearInterval(i);
+		busy = false;
+		nb_far=0;
+        setTimeout(() => {w.vibrate(0.85,1,300,200);}, 200);
+		//w.vibrate(0.85,1,300,200
+		gatt.disconnect();
+		});
+      return;
+    }else if (!gatt.connected)  {
+     console.log("gatt disconnected");
+      clearInterval(i);
+      gatt.disconnect();
+      //w.vibrate(0.85,3,200,100);
+      //console.log("gatt disconnected");
+      return; 
+    }
+
+    if (ninebot_38==0 && nb_still==false) {
+          nb_still=3;
+        //  console.log("still start");
+          //if (typeof nb_still_tmr !== "undefined") {clearTimeout(nb_still_tmr);}
+          nb_still_tmr=(setTimeout(() => { 
+          nb_still=true;
+         // console.log("still end");
+          },5000));
+	
+    }else if (ninebot_38>0 && nb_still!=false) {
+      clearTimeout(nb_still_tmr);
+      // console.log("still stop");
+      nb_far=0;
+      nb_still=false;
+	  console.log("change interval 100 still false");
+      changeInterval(i,100); 
+
+      //
+
+    }
+
+        if (nb_rssi< -75 && nb_still==true && ninebot_lock==false) {
+           // console.log("far start");
+		nb_far++;
+		nb_near=0;
+		if (nb_far > 3 && !ninebot_lock ) {
+			if (busy ) return;
+			busy = true;
+			characteristic.writeValue(nb_table[21]).then(function() {
+				ninebot_lock=true;
+				busy = false;
+				nb_far=0;
+				w.vibrate(0.85,2,100,50);
+               if (fcurr==-1) {
+                o.gfx.clear();
+                o.gfx.drawCircle(15,60,9);
+                o.gfx.drawCircle(15,60,10);
+                o.gfx.drawCircle(15,60,11);
+                o.gfx.drawCircle(15,60,12);
+                o.gfx.fillRect(1,66,30,88);
+                o.flip();o.on();
+                offid=setTimeout(() => {o.off();}, 5000);
+              }
+			});
+		}
+
+
+	}else if  (nb_rssi> -68 && ninebot_38<=5000 && ninebot_lock==true ) {
+//		nb_near++;
+		nb_far=0;
+//		if (nb_near > 1 && ninebot_lock==true) {
+			if (busy ) return;
+			busy = true;
+			characteristic.writeValue(nb_table[22]).then(function() {
+			  //changeInterval(i,50);
+			  busy = false;
+			  nb_near=0;
+			  ninebot_lock=false;
+			  w.vibrate(0.85,1,200,100);
+              if (fcurr==-1) {
+                o.gfx.clear();
+                o.gfx.drawCircle(15,60,9);
+                o.gfx.drawCircle(15,60,10);
+                o.gfx.drawCircle(15,60,11);
+                o.gfx.drawCircle(15,60,12);
+                o.gfx.fillRect(1,66,30,88);
+                o.gfx.setColor(0);
+                o.gfx.fillRect(20,55,30,65);
+                o.gfx.setColor(1);
+                o.flip();o.on();
+                offid=setTimeout(() => {o.gfx.clear();o.off();}, 5000);
+              }
+			});
+//		}		 
+	} else  { nb_far=0; nb_near=0; }
+	
+    if (busy ) return;
+	//only get alarms when locked
+    if (ninebot_lock==true && nb_count!=22 && ninebot_38==0) {nb_count=20;changeInterval(i,2000);}
+	//only get alarms-speed when still
+	else if (nb_still==true && nb_count<19 ) {nb_count=19;changeInterval(i,500);}
+    else if  ( nb_still!=true && ninebot_38<=5000)  {changeInterval(i,200);	}
+	else if  (ninebot_38>5000 && fcurr!=-1)  {changeInterval(i,30);}
+    else if  (ninebot_38>5000 && fcurr==-1)  {changeInterval(i,100);}
+	
+    //console.log("l :"+nb_count);
+    busy = true;
+    characteristic.writeValue(nb_table[nb_count]).then(function() {
+      nb_count++;
+      if (nb_count>=21) nb_count=0;
+      busy = false;
+    });
+
+  }, 100);  
+  
+}  
+
+//eval(require('Storage').read('ninebot'));
