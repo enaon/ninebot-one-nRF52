@@ -8,7 +8,8 @@ Scripts for directly connecting a Nordic Semiconductor nRF5 based smart watch/br
 Espruino for P8 watch-dsd6 band:
 https://github.com/fanoush/ds-d6
 
-nRF5 based bands/watches and custom Arduino firmware.
+nRF5 based bands/watches and custom Arduino firmware:
+
 https://github.com/atc1441/D6-arduino-nRF5
 https://github.com/atc1441/ATCwatch
 
