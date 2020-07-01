@@ -1,0 +1,215 @@
+//main
+//E.setFlags({pretokenise:1});
+//console.log("main start");
+
+//main clock face
+var mainFace = {
+  offms: 5000,
+  init: function(){
+    var g=w.gfx;
+    var d=(Date()).toString().split(' ');
+    this.v=w.battVoltage(1);
+    g.setColor(7);
+    g.fillRect(0,0,158,50); //date
+    g.fillRect(162,0,239,50);//batt
+    g.fillRect(0,200,78,239); //bottom1 memmory
+    g.fillRect(82,200,158,239); //bottom 2 
+    g.fillRect(162,200,239,239); //bottom3 euc
+    g.setColor(0);
+    g.setFont("Vector",28);
+    g.drawString(mem(),4,207); //memmory
+	g.drawString("AL",97,207); //Alarms
+    g.drawString("EUC",167,207); //euc
+    g.setFont("Vector",32);
+    g.drawString(d[2]+" "+d[0], (81-(g.stringWidth(d[2]+" "+d[0]))/2) ,9); //date
+    g.setFont("7x11Numeric7Seg",4);
+    g.drawString(this.v,240-(g.stringWidth(this.v)),3); //batt
+    g.flip();
+    if(!g.isOn) g.on();
+    this.hour=-1;
+    this.min=-1;
+    this.sec=-1;
+	alrm.btn=1;
+    this.run=true;
+  },
+  show : function(){
+  if (!this.run) return;
+  var g=w.gfx;
+  var d=(Date()).toString().split(' ');
+  var t=(d[4]).toString().split(':');
+  var s=(t[2]).toString().split('');
+  //hours
+  if (t[0]!=this.hour){
+  this.hour=t[0];
+  g.setColor(0);
+  g.fillRect(0,60,100,155);
+  g.setColor(15);
+  g.setFont("Vector",60);
+  g.drawString(t[0],0,75); //hours
+  g.setFont("Vector",45);
+  g.drawString(":",100,75);
+  g.flip();
+  }
+  //minutes
+  if (t[1]!=this.min){
+  this.min=t[1];
+  g.drawString(":",100,75);
+  g.setFont("Vector",60);
+  g.setColor(0);g.fillRect(110,60,210,155);
+  g.setColor(11);//
+  g.drawString(t[1],118,75); //minutes
+  g.flip();
+  }
+  //seconds
+  g.setColor(0);g.fillRect(211,60,240,155);
+  g.setColor(7);//
+  g.setFont("Vector",26);
+  g.drawString(s[0],218,74); //seconds
+  g.drawString(s[1],218,112); //seconds
+  g.flip(); 
+  //memmory  
+  if (mem()!=this.mem){
+  this.mem=mem();
+  g.setColor(7);
+  g.fillRect(0,200,78,239); //bottom1 memmory
+  g.setColor(0);
+  g.setFont("Vector",28);
+  g.drawString(mem(),4,207); //memmory
+  g.flip();
+  }
+  //batt
+  if (this.v!=this.batt){
+  this.batt=this.v;
+  if (digitalRead(w.pin.CHARGING)==1)
+    g.setColor(13);
+  else if (this.v<=20)
+    g.setColor(12);
+  else 
+    g.setColor(7);
+  g.fillRect(162,0,239,50);//batt
+  g.setColor(0);
+  g.setFont("7x11Numeric7Seg",4);
+  g.drawString(this.v,240-(g.stringWidth(this.v)),3); //batt
+  g.flip();
+  }
+  
+  //Alarms
+  if(alrm.btn!==-1){
+    alrm.btn=-1;
+  	if (alrm.buzz!=-1) g.setColor(14);
+    else if (alrm[1].tmr!==-1||alrm[2].tmr!==-1||alrm[3].tmr!==-1) g.setColor(9);
+    else  g.setColor(7);
+	g.fillRect(82,200,158,239); //bottom 2 alarms
+	g.setColor(0);
+	g.setFont("Vector",28);
+	g.drawString("AL",97,207); //Alarms
+	g.flip();
+  }
+  //euc
+  if (euc.val.lock==1 && euc.val.conn=="READY") g.setColor(13);
+  else if (euc.val.lock==1 ) g.setColor(10);
+  else if (euc.val.conn=="READY")g.setColor(11);
+  else g.setColor(7);
+  g.fillRect(162,200,239,239);
+  g.setColor(0);
+  g.setFont("Vector",28);
+  g.drawString("EUC",167,207); 
+  g.flip();
+
+    
+  //loop
+    this.tid=setTimeout(function(t){
+      t.tid=-1;
+      t.show();
+    },1000-Date().getMilliseconds(),this);
+  },
+  tid:-1,
+  run:false,
+  clear : function(){
+    var g=w.gfx;
+    g.clear();
+    this.exit();
+    return true;
+  },
+  exit: function(){
+    this.run=false;
+    if (this.tid>=0) clearTimeout(this.tid);
+    this.tid=-1;
+    return true;
+  },
+  off: function(){
+    var g=w.gfx;
+    g.off();
+    this.clear();
+  }
+};
+faces[0]=mainFace;
+//inputs
+//main clock input
+touchHandler[0]=function(e,x,y){
+    this.fto=-1;
+    this.farg=-1;
+    var p=w.pin.MOTOR;
+    if (e==5){
+	  //alarms
+	  if ((82<x&&x<158) && y>200){ 
+		this.fto=3;
+		this.fnow=true;
+        digitalPulse(p,1,[30,50,30]);
+	  //EUC
+	  }else if (x>162 && y>200){ 
+	  this.fto=1;
+	  this.fnow=true;
+      digitalPulse(p,1,[30,50,30]);
+	  }else digitalPulse(p,1,40);
+    }else if  (e==1){
+      this.fnow=true;
+      this.fto=-1;
+    }else if  (e==2){
+      digitalPulse(p,1,40);
+    }else if  (e==3){
+      this.fnow=true;
+      this.fto=1;
+    }else if  (e==4){
+      //if (y<70) w.gfx.bri.set(1);
+      //else if (70<y&&y<170) w.gfx.bri.set();
+      if (y<70&&x<70) {
+        if (w.gfx.bri.lv===2) w.gfx.bri.set(7);
+        else w.gfx.bri.set(2);
+		digitalPulse(p,1,[30,50,30]);
+      }else  digitalPulse(p,1,40);
+    }else if  (e==12){
+	 // euc on/off
+	 if (x>162 && y>200){ 
+	  this.fto=0;
+      euc.tgl();
+	 // alarms
+     }else if ((82<x&&x<158) && y>200){ 
+	   if (alrm.buzz!=-1) {
+		alrm.stop(alrm.now); digitalPulse(p,1,[80,40,80]);
+	   }else {
+		this.fto=3;
+		this.fnow=true;
+        digitalPulse(p,1,[30,50,30]);
+	  }	  
+     }else digitalPulse(p,1,40);
+    }
+   this.timeout();
+};
+//  g.setColor(1); //
+//  g.setColor(2);// Dgreen
+//  g.setColor(3);// Dgrey
+//  g.setColor(4);// Dred
+//  g.setColor(5);// Dpurple
+//  g.setColor(6);// Dorange
+//  g.setColor(7); //grey
+//  g.setColor(8);// Dark
+//  g.setColor(9); //Dblue
+//  g.setColor(10);// green
+//  g.setColor(11);// blue
+//  g.setColor(12);// red
+//  g.setColor(13);// purple
+//  g.setColor(14);// yellow
+//  g.setColor(15);// white
+//console.log("main end");
+

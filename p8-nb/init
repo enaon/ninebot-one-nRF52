@@ -158,12 +158,30 @@ const INITCMDS = [
   [0x2b,0,0,0,239],
   [0x2c]
 ];
+g.bri={
+	lv:1,
+	set:function(o){	
+	var l=pin.LCD_BL_L;
+	var m=pin.LCD_BL_M;
+	var h=pin.LCD_BL_H;
+	if (o) this.lv=o; else { this.lv++; if (this.lv>7) this.lv=1; o=this.lv; }
+	if (o===1) { l.reset();m.set();h.set();}
+	else if (o===1) { l.reset();m.set();h.set();}
+	else if (o===2) { l.set();m.reset();h.set();}
+	else if (o===3) { l.set();m.set();h.reset();}
+	else if (o===4) { l.reset();m.reset();h.set();}
+	else if (o===5) { l.reset();m.set();h.reset();}
+	else if (o===6) { l.set();m.reset();h.reset();}
+	else if (o===7) { l.reset();m.reset();h.reset();}
+	return o;
+	}
+};
+
 g.init=function(f){
   lcd_cmd([0x11]); // sleep out
   setTimeout(()=>{
     E.defrag();
-    pin.LCD_BL_L.reset();
-	pin.LCD_BL_H.reset();
+	g.bri.set(1);
     pin.LCD_CS.reset();
     INITCMDS.forEach((a)=>{var cmd=E.toString(a);SPI2.cmd(E.getAddressOf(cmd,true),cmd.length);});
     if (f !== undefined) f();
@@ -173,14 +191,14 @@ g.init=function(f){
 g.off=function(){
   lcd_cmd([0x10]);
   pin.LCD_BL_L.set();
+  pin.LCD_BL_M.set();
   pin.LCD_BL_H.set();
 
   g.isOn=false;
 };
 g.on=function(){
   lcd_cmd([0x11]);
-  pin.LCD_BL_L.reset();
-  pin.LCD_BL_H.reset();
+  g.bri.set(g.bri.lv);
   g.isOn=true;
 
 };
@@ -207,9 +225,6 @@ g.flip=function(){
 };
 module.exports = {
   pin: pin,
-//  touchInit:touchInit,
-//  touchRead:touchRead,
-//  touchWrite:touchWrite,
   battery: battery,
   charging: charging,
   battVoltage: battVoltage,
@@ -225,10 +240,13 @@ setWatch(function(s){
   else
   digitalPulse(w.pin.MOTOR,1,[100,80,100]);
 },w.pin.CHARGING,true);  
+//faces
+var faces={};
 //start
 w.gfx.init();
 digitalPulse(w.pin.MOTOR,1,[100,30,100,30,100]);
+eval(require('Storage').read('handler'));
+eval(require('Storage').read('main'));
+eval(require('Storage').read('alarm'));
 eval(require('Storage').read('euc'));
-eval(require('Storage').read('face'));
-eval(require('Storage').read('inputs'));
-//},3000);
+

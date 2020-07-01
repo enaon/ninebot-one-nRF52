@@ -1,7 +1,6 @@
-
-
+//Alarms function
 var alrm ={
-  buzz:-1,
+  buzz:-1,btn:-1,
   1:{hour:8,min:0,rep:0,snz:0,on:0,set:0,tmr:-1},
   2:{hour:13,min:0,rep:0,snz:0,on:0,set:0,tmr:-1},
   3:{hour:21,min:30,rep:0,snz:0,on:0,set:0,tmr:-1},
@@ -18,14 +17,17 @@ var alrm ={
       if (this[i].rep===1)this.set(i); 
     },diff,o); 
     console.log("alarm "+o+" set");
+//    this.btn=1;
   },
   clear: function(o){  
     console.log("alarm "+o+" clear");
     clearTimeout(this[o].tmr);
     this[o].tmr=-1;
+//    this.btn=1;
   },
   vibr: function(o){
     if (this.buzz!=-1) return; //do something here
+	this.btn=1;
     var a=[200];
     digitalPulse(w.pin.MOTOR,1,a);
     this[o].on=1;
@@ -46,11 +48,12 @@ var alrm ={
       this.buzz=-1;
       this[o].on=0;
 	  this.now=-1;
+      this.btn=1;
     }
   }
 };
-
-//Alarm
+//Faces
+//Alarms face
 var alarm = {
   offms: 5000,
   pad:function pad(n) {
@@ -112,8 +115,6 @@ var alarm = {
       g.drawString(this.pad(alrm[3].hour)+":"+this.pad(alrm[3].min),120-(g.stringWidth(this.pad(alrm[3].hour)+":"+this.pad(alrm[3].min)))/2,183); 
   	  g.flip();
     }
-
-  //loop
     this.tid=setTimeout(function(t){
       t.tid=-1;
       t.show();
@@ -121,7 +122,6 @@ var alarm = {
   },
   tid:-1,
   run:false,
-
   clear : function(){
     var g=w.gfx;
     g.clear();
@@ -132,8 +132,6 @@ var alarm = {
     this.run=false;
     if (this.tid>=0) clearTimeout(this.tid);
     this.tid=-1;
-//    g.clear();
- //   g.flip();
     return true;
   },
   off: function(){
@@ -142,8 +140,7 @@ var alarm = {
     this.clear();
   }
 };
-
-
+//Alarms setup face
 var aSet = {
   offms: 5000,
   al:{
@@ -222,9 +219,6 @@ var aSet = {
       g.drawString("REPEAT",130,202); 
   	  g.flip();
     }
-
-   
-  //loop
     this.tid=setTimeout(function(t){
       t.tid=-1;
       t.show(o);
@@ -243,8 +237,6 @@ var aSet = {
     this.run=false;
     if (this.tid>=0) clearTimeout(this.tid);
     this.tid=-1;
-//    g.clear();
- //   g.flip();
     return true;
   },
   off: function(){
@@ -254,4 +246,136 @@ var aSet = {
   }
 };
 
-faces.push(alarm,aSet);
+faces[3]=alarm;
+faces[4]=aSet; 
+//faces.push(alarm,aSet);
+//Inputs
+//Alarms input
+touchHandler[3]=function(e,x,y){
+    this.fto=0;
+    this.farg=-1;
+    var p=w.pin.MOTOR;
+    if (e==5){
+	   if(39<y&&y<105&&alrm[1].on!==1) {
+		 if (alrm[1].tmr===-1) alrm.set(1); else alrm.clear(1);
+		 digitalPulse(p,1,[30,50,30]);
+	   }else if(105<y&&y<174&&alrm[2].on!==1) {
+		 if (alrm[2].tmr===-1) alrm.set(2); else alrm.clear(2);
+	     digitalPulse(p,1,[30,50,30]);
+	   }else if(174<y&&y<239&&alrm[3].on!==1) {
+		 if (alrm[3].tmr===-1) alrm.set(3); else alrm.clear(3);
+	     digitalPulse(p,1,[30,50,30]);
+	   }else digitalPulse(p,1,40);
+    }else if  (e==1){
+	  this.fnow=true;
+    }else if  (e==2){
+      digitalPulse(p,1,40);
+    }else if  (e==3){
+      digitalPulse(p,1,40);
+    }else if  (e==4){
+      //if (y<70) w.gfx.bri.set(1);
+      //else if (70<y&&y<170) w.gfx.bri.set();
+      if (y<70&&x<70) {
+        if (w.gfx.bri.lv===2) w.gfx.bri.set(7);
+        else w.gfx.bri.set(2);
+		digitalPulse(p,1,[30,50,30]);
+      }else this.fnow=true;
+    }else if  (e==12){		
+	  if(39<y&&y<105) {
+		if(alrm[1].on===1)  {alrm.stop(1); digitalPulse(p,1,[80,40,80]);alarm.al1=-2;}
+		else {this.fnow=true;this.fto=4;this.farg=1; }//alarms setup
+	  }else if(105<y&&y<174) {
+		if(alrm[2].on===1) {alrm.stop(2); digitalPulse(p,1,[80,40,80]);alarm.al2=-2;}
+		else {this.fnow=true;this.fto=4;this.farg=2; }
+      }else if(174<y&&y<239) {
+		if(alrm[3].on===1) {alrm.stop(3); digitalPulse(p,1,[80,40,80]);alarm.al3=-2;}
+		else {this.fnow=true;this.fto=4;this.farg=3; }
+	  }else digitalPulse(p,1,40);    
+    }
+    this.timeout();
+ };
+  //alarms setup input
+touchHandler[4]=function(e,x,y){
+    this.fto=3;
+    this.farg=-1;
+    var p=w.pin.MOTOR;
+	var a=aSet.al.curr;
+    if (e==5){
+		if (y>185){
+		  if(0<x&&x<120) alrm[a].snz=1-alrm[a].snz;	
+		  else if(121<x&&x<239) alrm[a].rep=1-alrm[a].rep;
+		  digitalPulse(p,1,[30,50,30]);		
+        /*}else if(x<120&&35<y&&y<110) { 
+   		  alrm[a].hour++;
+		  if (alrm[a].hour>23) alrm[a].hour=alrm[a].hour-24;
+        } else if(x>120&&35<y&&y<110){ 
+		  alrm[a].min++;
+		  if (alrm[a].min>59) alrm[a].min=alrm[a].min-60;
+        } else if(x<120&&110<y&&y<185) { 
+   		  alrm[a].hour--;
+		  if (alrm[a].hour<0) alrm[a].hour=alrm[a].hour+24;
+        }else if(x>120&&110<y&&y<185){ 
+          alrm[a].min--;
+		  if (alrm[a].min<0) alrm[a].min=alrm[a].min+60;*/
+        }else	digitalPulse(p,1,40);	
+    }else if (e==2){
+      if(x<30&&y<185) { 
+   		alrm[a].hour=alrm[a].hour+3;
+		if (alrm[a].hour>23) alrm[a].hour=alrm[a].hour-24;
+      }else  if(30<x&&x<120&&y<185) { 
+   		alrm[a].hour++;
+		if (alrm[a].hour>23) alrm[a].hour=alrm[a].hour-24;
+      }else if(120<x&&x<210&&y<185){ 
+        alrm[a].min=alrm[a].min+10;
+		if (alrm[a].min>59) alrm[a].min=alrm[a].min-60;
+      } else if(x>210&&y<185){ 
+		alrm[a].min++;
+		if (alrm[a].min>59) alrm[a].min=alrm[a].min-60;
+      /*
+      if(x<120&&y<185) { 
+   		alrm[a].hour++;
+		if (alrm[a].hour>23) alrm[a].hour=alrm[a].hour-24;
+      }else if(x>120&&y<185){ 
+		alrm[a].min=alrm[a].min+10;
+		if (alrm[a].min>59) alrm[a].min=alrm[a].min-60;
+      */
+      }else	digitalPulse(p,1,40);	
+    }else if  (e==1){
+	  if(x<30&&y<185) { 
+   		alrm[a].hour=alrm[a].hour-3;
+		if (alrm[a].hour<0) alrm[a].hour=alrm[a].hour+24;
+      }else  if(30<x&&x<120&&y<185) { 
+   		alrm[a].hour--;
+		if (alrm[a].hour<0) alrm[a].hour=alrm[a].hour+24;
+      }else if(120<x&&x<210&&y<185){ 
+        alrm[a].min=alrm[a].min-10;
+		if (alrm[a].min<0) alrm[a].min=alrm[a].min+60;
+      } else if(x>210&&y<185){ 
+		alrm[a].min--;
+		if (alrm[a].min<0) alrm[a].min=alrm[a].min+60;
+      
+      /*if(x<120&&y<185) { 
+   		alrm[a].hour--;
+		if (alrm[a].hour<0) alrm[a].hour=alrm[a].hour+24;
+      } else if(x>120&&y<185){ 
+		alrm[a].min=alrm[a].min-10;
+		if (alrm[a].min<0) alrm[a].min=alrm[a].min+60;
+     */
+      }else	digitalPulse(p,1,40);	
+    }else if  (e==3){
+      digitalPulse(p,1,40);
+    }else if  (e==4){
+      //if (y<70) w.gfx.bri.set(1);
+      //else if (70<y&&y<170) w.gfx.bri.set();
+      if (y<70&&x<70) {
+        if (w.gfx.bri.lv===2) w.gfx.bri.set(7);
+        else w.gfx.bri.set(2);
+		digitalPulse(p,1,[30,50,30]);
+      }else  this.fnow=true;
+    }else if  (e==12){
+      digitalPulse(p,1,40); 
+    }
+	if (alrm[a].tmr!==-1){alrm.clear(a); alrm.set(a);console.log("alarm reset");}
+    this.timeout();
+ };
+ 
