@@ -115,6 +115,7 @@ pin.LCD_RST.set();
 //var bpp=1; // powers of two work, 3=8 colors would be nice
 var g=Graphics.createArrayBuffer(240,240,bpp);
 g.isOn=false;
+g.setColor0=16;
 var pal;
 switch(bpp){
   case 2: pal= Uint16Array([0x000,0xf00,0x0f0,0x00f]);break; // white won't fit
@@ -122,7 +123,15 @@ switch(bpp){
   case 1: 
   g.sc=g.setColor;
   g.setColor=function(c){ //change color 1 dynamically
-    if (c > 1) { pal[1]=pal[Math.floor(c)]; g.sc(1);} else g.sc(c);
+    if (c>0) { 
+      pal[1]=pal[Math.floor(c)]; 
+      pal[0]=pal[Math.floor(g.setColor0)]; 
+      g.sc(1);
+    }else {
+      pal[0]=pal[Math.floor(g.setColor0)];
+      g.sc(0);
+  }
+      g.setColor0=16;
   };
   case 4: pal= Uint16Array( // CGA
     [
@@ -168,8 +177,8 @@ g.bri={
 	if (o===1) { l.reset();m.set();h.set();}
 	else if (o===1) { l.reset();m.set();h.set();}
 	else if (o===2) { l.set();m.reset();h.set();}
-	else if (o===3) { l.set();m.set();h.reset();}
-	else if (o===4) { l.reset();m.reset();h.set();}
+	else if (o===3) { l.reset();m.reset();h.set();}
+	else if (o===4) { l.set();m.set();h.reset();}
 	else if (o===5) { l.reset();m.set();h.reset();}
 	else if (o===6) { l.set();m.reset();h.reset();}
 	else if (o===7) { l.reset();m.reset();h.reset();}

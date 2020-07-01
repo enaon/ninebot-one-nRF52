@@ -111,6 +111,7 @@ var alarm = {
       else if (this.al3!==-1) g.setColor(9);
       else g.setColor(7);  
       g.fillRect(0,175,239,239); //3
+      g.setColor0=15;
       g.setColor(0);
       g.drawString(this.pad(alrm[3].hour)+":"+this.pad(alrm[3].min),120-(g.stringWidth(this.pad(alrm[3].hour)+":"+this.pad(alrm[3].min)))/2,183); 
   	  g.flip();
