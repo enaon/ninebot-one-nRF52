@@ -5,7 +5,7 @@ var set={
   bt:1,
   cli:1,
   hid:0,
-  atc:1
+  atc:0
 };  
 //main clock face
 var mainFace = {
@@ -18,17 +18,14 @@ var mainFace = {
     g.fillRect(0,0,158,50); //date
     g.fillRect(162,0,239,50);//batt
   g.setFont("Vector",22);
-    if (atc) g.drawString(atc,119-(g.stringWidth(atc))/2,165); //info
+    if (typeof atc !== 'undefined') g.drawString(atc,119-(g.stringWidth(atc))/2,165); //info
     g.fillRect(0,200,78,239); //bottom1 memmory
     g.fillRect(82,200,158,239); //bottom 2 
     g.fillRect(162,200,239,239); //bottom3 euc
 //    g.fillRect(0,151,101,195);// hours2
 //    g.fillRect(101,151,239,195);//min2
-//    g.setColor(1,colo.bck2);
 //    g.fillRect(0,55,100,150);
 //    g.fillRect(105,55,239,150);
-    g.flip();
-//    g.flip();
     g.setColor(0,colo.btnTxt);
     g.setFont("Vector",28);
     g.drawString(mem(),4,207); //memmory
@@ -385,8 +382,8 @@ touchHandler[9]=function(e,x,y){
         }else digitalPulse(p,1,40);
 	  }else if(0<x&&x<75&&75<y&&y<157){
         set.atc=1-set.atc;
-        if (set.atc===1) console.log("atc:1");  
-        else console.log("atc:0");
+        if (set.atc===1) eval(require('Storage').read('atc'));
+         else console.log("atc:0");
         digitalPulse(p,1,[30,50,30]);
       }else if(0<x&&x<75&&158<y&&y<239){
         this.tor=1;
