@@ -11,12 +11,70 @@ var mem = () => {
  var m=process.memory();
  return m.free;
 };
-var w;
 var erase= () => require("Storage").eraseAll();
 //startup
-//setTimeout(()=>{
 NRF.setAdvertising({}, {name:"enaonP8"});
 //p8 smart watch
+var w;
+var pal;
+var offid=-1;
+var offms=5000;
+var fcurr=-1;
+var fprev=-1;
+col={
+	black:0,
+	white:4095,
+	lblue:1535,
+	blue:143,
+	dblue:1375,
+	blue1:1708,
+	raf:1453,
+	raf1:1708,
+	raf2:1963,
+	raf3:2220,
+	raf4:2474,
+	raf5:3005,
+	olive:170,
+	gray:2730,
+	lgray:3003,
+	dgray:1365,
+	lgreen:1525,
+	red:3840,
+	dred:3925,
+	purple:3935,
+	yellow:4085
+};
+var colo={ txt: 4095, txt1: 1535, txt2: 1365, txt3: 0,
+  hdr: 1368, hTxt: 3003, bck: 1708, bck0: 0, bck1: 3003,
+  bck2: 2730, bck3: 1963, btnEn: 1453, btnEn1: 1535, btnEn2: 3935,
+  btnDs: 2730, btnDs1: 3003, btnDs2: 1963, btnAl: 4085, btnAl1: 3840,
+  btnSt: 3935, btnTxt: 0, btnTxt1: 4095 };
+/*
+var colo={
+	txt:col.white,
+	txt1:col.lblue,
+	txt2:col.dgray,
+	txt3:col.black,
+	hdr:col.dgray+3,
+	hTxt:col.lgray,
+	bck:col.raf1,
+	bck0:col.black,
+	bck1:col.lgray,
+	bck2:col.gray,
+	bck3:col.raf2,
+	btnEn:col.raf,
+	btnEn1:col.lblue,
+	btnEn2:col.purple,
+	btnDs:col.gray,
+	btnDs1:col.lgray,
+	btnDs2:col.raf2,
+	btnAl:col.yellow,
+	btnAl1:col.red,
+	btnSt:col.purple,
+	btnTxt:col.black,
+   	btnTxt1:col.white
+};
+*/
 Modules.addCached("P8",function(){
 const bpp=1;
 const pin = {
@@ -115,34 +173,12 @@ pin.LCD_RST.set();
 //var bpp=1; // powers of two work, 3=8 colors would be nice
 var g=Graphics.createArrayBuffer(240,240,bpp);
 g.isOn=false;
-g.setColor0=16;
-var pal;
-switch(bpp){
-  case 2: pal= Uint16Array([0x000,0xf00,0x0f0,0x00f]);break; // white won't fit
-//  case 1: pal= Uint16Array([0x000,0xfff]);break;
-  case 1: 
-  g.sc=g.setColor;
-  g.setColor=function(c){ //change color 1 dynamically
-    if (c>0) { 
-      pal[1]=pal[Math.floor(c)]; 
-      pal[0]=pal[Math.floor(g.setColor0)]; 
-      g.sc(1);
-    }else {
-      pal[0]=pal[Math.floor(g.setColor0)];
-      g.sc(0);
-  }
-      g.setColor0=16;
-  };
-  case 4: pal= Uint16Array( // CGA
-    [
-// 12bit RGB444
-      0x000,0x00a,0x0a0,0x0aa,0xa00,0xa0a,0xa50,0xaaa,
-     0x555,0x55f,0x5f5,0x5ff,0xf55,0xf5f,0xff5,0xfff
-//16bit RGB565
-//      0x0000,0x00a8,0x0540,0x0555,0xa800,0xa815,0xaaa0,0xad55,
-//      0x52aa,0x52bf,0x57ea,0x57ff,0xfaaa,0xfabf,0xffea,0xffff
-    ]);break;
-}
+pal= Uint16Array([0x000,0xfff]);
+g.sc=g.setColor;
+g.setColor=function(c,v){ 
+  if (c==1) pal[1]=v; else pal[0]=v;
+  g.sc(c);
+};
 const INITCMDS = [
   // This is an unrotated screen
   [0x36, 0],     // MADCTL
@@ -168,7 +204,7 @@ const INITCMDS = [
   [0x2c]
 ];
 g.bri={
-	lv:1,
+	lv:3,
 	set:function(o){	
 	var l=pin.LCD_BL_L;
 	var m=pin.LCD_BL_M;
@@ -185,12 +221,12 @@ g.bri={
 	return o;
 	}
 };
-
+console.log(g.bri.lv);
 g.init=function(f){
   lcd_cmd([0x11]); // sleep out
   setTimeout(()=>{
     E.defrag();
-	g.bri.set(1);
+	g.bri.set(3);
     pin.LCD_CS.reset();
     INITCMDS.forEach((a)=>{var cmd=E.toString(a);SPI2.cmd(E.getAddressOf(cmd,true),cmd.length);});
     if (f !== undefined) f();
@@ -202,7 +238,6 @@ g.off=function(){
   pin.LCD_BL_L.set();
   pin.LCD_BL_M.set();
   pin.LCD_BL_H.set();
-
   g.isOn=false;
 };
 g.on=function(){
@@ -244,11 +279,46 @@ module.exports = {
 w=require("P8");
 //charging notify
 setWatch(function(s){
-  if (s.state==1) 
-  digitalPulse(w.pin.MOTOR,1,200);  
-  else
-  digitalPulse(w.pin.MOTOR,1,[100,80,100]);
-},w.pin.CHARGING,true);  
+  var co;
+  var g=w.gfx;
+  if (s.state==1) {
+	digitalPulse(w.pin.MOTOR,1,200); 
+	co=col.raf;
+  }else {
+	digitalPulse(w.pin.MOTOR,1,[100,80,100]);
+  	co=col.black;
+  }
+  if (fcurr<0){
+	if (offid==-1){ g.clear();g.flip();}
+	g.setColor(0,col.lgray);
+	g.fillRect(63,0,178,239);
+	g.setColor(1,col.black);
+	g.drawRect(100,58,140,89);
+	g.drawRect(101,59,139,89);
+	g.drawRect(102,60,138,88);
+	g.drawRect(90,88,150,147);
+	g.drawRect(91,89,149,146);
+	g.drawRect(92,90,148,145);
+	g.drawRect(104,145,137,166);
+	g.drawRect(105,146,136,165);
+	g.drawRect(106,147,135,164);
+	g.drawRect(115,166,126,229);
+	g.drawRect(116,166,125,228);
+	g.drawRect(117,166,124,227);
+	g.flip();
+	g.setColor(1,co);
+	g.fillRect(93,91,147,144);
+   	g.setColor(0,col.black);
+	g.flip();
+	if (offid!==-1) clearTimeout(offid);
+	  offid=setTimeout(()=>{
+        g.clear();
+		g.off();
+		offid=-1;
+      },2000);
+	}  
+    if(!g.isOn) g.on();
+},w.pin.CHARGING,{repeat:true, debounce:500,edge:0});  
 //faces
 var faces={};
 //start
@@ -256,6 +326,6 @@ w.gfx.init();
 digitalPulse(w.pin.MOTOR,1,[100,30,100,30,100]);
 eval(require('Storage').read('handler'));
 eval(require('Storage').read('main'));
+eval(require('Storage').read('hid'));
 eval(require('Storage').read('alarm'));
 eval(require('Storage').read('euc'));
-

@@ -1,7 +1,12 @@
 //main
 //E.setFlags({pretokenise:1});
 //console.log("main start");
-
+var set={
+  bt:1,
+  cli:1,
+  hid:0,
+  atc:1
+};  
 //main clock face
 var mainFace = {
   offms: 5000,
@@ -9,124 +14,143 @@ var mainFace = {
     var g=w.gfx;
     var d=(Date()).toString().split(' ');
     this.v=w.battVoltage(1);
-    g.setColor(7);
+    g.setColor(1,colo.bck1);
     g.fillRect(0,0,158,50); //date
     g.fillRect(162,0,239,50);//batt
+  g.setFont("Vector",22);
+    if (atc) g.drawString(atc,119-(g.stringWidth(atc))/2,165); //info
     g.fillRect(0,200,78,239); //bottom1 memmory
     g.fillRect(82,200,158,239); //bottom 2 
     g.fillRect(162,200,239,239); //bottom3 euc
-    g.setColor(0);
+//    g.fillRect(0,151,101,195);// hours2
+//    g.fillRect(101,151,239,195);//min2
+//    g.setColor(1,colo.bck2);
+//    g.fillRect(0,55,100,150);
+//    g.fillRect(105,55,239,150);
+    g.flip();
+//    g.flip();
+    g.setColor(0,colo.btnTxt);
     g.setFont("Vector",28);
     g.drawString(mem(),4,207); //memmory
 	g.drawString("AL",97,207); //Alarms
     g.drawString("EUC",167,207); //euc
-    g.setFont("Vector",32);
-    g.drawString(d[2]+" "+d[0], (81-(g.stringWidth(d[2]+" "+d[0]))/2) ,9); //date
+    g.setFont("Vector",28);
+    g.drawString(d[2]+" "+d[0].toUpperCase(), (81-(g.stringWidth(d[2]+" "+d[0].toUpperCase()))/2) ,9); //date
     g.setFont("7x11Numeric7Seg",4);
-    g.drawString(this.v,240-(g.stringWidth(this.v)),3); //batt
+    g.drawString(this.v,239-(g.stringWidth(this.v)),3); //batt
     g.flip();
     if(!g.isOn) g.on();
     this.hour=-1;
     this.min=-1;
     this.sec=-1;
+    this.batt=-1;
+    this.mem=-1;
 	alrm.btn=1;
+    this.conn=-1;
     this.run=true;
   },
   show : function(){
   if (!this.run) return;
+  this.v=w.battVoltage(1);
   var g=w.gfx;
   var d=(Date()).toString().split(' ');
   var t=(d[4]).toString().split(':');
   var s=(t[2]).toString().split('');
   //hours
   if (t[0]!=this.hour){
-  this.hour=t[0];
-  g.setColor(0);
-  g.fillRect(0,60,100,155);
-  g.setColor(15);
-  g.setFont("Vector",60);
-  g.drawString(t[0],0,75); //hours
-  g.setFont("Vector",45);
-  g.drawString(":",100,75);
+    this.hour=t[0];
+    g.setColor(0,colo.bck1);
+    g.fillRect(0,55,100,150);
+    g.setColor(1,colo.txt);
+    g.setFont("Vector",50);
+    g.drawString(t[0],10,75); //hours
+//  g.setFont("Vector",45);
+//  g.drawString(":",100,75);
   g.flip();
   }
   //minutes
   if (t[1]!=this.min){
-  this.min=t[1];
-  g.drawString(":",100,75);
-  g.setFont("Vector",60);
-  g.setColor(0);g.fillRect(110,60,210,155);
-  g.setColor(11);//
-  g.drawString(t[1],118,75); //minutes
-  g.flip();
+    this.min=t[1];
+//  g.drawString(":",100,75);
+    g.setFont("Vector",50);
+    g.setColor(0,colo.bck);
+    g.fillRect(105,55,210,150);
+    g.setColor(1,colo.txt1);//
+    g.drawString(t[1],123,75); //minutes
+    g.flip();
   }
   //seconds
-  g.setColor(0);g.fillRect(211,60,240,155);
-  g.setColor(7);//
+  g.setColor(0,colo.bck);
+  g.fillRect(211,55,240,150);
+  g.setColor(1,colo.btnTxt);//
   g.setFont("Vector",26);
-  g.drawString(s[0],218,74); //seconds
-  g.drawString(s[1],218,112); //seconds
+  g.drawString(s[0],218,70); //seconds
+  g.drawString(s[1],218,108); //seconds
   g.flip(); 
-  //memmory  
-  if (mem()!=this.mem){
-  this.mem=mem();
-  g.setColor(7);
-  g.fillRect(0,200,78,239); //bottom1 memmory
-  g.setColor(0);
-  g.setFont("Vector",28);
-  g.drawString(mem(),4,207); //memmory
-  g.flip();
-  }
   //batt
   if (this.v!=this.batt){
-  this.batt=this.v;
-  if (digitalRead(w.pin.CHARGING)==1)
-    g.setColor(13);
-  else if (this.v<=20)
-    g.setColor(12);
-  else 
-    g.setColor(7);
-  g.fillRect(162,0,239,50);//batt
-  g.setColor(0);
-  g.setFont("7x11Numeric7Seg",4);
-  g.drawString(this.v,240-(g.stringWidth(this.v)),3); //batt
-  g.flip();
+    this.batt=this.v;
+    if (digitalRead(w.pin.CHARGING)==1)
+      g.setColor(0,colo.btnSt);
+    else if (this.v<=20)
+      g.setColor(0,colo.btnAl);
+    else 
+      g.setColor(0,colo.btnDs);
+    g.fillRect(162,0,239,50);//batt
+    g.setColor(1,colo.btnTxt);
+    g.setFont("7x11Numeric7Seg",4);
+    g.drawString(this.v,240-(g.stringWidth(this.v)),3); //batt
+    g.flip();
   }
-  
+  //memmory  
+  if (mem()!=this.mem){
+    this.mem=mem();
+    g.setColor(1,colo.btnDs1);
+    g.fillRect(0,200,78,239); //bottom1 memmory
+    g.setColor(0,colo.btnTxt);
+    g.setFont("Vector",28);
+    g.drawString(mem(),4,207); //memmory
+    g.flip();
+  }
   //Alarms
   if(alrm.btn!==-1){
     alrm.btn=-1;
-  	if (alrm.buzz!=-1) g.setColor(14);
-    else if (alrm[1].tmr!==-1||alrm[2].tmr!==-1||alrm[3].tmr!==-1) g.setColor(9);
-    else  g.setColor(7);
+    this.c=colo.btnTxt;
+  	if (alrm.buzz!=-1) g.setColor(0,colo.btnAl);
+    else if (alrm[1].tmr!==-1||alrm[2].tmr!==-1||alrm[3].tmr!==-1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
+    else  g.setColor(0,colo.btnDs1);
 	g.fillRect(82,200,158,239); //bottom 2 alarms
-	g.setColor(0);
+	g.setColor(1,this.c);
 	g.setFont("Vector",28);
 	g.drawString("AL",97,207); //Alarms
 	g.flip();
   }
   //euc
-  if (euc.val.lock==1 && euc.val.conn=="READY") g.setColor(13);
-  else if (euc.val.lock==1 ) g.setColor(10);
-  else if (euc.val.conn=="READY")g.setColor(11);
-  else g.setColor(7);
-  g.fillRect(162,200,239,239);
-  g.setColor(0);
-  g.setFont("Vector",28);
-  g.drawString("EUC",167,207); 
-  g.flip();
-
+  if (euc.val.conn!=this.conn || euc.val.lock!=this.lock) {
+    this.lock=euc.val.lock;
+    this.conn=euc.val.conn;
+    if (euc.val.lock==1 && euc.val.conn=="READY") g.setColor(0,colo.btnSt);
+    else if (euc.val.lock==1 ) g.setColor(0,colo.btnAl);
+    else if (euc.val.conn=="READY")g.setColor(0,colo.btnEn1);
+    else g.setColor(0,colo.btnDs1);
+    g.fillRect(162,200,239,239);
+    g.setColor(1,colo.btnTxt);
+    g.setFont("Vector",28);
+    g.drawString("EUC",167,207); 
+    g.flip();
+  }
     
   //loop
     this.tid=setTimeout(function(t){
       t.tid=-1;
       t.show();
-    },1000-Date().getMilliseconds(),this);
+    },1000,this);
   },
   tid:-1,
   run:false,
   clear : function(){
     var g=w.gfx;
+    pal[0]=colo.bck0;
     g.clear();
     this.exit();
     return true;
@@ -143,7 +167,138 @@ var mainFace = {
     this.clear();
   }
 };
+
+var setF = {
+  offms: 5000,
+  init: function(){
+    var g=w.gfx;
+    this.cli=-1;
+    this.bt=-1;
+    this.hid=-1;
+    this.atc=-1;
+    this.bri=-1;
+    var d=(Date()).toString().split(' ');
+    var t=(d[4]).toString().split(':');
+    g.setColor(1,colo.bck3);
+    g.fillRect(0,0,75,75); //bluetooth
+    g.fillRect(80,0,155,75); //cli
+    g.fillRect(160,0,239,75); //hid
+    g.fillRect(0,80,75,155); //atc
+    g.fillRect(0,160,75,239); //torch
+    g.fillRect(160,80,239,200);//brightness
+    g.fillRect(160,201,239,239);//brightness text
+    g.setColor(0,colo.txt3);
+    g.setFont("Vector",22);
+    g.drawString("BT",19,27);   
+    g.drawString("CLI",93,27);   
+    g.drawString("HID",175,27);   
+    g.drawString("ATC",9,107);
+    g.drawString("TOR",8,195);
+    g.drawString("BRI",175,200);   
+    g.flip();
+    this.run=true;
+  },
+  show : function(){
+    if (!this.run) return;
+    var g=w.gfx;
+    //BT on/off
+    if (this.tor==1) {
+      g.setColor(0,colo.txt);
+      g.fillRect(0,0,239,239); //bluetooth
+      g.flip();
+      return;
+    }
+    //BT on/off
+    if (set.bt!=this.bt) {
+      this.bt=set.bt;
+      this.c=colo.btnTxt;
+      if (this.bt===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
+      else g.setColor(0,colo.btnDs);
+      g.fillRect(0,0,75,75); //bluetooth
+      g.setColor(1,this.c);
+      g.setFont("Vector",22);
+      g.drawString("BT",19,27);   
+      g.flip();
+    }
+    //CLI on/off
+    if (set.cli!=this.cli) {
+      this.cli=set.cli;
+      this.c=colo.btnTxt;
+      if (this.cli===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
+      else g.setColor(0,colo.btnDs);
+      g.fillRect(80,0,155,75); //cli
+      g.setColor(1,this.c);
+      g.setFont("Vector",22);
+      g.drawString("CLI",93,27);   
+      g.flip();
+    }
+	 //hid on/off
+    if (set.hid!=this.hid) {
+      this.hid=set.hid;
+      this.c=colo.btnTxt;
+      if (this.hid===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
+      else g.setColor(0,colo.btnDs);
+      g.fillRect(160,0,239,75); //hid
+      g.setColor(1,this.c);
+      g.setFont("Vector",22);
+      g.drawString("HID",175,27);   
+      g.flip();
+    }
+    //atc on/off
+    if (set.atc!=this.atc) {
+      this.atc=set.atc;
+      this.c=colo.btnTxt;
+      if (this.atc===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
+      else g.setColor(0,colo.btnDs1);
+      g.fillRect(0,80,75,155); //atc
+      g.setColor(1,this.c);
+      g.setFont("Vector",22);
+      g.drawString("ATC",7,107);
+      g.flip();
+    }
+	//brightness level
+    if (g.bri.lv!=this.bri) {
+      this.bri=g.bri.lv;
+      this.c=colo.btnTxt1;
+//      g.setColor(0,colo.bck);
+      g.clearRect(160,80,239,200);//brightness
+      g.setColor(1,this.c);
+      pal[0]=colo.bck3;
+      g.setFont("Vector",35);
+      g.drawString(g.bri.lv,190,130);   
+      g.flip();
+    }
+  //loop
+    this.tid=setTimeout(function(t,o){
+      t.tid=-1;
+      t.show(o);
+    },200,this);
+  },
+  tid:-1,
+  run:false,
+  clear : function(o){
+    var g=w.gfx;
+    pal[0]=colo.bck0;
+    g.clear();
+    this.exit(o);
+    return true;
+  },
+  exit: function(o){
+    this.run=false;
+    if (this.tid>=0) clearTimeout(this.tid);
+    this.tid=-1;
+    return true;
+  },
+  off: function(o){
+    var g=w.gfx;
+    g.off();
+    this.clear(o);
+  }
+};
+
 faces[0]=mainFace;
+faces[9]=setF;
+
 //inputs
 //main clock input
 touchHandler[0]=function(e,x,y){
@@ -166,18 +321,20 @@ touchHandler[0]=function(e,x,y){
       this.fnow=true;
       this.fto=-1;
     }else if  (e==2){
-      digitalPulse(p,1,40);
+	  if (y>160&&x<50) {
+        if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
+        else w.gfx.bri.set(this.bri);
+		digitalPulse(p,1,[30,50,30]);
+     }else if (y>200) {
+      fprev=0;
+	  this.fto=9;
+      this.fnow=true;
+	  } else digitalPulse(p,1,40);
     }else if  (e==3){
       this.fnow=true;
       this.fto=1;
     }else if  (e==4){
-      //if (y<70) w.gfx.bri.set(1);
-      //else if (70<y&&y<170) w.gfx.bri.set();
-      if (y<70&&x<70) {
-        if (w.gfx.bri.lv===2) w.gfx.bri.set(7);
-        else w.gfx.bri.set(2);
-		digitalPulse(p,1,[30,50,30]);
-      }else  digitalPulse(p,1,40);
+      digitalPulse(p,1,40);
     }else if  (e==12){
 	 // euc on/off
 	 if (x>162 && y>200){ 
@@ -196,6 +353,101 @@ touchHandler[0]=function(e,x,y){
     }
    this.timeout();
 };
+   
+touchHandler[9]=function(e,x,y){
+    this.fto=-0;
+    this.farg=-1;
+    var g=w.gfx;
+    var p=w.pin.MOTOR;
+    if (this.tor==1){
+        g.bri.set(this.b);
+        this.tor=-1;
+        setF.tor=0;
+        this.fnow=true;
+        this.fto=fprev;
+        fprev=-1;
+    }else if (e==5){
+      if(x<77&&y<75){
+        set.bt=1-set.bt;
+        if (set.bt===1) {set.cli=1;set.atc=1;set.hid=1;} 
+        else {NRF.sleep();set.cli=0;set.atc=0;set.hid=0;} 
+        digitalPulse(p,1,[30,50,30]);
+      }else if(77<x&&x<158&&y<75){
+        set.cli=1-set.cli;
+        if (set.cli===1) NRF.setServices({},{uart:true});  
+        else NRF.setServices({},{uart:false});
+        digitalPulse(p,1,[30,50,30]);
+      }else if(158<x&&x<239&&y<75){
+        if (set.hid===1) {console.log("hid:1");  
+          this.fnow=true;
+          this.fto=7;             
+          digitalPulse(p,1,[30,50,30]);
+        }else digitalPulse(p,1,40);
+	  }else if(0<x&&x<75&&75<y&&y<157){
+        set.atc=1-set.atc;
+        if (set.atc===1) console.log("atc:1");  
+        else console.log("atc:0");
+        digitalPulse(p,1,[30,50,30]);
+      }else if(0<x&&x<75&&158<y&&y<239){
+        this.tor=1;
+        this.b=w.gfx.bri.lv;
+        g.bri.set(7);
+        setF.tor=1;
+        if (offid>=0) {clearTimeout(offid); offid=-1;}
+        offid=setTimeout((f)=>{
+          if (f>=0 && faces[f].off) faces[f].off();
+          g.bri.set(this.b);
+          offid=-1;fcurr=-1;
+        },15000,fcurr);
+        return;
+      }else if(158<x&&x<239&&160<y&&y<239) {
+        this.b=g.bri.lv-1;
+        if (this.b<1) this.b=1;
+        g.bri.set(this.b);
+      }else if(158<x&&x<239&&77<y&&y<159) {
+        this.b=g.bri.lv+1;
+        if (this.b>7) this.b=7;
+        g.bri.set(this.b);   
+      } else digitalPulse(p,1,40);
+    }else if  (e==1){
+      if(158<x&&x<239&&77<y&&y<239) {
+        this.b=g.bri.lv-1;
+        if (this.b<1) this.b=1;
+        g.bri.set(this.b);
+      }else { 
+        this.fnow=true;
+        this.fto=0;
+      }  
+    }else if  (e==2){
+	  if (y>160&&x<50) {
+        if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
+        else w.gfx.bri.set(this.bri);
+		digitalPulse(p,1,[30,50,30]);
+      }else if(158<x&&x<239&&77<y&&y<239) {
+        this.b=g.bri.lv+1;
+        if (this.b>7) this.b=7;
+        g.bri.set(this.b);
+      }else { 
+        this.fnow=true;
+        this.fto=fprev;
+		fprev=-1;
+      }  
+    }else if  (e==3){
+	  digitalPulse(p,1,40);
+    }else if  (e==4){
+      this.fnow=true;
+      this.fto=0;    }
+    else if  (e==12){
+      if(158<x&&x<239&&y<75){
+        set.hid=1-set.hid;
+        if (set.hid===1) console.log("hid:1");  
+        else console.log("hid:0");
+        digitalPulse(p,1,[30,50,30]);
+      }
+    }
+   this.timeout();
+};
+
 //  g.setColor(1); //
 //  g.setColor(2);// Dgreen
 //  g.setColor(3);// Dgrey

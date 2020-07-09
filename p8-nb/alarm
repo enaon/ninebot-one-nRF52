@@ -1,4 +1,4 @@
-//Alarms function
+//Alarms setter
 var alrm ={
   buzz:-1,btn:-1,
   1:{hour:8,min:0,rep:0,snz:0,on:0,set:0,tmr:-1},
@@ -16,27 +16,23 @@ var alrm ={
       this[i].tmr=-1;
       if (this[i].rep===1)this.set(i); 
     },diff,o); 
-    console.log("alarm "+o+" set");
-//    this.btn=1;
   },
   clear: function(o){  
-    console.log("alarm "+o+" clear");
     clearTimeout(this[o].tmr);
     this[o].tmr=-1;
-//    this.btn=1;
   },
   vibr: function(o){
     if (this.buzz!=-1) return; //do something here
 	this.btn=1;
-    var a=[200];
+//    var a=[200];
+	var a=[200,300,100,80,100,80,100,80,100];
     digitalPulse(w.pin.MOTOR,1,a);
     this[o].on=1;
 	this.now=o;
 	this.buzz=setInterval((o)=>{
-      a.push(300,100,80,100,80,100,80,100);
+//      a.push(300,100,80,100,80,100,80,100);
       digitalPulse(w.pin.MOTOR,1,a); 
     },15000);
-    
   },
   snz: function(o){  
     if (this.buzz!=-1) {
@@ -63,18 +59,13 @@ var alarm = {
     var g=w.gfx;
     var d=(Date()).toString().split(' ');
     var t=(d[4]).toString().split(':');
-    g.setColor(7);
-      g.fillRect(0,39,239,103); //1
-      g.fillRect(0,107,239,171); //2
-      g.fillRect(0,175,239,239); //3
-    g.flip();
-    g.setColor(3);
+    g.setColor(0,colo.hdr);//header bck
     g.fillRect(0,0,239,35); 
-    g.setColor(0);
+    g.setColor(1,colo.hTxt);//header txt
     g.setFont("Vector",20);
-	g.drawString("ALARMS",4,10); 
+	g.drawString("ALARMS",4,6); 
     g.setFont("Vector",26);
-  	g.drawString(t[0]+":"+t[1],242-(g.stringWidth(t[0]+":"+t[1])),6); 
+  	g.drawString(t[0]+":"+t[1],242-(g.stringWidth(t[0]+":"+t[1])),3); 
     g.flip();
 	this.al1=-2;
 	this.al2=-2;
@@ -84,36 +75,39 @@ var alarm = {
   show : function(){
     if (!this.run) return;
     var g=w.gfx;
-    g.setFont("Vector",50);  
+    g.setFont("Vector",45);  
     if (alrm[1].tmr!=this.al1) {
       this.al1=alrm[1].tmr;
-	  if (alrm[1].on===1) g.setColor(14);
-      else if (this.al1!==-1) g.setColor(9);
-      else g.setColor(7);  
+      this.c=colo.btnTxt1;
+      if (this.al1!==-1) g.setColor(1,colo.btnEn);
+      else { g.setColor(1,colo.btnDs1); this.c=colo.btnTxt;}
+      if (alrm[1].on===1)  this.c=colo.btnAl;
       g.fillRect(0,39,239,103); //1
-      g.setColor(0);
-      g.drawString(this.pad(alrm[1].hour)+":"+this.pad(alrm[1].min),120-(g.stringWidth(this.pad(alrm[1].hour)+":"+this.pad(alrm[1].min)))/2,47); 
+      g.setColor(0,this.c);
+      g.drawString(this.pad(alrm[1].hour)+":"+this.pad(alrm[1].min),120-(g.stringWidth(this.pad(alrm[1].hour)+":"+this.pad(alrm[1].min)))/2,50); 
   	  g.flip();
+
     }
     if (alrm[2].tmr!=this.al2) {
       this.al2=alrm[2].tmr;
-	  if (alrm[2].on===1) g.setColor(14);
-      else if (this.al2!==-1) g.setColor(9);
-      else g.setColor(3);  
+	  this.c=colo.btnTxt1;
+      if (this.al2!==-1) g.setColor(1,colo.btnEn);
+      else { g.setColor(1,colo.btnDs); this.c=colo.btnTxt;}
+      if (alrm[2].on===1)  this.c=colo.btnAl;
       g.fillRect(0,107,239,171); //2
-      g.setColor(0);
-     g.drawString(this.pad(alrm[2].hour)+":"+this.pad(alrm[2].min),120-(g.stringWidth(this.pad(alrm[2].hour)+":"+this.pad(alrm[2].min)))/2,115); 
+      g.setColor(0,this.c);
+     g.drawString(this.pad(alrm[2].hour)+":"+this.pad(alrm[2].min),120-(g.stringWidth(this.pad(alrm[2].hour)+":"+this.pad(alrm[2].min)))/2,118); 
   	  g.flip();
     } 
     if (alrm[3].tmr!=this.al3) {
       this.al3=alrm[3].tmr;
-	  if (alrm[3].on===1) g.setColor(14);
-      else if (this.al3!==-1) g.setColor(9);
-      else g.setColor(7);  
+      this.c=colo.btnTxt1;
+      if (this.al3!==-1) g.setColor(1,colo.btnEn);
+      else { g.setColor(1,colo.btnDs1); this.c=colo.btnTxt;}
+      if (alrm[3].on===1)  this.c=colo.btnAl;
       g.fillRect(0,175,239,239); //3
-      g.setColor0=15;
-      g.setColor(0);
-      g.drawString(this.pad(alrm[3].hour)+":"+this.pad(alrm[3].min),120-(g.stringWidth(this.pad(alrm[3].hour)+":"+this.pad(alrm[3].min)))/2,183); 
+      g.setColor(0,this.c);
+      g.drawString(this.pad(alrm[3].hour)+":"+this.pad(alrm[3].min),120-(g.stringWidth(this.pad(alrm[3].hour)+":"+this.pad(alrm[3].min)))/2,186); 
   	  g.flip();
     }
     this.tid=setTimeout(function(t){
@@ -125,6 +119,7 @@ var alarm = {
   run:false,
   clear : function(){
     var g=w.gfx;
+    pal[0]=col.black;
     g.clear();
     this.exit();
     return true;
@@ -154,29 +149,22 @@ var aSet = {
     return (n < 10) ? ("0" + n) : n;
   }, 
   init: function(o){
-//    console.log("ll",o);
     var g=w.gfx;
-    var d=(Date()).toString().split(' ');
-    var t=(d[4]).toString().split(':');
-    g.setColor(3);
-    g.fillRect(0,0,239,35); 
-//    g.fillRect(0,185,239,239); //rest
-    g.setColor(0);
-    g.setFont("Vector",20);
-	g.drawString("ALARMS",4,10); 
-    g.setFont("Vector",26);
-  	g.drawString(t[0]+":"+t[1],242-(g.stringWidth(t[0]+":"+t[1])),6); 
-    g.flip();
-    g.setColor(7);
-    //g.fillRect(0,39,118,180); //hour
-    g.fillRect(122,39,239,180); //min
-    //
-    g.flip();
     this.al[o].hour=-1;
     this.al[o].min=-1;
     this.al[o].rep=-1;
     this.al[o].snz=-1;
     this.al.curr=o;
+    var d=(Date()).toString().split(' ');
+    var t=(d[4]).toString().split(':');
+    g.setColor(0,colo.hdr); //header
+    g.fillRect(0,0,239,35); 
+    g.setColor(1,colo.hTxt);
+    g.setFont("Vector",20);
+	g.drawString("SET AL"+this.al.curr,4,6); 
+    g.setFont("Vector",26);
+  	g.drawString(t[0]+":"+t[1],242-(g.stringWidth(t[0]+":"+t[1])),3); 
+    g.flip();
   	this.run=true;
   },
   show : function(o){
@@ -184,38 +172,46 @@ var aSet = {
     var g=w.gfx;
     if (alrm[o].hour!=this.al[o].hour) {
       this.al[o].hour=alrm[o].hour;
-      g.setColor(3);
-      g.fillRect(0,39,119,180); //hour
-      g.setColor(0);
-      g.setFont("Vector",75);  
+      g.setColor(0,colo.bck1);
+      g.fillRect(0,39,121,181);//hour
+      if (alrm[o].tmr!=-1) g.setColor(1,colo.txt);else g.setColor(1,colo.txt3);
+      g.setFont("Vector",65);  
       g.drawString(this.pad(this.al[o].hour),66-(g.stringWidth(this.pad(this.al[o].hour)))/2,70); 
   	  g.flip();
     }
     if (alrm[o].min!=this.al[o].min) {
       this.al[o].min=alrm[o].min;
-      g.setColor(7);
-      g.fillRect(121,39,239,180); //min
-      g.setColor(0);
-      g.setFont("Vector",75);  
-      g.drawString(this.pad(this.al[o].min),187-(g.stringWidth(this.pad(this.al[o].min)))/2,70); 
+      if (alrm[o].tmr!=-1){
+        g.setColor(0,colo.bck3);
+        g.fillRect(122,39,239,181);//min
+        g.setColor(1,colo.txt1);
+      }else {
+        g.setColor(0,colo.bck2);
+        g.fillRect(122,39,239,181);//min
+        g.setColor(1,colo.txt3);
+      }
+      g.setFont("Vector",65);  
+      g.drawString(this.pad(this.al[o].min),190-(g.stringWidth(this.pad(this.al[o].min)))/2,70); 
   	  g.flip();
     }
     if (alrm[o].snz!=this.al[o].snz) {
       this.al[o].snz=alrm[o].snz;
-     if (this.al[o].snz===1) g.setColor(9);
-      else g.setColor(7); 
-      g.fillRect(0,184,120,239); //snooze
-      g.setColor(0);
+      this.c=colo.btnTxt;
+      if (this.al[o].snz===1)  { g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
+      else g.setColor(0,colo.btnDs); 
+      g.fillRect(0,185,120,239);//snooze
+      g.setColor(1,this.c);
       g.setFont("Vector",20);  
       g.drawString("SNOOZE",4,202); 
   	  g.flip();
     }
     if (alrm[o].rep!=this.al[o].rep) {
       this.al[o].rep=alrm[o].rep;
-     if (this.al[o].rep===1) g.setColor(9);
-      else g.setColor(7); 
-      g.fillRect(121,184,239,239); //repeat
-      g.setColor(0);
+      this.c=colo.btnTxt;
+      if (this.al[o].rep===1) { g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
+      else g.setColor(0,colo.btnDs); 
+      g.fillRect(123,185,239,239);//repeat
+      g.setColor(1,this.c);
       g.setFont("Vector",20);  
       g.drawString("REPEAT",130,202); 
   	  g.flip();
@@ -230,6 +226,7 @@ var aSet = {
 
   clear : function(){
     var g=w.gfx;
+    pal[0]=col.black;
     g.clear();
     this.exit();
     return true;
@@ -246,10 +243,8 @@ var aSet = {
     this.clear();
   }
 };
-
 faces[3]=alarm;
 faces[4]=aSet; 
-//faces.push(alarm,aSet);
 //Inputs
 //Alarms input
 touchHandler[3]=function(e,x,y){
@@ -270,31 +265,36 @@ touchHandler[3]=function(e,x,y){
     }else if  (e==1){
 	  this.fnow=true;
     }else if  (e==2){
-      digitalPulse(p,1,40);
+	  if (y>160&&x<50) {
+        if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
+        else w.gfx.bri.set(this.bri);
+		digitalPulse(p,1,[30,50,30]);
+      }else if (y>200) {  
+      fprev=3;
+	  this.fto=9;
+      this.fnow=true;
+	  } else digitalPulse(p,1,40);
     }else if  (e==3){
       digitalPulse(p,1,40);
     }else if  (e==4){
-      //if (y<70) w.gfx.bri.set(1);
-      //else if (70<y&&y<170) w.gfx.bri.set();
-      if (y<70&&x<70) {
-        if (w.gfx.bri.lv===2) w.gfx.bri.set(7);
-        else w.gfx.bri.set(2);
-		digitalPulse(p,1,[30,50,30]);
-      }else this.fnow=true;
+      this.fnow=true;
     }else if  (e==12){		
 	  if(39<y&&y<105) {
-		if(alrm[1].on===1)  {alrm.stop(1); digitalPulse(p,1,[80,40,80]);alarm.al1=-2;}
+		if(alrm[1].on===1)  {alrm.stop(1);alarm.al1=-2;}
 		else {this.fnow=true;this.fto=4;this.farg=1; }//alarms setup
+        digitalPulse(p,1,[30,50,30]);
 	  }else if(105<y&&y<174) {
-		if(alrm[2].on===1) {alrm.stop(2); digitalPulse(p,1,[80,40,80]);alarm.al2=-2;}
+		if(alrm[2].on===1) {alrm.stop(2);alarm.al2=-2;}
 		else {this.fnow=true;this.fto=4;this.farg=2; }
+        digitalPulse(p,1,[30,50,30]);
       }else if(174<y&&y<239) {
-		if(alrm[3].on===1) {alrm.stop(3); digitalPulse(p,1,[80,40,80]);alarm.al3=-2;}
+		if(alrm[3].on===1) {alrm.stop(3);alarm.al3=-2;}
 		else {this.fnow=true;this.fto=4;this.farg=3; }
+        digitalPulse(p,1,[30,50,30]);
 	  }else digitalPulse(p,1,40);    
     }
     this.timeout();
- };
+};
   //alarms setup input
 touchHandler[4]=function(e,x,y){
     this.fto=3;
@@ -306,21 +306,13 @@ touchHandler[4]=function(e,x,y){
 		  if(0<x&&x<120) alrm[a].snz=1-alrm[a].snz;	
 		  else if(121<x&&x<239) alrm[a].rep=1-alrm[a].rep;
 		  digitalPulse(p,1,[30,50,30]);		
-        /*}else if(x<120&&35<y&&y<110) { 
-   		  alrm[a].hour++;
-		  if (alrm[a].hour>23) alrm[a].hour=alrm[a].hour-24;
-        } else if(x>120&&35<y&&y<110){ 
-		  alrm[a].min++;
-		  if (alrm[a].min>59) alrm[a].min=alrm[a].min-60;
-        } else if(x<120&&110<y&&y<185) { 
-   		  alrm[a].hour--;
-		  if (alrm[a].hour<0) alrm[a].hour=alrm[a].hour+24;
-        }else if(x>120&&110<y&&y<185){ 
-          alrm[a].min--;
-		  if (alrm[a].min<0) alrm[a].min=alrm[a].min+60;*/
         }else	digitalPulse(p,1,40);	
     }else if (e==2){
-      if(x<30&&y<185) { 
+	  if (y>160&&x<80) {
+        if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
+        else w.gfx.bri.set(this.bri);
+		digitalPulse(p,1,[30,50,30]);
+      }else if(x<30&&y<185) { 
    		alrm[a].hour=alrm[a].hour+3;
 		if (alrm[a].hour>23) alrm[a].hour=alrm[a].hour-24;
       }else  if(30<x&&x<120&&y<185) { 
@@ -332,15 +324,11 @@ touchHandler[4]=function(e,x,y){
       } else if(x>210&&y<185){ 
 		alrm[a].min++;
 		if (alrm[a].min>59) alrm[a].min=alrm[a].min-60;
-      /*
-      if(x<120&&y<185) { 
-   		alrm[a].hour++;
-		if (alrm[a].hour>23) alrm[a].hour=alrm[a].hour-24;
-      }else if(x>120&&y<185){ 
-		alrm[a].min=alrm[a].min+10;
-		if (alrm[a].min>59) alrm[a].min=alrm[a].min-60;
-      */
-      }else	digitalPulse(p,1,40);	
+      }else if (y>200) {
+      fprev=3;
+	  this.fto=9;
+      this.fnow=true;
+	  } else digitalPulse(p,1,40);
     }else if  (e==1){
 	  if(x<30&&y<185) { 
    		alrm[a].hour=alrm[a].hour-3;
@@ -354,29 +342,20 @@ touchHandler[4]=function(e,x,y){
       } else if(x>210&&y<185){ 
 		alrm[a].min--;
 		if (alrm[a].min<0) alrm[a].min=alrm[a].min+60;
-      
-      /*if(x<120&&y<185) { 
-   		alrm[a].hour--;
-		if (alrm[a].hour<0) alrm[a].hour=alrm[a].hour+24;
-      } else if(x>120&&y<185){ 
-		alrm[a].min=alrm[a].min-10;
-		if (alrm[a].min<0) alrm[a].min=alrm[a].min+60;
-     */
       }else	digitalPulse(p,1,40);	
     }else if  (e==3){
       digitalPulse(p,1,40);
     }else if  (e==4){
-      //if (y<70) w.gfx.bri.set(1);
-      //else if (70<y&&y<170) w.gfx.bri.set();
-      if (y<70&&x<70) {
-        if (w.gfx.bri.lv===2) w.gfx.bri.set(7);
-        else w.gfx.bri.set(2);
-		digitalPulse(p,1,[30,50,30]);
-      }else  this.fnow=true;
+      this.fnow=true;
     }else if  (e==12){
-      digitalPulse(p,1,40); 
+      alrm[a].hour=Date().getHours();
+      alrm[a].min=Date().getMinutes();
+      digitalPulse(p,1,[80,60,80]); 
     }
-	if (alrm[a].tmr!==-1){alrm.clear(a); alrm.set(a);console.log("alarm reset");}
+	if (alrm[a].tmr!==-1){alrm.clear(a); 
+        alrm.set(a);
+//      console.log("alarm reset");
+    }
     this.timeout();
- };
+};
  

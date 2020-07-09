@@ -1,0 +1,93 @@
+NRF.setServices({
+  0x190A: {
+     0x0001: {
+      value : "RXchar",
+      maxLen : 20,
+      writable : true,
+      onWrite : function(evt) {
+		atcR(evt);
+      }
+     },
+    0x0002: {
+      value : "TXchar",
+      maxLen : 20,
+	  readable : true, 
+      notify:true,
+     },
+   },
+}, { advertise: ['0x190A'], uart : true });
+//NRF.setAdvertising({}, {name:"ATCds"});
+
+
+var atcR= function(evt){
+  var srt=String.fromCharCode.apply(String,evt.data);
+        srt = srt.replace(/(\r\n|\n|\r)/gm, "");
+//    	console.log("data in :",srt,evt.data);
+        var i=srt.toString().split('=');
+		if (srt == "AT+BOND") {
+		atcW("AT+BOND:OK");
+		} else if (srt == "AT+ACT") {
+		atcW("AT+ACT:0");
+		} else if (srt.substring(0, 7) == "BT+UPGB") {
+		start_bootloader();
+		} else if (srt.substring(0, 8) == "BT+RESET") {
+		set_reboot();
+		} else if (srt.substring(0, 7) == "AT+RUN=") {
+		atcW("AT+RUN:" + srt.substring(7));
+		} else if (srt.substring(0, 8) == "AT+USER=") {
+		atcW("AT+USER:" + srt.substring(8));
+		} else if (srt == "AT+PACE") {
+		atcW("AT+PACE:10");
+		} else if (srt == "AT+BATT") {
+		atcW("AT+BATT:"+w.battVoltage(1));
+		} else if (srt.substring(0, 8) == "AT+PUSH=") {
+		atc=i[1];
+		atcW("AT+PUSH:OK");
+		} else if (srt == "BT+VER") {
+		atcW("BT+VER:sdk11");
+		} else if (srt == "AT+VER") {
+		atcW("AT+VER:"+process.version);
+		} else if (srt == "AT+SN") {
+		atcW("AT+SN:Espruino");
+		} else if (srt.substring(0, 12) == "AT+CONTRAST=") {
+		var ct = srt.substring(12);
+		if (ct == "100")
+		set_backlight(1);
+		else if (ct == "175")
+		w.gfx.bri.set(3);
+		else w.gfx.bri.set(7);
+		atcW("AT+CONTRAST:" + srt.substring(12));
+		} else if (srt.substring(0, 10) == "AT+MOTOR=1") {
+		motor_power = srt.substring(10);
+		atcW("AT+MOTOR:1" + srt.substring(10));
+		} else if (srt.substring(0, 6) == "AT+DT=") {
+			var ye=i[1].toString().substring(0, 4);
+			var mo=i[1].toString().substring(4, 6)-1;
+			var da=i[1].toString().substring(6, 8);
+			var ho=i[1].toString().substring(8, 10);
+			var mi=i[1].toString().substring(10, 12);          
+			var date=new Date(ye,mo,da,ho,mi);
+			setTime((date-0).toFixed().substring(0, 10));		
+			console.log("Time set to :",date);
+			atcW("AT+DT:" + i[1]);
+		} else if (srt.substring(0, 5) == "AT+DT") {
+		}
+};
+var atcW= function(i) {
+  i = i + "\r\n";
+  while (i.length >0) {
+   var  o = i.substring(0, 20);
+    i = i.substring(20);    
+    NRF.updateServices({
+     0x190A : {
+     0x0002 : {
+       value : o,
+       notify:true
+     }
+     }
+    });
+    console.log("send: ",o);	
+  }
+};
+
+

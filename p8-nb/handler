@@ -1,12 +1,6 @@
 //inputs
 var button;
-var w_up=false;
 var press=true;
-var dbl=0;
-var offid=-1;
-var offms=5000;
-var fcurr=-1;
-var fprev=-1;
 var l1=-1;
 var l2=-1;
 
@@ -107,8 +101,7 @@ var i2c=new I2C();
 //var i2c=I2C1;
 i2c.setup({scl:w.pin.TP_SCL, sda:w.pin.TP_SDA, bitrate:100000});
 digitalPulse(w.pin.TP_RESET,1,[5,50]);
-
-var c=0;
+var c;
 setWatch(function(s){
   var tp=i2c.readFrom(0x15,7);
 //  digitalPulse(w.pin.TP_RESET,1,[5,50]);
