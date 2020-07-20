@@ -1,14 +1,21 @@
 //main
 //E.setFlags({pretokenise:1});
-//console.log("main start");
-var set={
-  bt:1,
-  cli:1,
-  hid:0,
-  atc:0
-};  
-//main clock face
-var mainFace = {
+//if (set.cli) console.log("main start");
+//NRF.setServices(undefined, {uart : false});
+//NRF.setAdvertising({}, { connectable:false });
+//NRF.on('HID', function() { ... });
+/*
+NRF.on('disconnect',function() {
+set.bt=0;
+});  
+set.devices = [];
+NRF.on('connect',function(addr) {
+  set.devices.push(addr);
+  set.bt=1;
+});
+*/
+//face-main
+face[0] = {
   offms: 5000,
   init: function(){
     var g=w.gfx;
@@ -18,7 +25,7 @@ var mainFace = {
     g.fillRect(0,0,158,50); //date
     g.fillRect(162,0,239,50);//batt
   g.setFont("Vector",22);
-    if (typeof atc !== 'undefined') g.drawString(atc,119-(g.stringWidth(atc))/2,165); //info
+    if (typeof set.push !== 'undefined') g.drawString(set.push,119-(g.stringWidth(set.push))/2,165); //info
     g.fillRect(0,200,78,239); //bottom1 memmory
     g.fillRect(82,200,158,239); //bottom 2 
     g.fillRect(162,200,239,239); //bottom3 euc
@@ -28,20 +35,20 @@ var mainFace = {
 //    g.fillRect(105,55,239,150);
     g.setColor(0,colo.btnTxt);
     g.setFont("Vector",28);
-    g.drawString(mem(),4,207); //memmory
+//    g.drawString(mem(),4,207); //memmory
 	g.drawString("AL",97,207); //Alarms
-    g.drawString("EUC",167,207); //euc
+//    g.drawString("EUC",167,207); //euc
     g.setFont("Vector",28);
     g.drawString(d[2]+" "+d[0].toUpperCase(), (81-(g.stringWidth(d[2]+" "+d[0].toUpperCase()))/2) ,9); //date
     g.setFont("7x11Numeric7Seg",4);
     g.drawString(this.v,239-(g.stringWidth(this.v)),3); //batt
     g.flip();
-    if(!g.isOn) g.on();
     this.hour=-1;
     this.min=-1;
     this.sec=-1;
     this.batt=-1;
     this.mem=-1;
+	this.bt=-1;
 	alrm.btn=1;
     this.conn=-1;
     this.run=true;
@@ -84,8 +91,8 @@ var mainFace = {
   g.drawString(s[0],218,70); //seconds
   g.drawString(s[1],218,108); //seconds
   g.flip(); 
-  //batt
-  if (this.v!=this.batt){
+  //batt & bt status
+  if (this.v!=this.batt ){
     this.batt=this.v;
     if (digitalRead(w.pin.CHARGING)==1)
       g.setColor(0,colo.btnSt);
@@ -99,17 +106,29 @@ var mainFace = {
     g.drawString(this.v,240-(g.stringWidth(this.v)),3); //batt
     g.flip();
   }
+  //bt status on date
+  if (set.bt != this.bt){
+	this.bt=set.bt;
+	if (this.bt==0)	g.setColor(0,colo.bck1);
+    else g.setColor(0,colo.bck3);
+	g.fillRect(0,0,158,50); //date
+    g.setColor(1,colo.btnTxt);
+    g.setFont("Vector",28);
+    g.drawString(d[2]+" "+d[0].toUpperCase(), (81-(g.stringWidth(d[2]+" "+d[0].toUpperCase()))/2) ,9); //date
+	g.flip();
+  }
   //memmory  
   if (mem()!=this.mem){
     this.mem=mem();
     g.setColor(1,colo.btnDs1);
     g.fillRect(0,200,78,239); //bottom1 memmory
     g.setColor(0,colo.btnTxt);
-    g.setFont("Vector",28);
+    g.setFont("Vector",20);
     g.drawString(mem(),4,207); //memmory
     g.flip();
   }
   //Alarms
+  if (alrm.start==1) {
   if(alrm.btn!==-1){
     alrm.btn=-1;
     this.c=colo.btnTxt;
@@ -122,13 +141,15 @@ var mainFace = {
 	g.drawString("AL",97,207); //Alarms
 	g.flip();
   }
+  }
   //euc
-  if (euc.val.conn!=this.conn || euc.val.lock!=this.lock) {
-    this.lock=euc.val.lock;
-    this.conn=euc.val.conn;
-    if (euc.val.lock==1 && euc.val.conn=="READY") g.setColor(0,colo.btnSt);
-    else if (euc.val.lock==1 ) g.setColor(0,colo.btnAl);
-    else if (euc.val.conn=="READY")g.setColor(0,colo.btnEn1);
+  if (typeof euc !== 'undefined') {
+  if (euc.conn!=this.conn || euc.lock!=this.lock) {
+    this.lock=euc.lock;
+    this.conn=euc.conn;
+    if (euc.lock==1 && euc.conn=="READY") g.setColor(0,colo.btnSt);
+    else if (euc.lock==1 ) g.setColor(0,colo.btnAl);
+    else if (euc.conn=="READY")g.setColor(0,colo.btnEn1);
     else g.setColor(0,colo.btnDs1);
     g.fillRect(162,200,239,239);
     g.setColor(1,colo.btnTxt);
@@ -136,7 +157,7 @@ var mainFace = {
     g.drawString("EUC",167,207); 
     g.flip();
   }
-    
+  }  
   //loop
     this.tid=setTimeout(function(t){
       t.tid=-1;
@@ -164,8 +185,22 @@ var mainFace = {
     this.clear();
   }
 };
-
-var setF = {
+//
+face[1] = {
+  offms:1000,
+  init: function(){
+  return true;
+  },
+  show : function(){
+    face.go("euc",0);
+    return true;
+  },
+  clear: function(){
+  return true;
+  },
+};	
+//	
+face[5] = {
   offms: 5000,
   init: function(){
     var g=w.gfx;
@@ -177,10 +212,10 @@ var setF = {
     var d=(Date()).toString().split(' ');
     var t=(d[4]).toString().split(':');
     g.setColor(1,colo.bck3);
-    g.fillRect(0,0,75,75); //bluetooth
+    g.fillRect(0,0,75,75); //atc
     g.fillRect(80,0,155,75); //cli
     g.fillRect(160,0,239,75); //hid
-    g.fillRect(0,80,75,155); //atc
+    g.fillRect(0,80,75,155); //calc
     g.fillRect(0,160,75,239); //torch
     g.fillRect(160,80,239,200);//brightness
     g.fillRect(160,201,239,239);//brightness text
@@ -189,32 +224,34 @@ var setF = {
     g.drawString("BT",19,27);   
     g.drawString("CLI",93,27);   
     g.drawString("HID",175,27);   
-    g.drawString("ATC",9,107);
     g.drawString("TOR",8,195);
     g.drawString("BRI",175,200);   
+	g.setFont("Vector",18);
+    g.drawString("CALC",2,107);
+
     g.flip();
     this.run=true;
   },
   show : function(){
     if (!this.run) return;
     var g=w.gfx;
-    //BT on/off
+    //torch
     if (this.tor==1) {
       g.setColor(0,colo.txt);
-      g.fillRect(0,0,239,239); //bluetooth
+      g.fillRect(0,0,239,239); 
       g.flip();
       return;
     }
-    //BT on/off
-    if (set.bt!=this.bt) {
-      this.bt=set.bt;
+    //atc on/off
+	 if (set.atc!=this.atc) {
+      this.atc=set.atc;
       this.c=colo.btnTxt;
-      if (this.bt===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
-      else g.setColor(0,colo.btnDs);
-      g.fillRect(0,0,75,75); //bluetooth
+      if (this.atc===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
+      else g.setColor(0,colo.btnDs1);
+      g.fillRect(0,0,75,75);//atc
       g.setColor(1,this.c);
       g.setFont("Vector",22);
-      g.drawString("BT",19,27);   
+      g.drawString("ATC",7,27);
       g.flip();
     }
     //CLI on/off
@@ -222,7 +259,7 @@ var setF = {
       this.cli=set.cli;
       this.c=colo.btnTxt;
       if (this.cli===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
-      else g.setColor(0,colo.btnDs);
+      else g.setColor(0,colo.btnDs1);
       g.fillRect(80,0,155,75); //cli
       g.setColor(1,this.c);
       g.setFont("Vector",22);
@@ -234,26 +271,25 @@ var setF = {
       this.hid=set.hid;
       this.c=colo.btnTxt;
       if (this.hid===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
-      else g.setColor(0,colo.btnDs);
+      else g.setColor(0,colo.btnDs1);
       g.fillRect(160,0,239,75); //hid
       g.setColor(1,this.c);
       g.setFont("Vector",22);
-      g.drawString("HID",175,27);   
+      g.drawString("HID",176,27);   
       g.flip();
     }
-    //atc on/off
+/*    //calc
     if (set.atc!=this.atc) {
       this.atc=set.atc;
       this.c=colo.btnTxt;
-      if (this.atc===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
-      else g.setColor(0,colo.btnDs1);
-      g.fillRect(0,80,75,155); //atc
+      g.setColor(0,colo.btnDs1);
+      g.fillRect(0,80,75,155); 
       g.setColor(1,this.c);
       g.setFont("Vector",22);
-      g.drawString("ATC",7,107);
+      g.drawString("CALC",1,107);
       g.flip();
     }
-	//brightness level
+*/	//brightness level
     if (g.bri.lv!=this.bri) {
       this.bri=g.bri.lv;
       this.c=colo.btnTxt1;
@@ -292,104 +328,95 @@ var setF = {
     this.clear(o);
   }
 };
-
-faces[0]=mainFace;
-faces[9]=setF;
-
-//inputs
-//main clock input
+//touch-main
 touchHandler[0]=function(e,x,y){
-    this.fto=-1;
-    this.farg=-1;
+//    this.fto=-1;
+	this.face="main";
+//   this.farg=-1;
     var p=w.pin.MOTOR;
     if (e==5){
-	  //alarms
+	//alarms
 	  if ((82<x&&x<158) && y>200){ 
-		this.fto=3;
-		this.fnow=true;
         digitalPulse(p,1,[30,50,30]);
-	  //EUC
-	  }else if (x>162 && y>200){ 
-	  this.fto=1;
-	  this.fnow=true;
-      digitalPulse(p,1,[30,50,30]);
+        face.go("alarm",0);return;
+	//EUC
+      }else if (x>162 && y>200){ 
+        if (typeof euc !== 'undefined') {  
+          digitalPulse(p,1,[30,50,30]);
+          face.go("euc",0);return;
+        }else digitalPulse(p,1,40);
+	//hid music controls
+      }else if (x<158 && y<50){ 
+	   if (typeof hidM!="undefined"){
+        digitalPulse(p,1,[30,50,30]);
+         face.go("hid",0); return;
+       }else digitalPulse(p,1,40);
 	  }else digitalPulse(p,1,40);
     }else if  (e==1){
-      this.fnow=true;
-      this.fto=-1;
+		face.go("main",-1);return;
     }else if  (e==2){
 	  if (y>160&&x<50) {
         if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
         else w.gfx.bri.set(this.bri);
 		digitalPulse(p,1,[30,50,30]);
-     }else if (y>200) {
-      fprev=0;
-	  this.fto=9;
-      this.fnow=true;
+     }else if (y>190) {
+		face.go("main",5);return;
 	  } else digitalPulse(p,1,40);
     }else if  (e==3){
-      this.fnow=true;
-      this.fto=1;
+      if (typeof euc !== 'undefined') {  
+       face.go("euc",0);return;
+      }else digitalPulse(p,1,40);
     }else if  (e==4){
       digitalPulse(p,1,40);
     }else if  (e==12){
-	 // euc on/off
+	//euc on/off
 	 if (x>162 && y>200){ 
-	  this.fto=0;
-      euc.tgl();
-	 // alarms
+      if (typeof euc !== 'undefined') {  
+        euc.tgl();
+		face.go("euc",0);return;
+      }else digitalPulse(p,1,40);
+	//alarms
      }else if ((82<x&&x<158) && y>200){ 
 	   if (alrm.buzz!=-1) {
 		alrm.stop(alrm.now); digitalPulse(p,1,[80,40,80]);
 	   }else {
-		this.fto=3;
-		this.fnow=true;
         digitalPulse(p,1,[30,50,30]);
+        face.go("alarm",0);return;
 	  }	  
      }else digitalPulse(p,1,40);
     }
    this.timeout();
 };
-   
-touchHandler[9]=function(e,x,y){
-    this.fto=-0;
-    this.farg=-1;
+//touch-settings  
+touchHandler[5]=function(e,x,y){
     var g=w.gfx;
     var p=w.pin.MOTOR;
     if (this.tor==1){
         g.bri.set(this.b);
         this.tor=-1;
-        setF.tor=0;
-        this.fnow=true;
-        this.fto=fprev;
-        fprev=-1;
+        face[5].tor=0;
+        face.go(face.appPrev,face.pagePrev,face.pageArg);return;
     }else if (e==5){
       if(x<77&&y<75){
-        set.bt=1-set.bt;
-        if (set.bt===1) {set.cli=1;set.atc=1;set.hid=1;} 
-        else {NRF.sleep();set.cli=0;set.atc=0;set.hid=0;} 
-        digitalPulse(p,1,[30,50,30]);
+        set.atc=1-set.atc;
+        set.upd();
+		digitalPulse(p,1,[30,50,30]);
       }else if(77<x&&x<158&&y<75){
         set.cli=1-set.cli;
-        if (set.cli===1) NRF.setServices({},{uart:true});  
-        else NRF.setServices({},{uart:false});
-        digitalPulse(p,1,[30,50,30]);
+		set.upd();
+		digitalPulse(p,1,[30,50,30]);
       }else if(158<x&&x<239&&y<75){
-        if (set.hid===1) {console.log("hid:1");  
-          this.fnow=true;
-          this.fto=7;             
-          digitalPulse(p,1,[30,50,30]);
-        }else digitalPulse(p,1,40);
+		set.hid=1-set.hid;
+		set.upd();
+		digitalPulse(p,1,[30,50,30]);
 	  }else if(0<x&&x<75&&75<y&&y<157){
-        set.atc=1-set.atc;
-        if (set.atc===1) eval(require('Storage').read('atc'));
-         else console.log("atc:0");
-        digitalPulse(p,1,[30,50,30]);
+		digitalPulse(p,1,[30,50,30]);
+		face.go("calc",0);return;
       }else if(0<x&&x<75&&158<y&&y<239){
         this.tor=1;
         this.b=w.gfx.bri.lv;
         g.bri.set(7);
-        setF.tor=1;
+        face[5].tor=1;
         if (offid>=0) {clearTimeout(offid); offid=-1;}
         offid=setTimeout((f)=>{
           if (f>=0 && faces[f].off) faces[f].off();
@@ -412,8 +439,7 @@ touchHandler[9]=function(e,x,y){
         if (this.b<1) this.b=1;
         g.bri.set(this.b);
       }else { 
-        this.fnow=true;
-        this.fto=0;
+        face.go("main",0);return;
       }  
     }else if  (e==2){
 	  if (y>160&&x<50) {
@@ -425,20 +451,17 @@ touchHandler[9]=function(e,x,y){
         if (this.b>7) this.b=7;
         g.bri.set(this.b);
       }else { 
-        this.fnow=true;
-        this.fto=fprev;
-		fprev=-1;
+        face.go(face.appPrev,face.pagePrev,face.pageArg);return;
       }  
     }else if  (e==3){
 	  digitalPulse(p,1,40);
     }else if  (e==4){
-      this.fnow=true;
-      this.fto=0;    }
-    else if  (e==12){
+       face.go("main",0);return;
+    }else if  (e==12){
       if(158<x&&x<239&&y<75){
         set.hid=1-set.hid;
-        if (set.hid===1) console.log("hid:1");  
-        else console.log("hid:0");
+        if (set.hid===1) if (set.cli) console.log("hid:1");  
+        else if (set.cli) console.log("hid:0");
         digitalPulse(p,1,[30,50,30]);
       }
     }
@@ -460,5 +483,5 @@ touchHandler[9]=function(e,x,y){
 //  g.setColor(13);// purple
 //  g.setColor(14);// yellow
 //  g.setColor(15);// white
-//console.log("main end");
+//if (set.cli) console.log("main end");
 

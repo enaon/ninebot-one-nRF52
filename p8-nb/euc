@@ -1,7 +1,7 @@
 E.setFlags({pretokenise:0});
-Modules.addCached("euc",function(){
-  
-const val = {
+if (typeof euc =='undefined'){
+//vars
+var euc= {
   spd: ["0","0"], 
   spdC:col.black,
   amp: "0", 
@@ -29,8 +29,8 @@ const val = {
 //  mac: "20:91:48:AB:2A:AD public", //megadeath
 //  mac: "20:91:48:BC:91:3B public", //poet
 };
-
-const alert = {
+//alerts
+euc.alert = {
   spd: 23,
   temp: 60,
   batt: 20,
@@ -38,443 +38,29 @@ const alert = {
   ampL: -6,
   on: false,
 };
-
-
-const tmp = {
-  spd: ["0","0"], 
-  amp: "0", 
-  temp: "0", 
-  count:0,
-  batt: "0", 
-  trpN: "0",
-  cmd: false,
-  loop:-1,
-  reconnect:-1,
-  rssi:"",
-  gatt:0,
-  service:0,
-  characteristic:0,
-};
-
-const cmd = [
-    '[85,170,3,9,1,80,2,160,255]', //Current Amperage with sign if v[80] > 32768 I = v[80] - 65536 else I = v[80] in Amperes * 100
-    '[85,170,3,9,1,38,2,202,255]', //Current Speed in Km/h*1000d
-    '[85,170,3,9,1,62,2,178,255]', //Temperature numeric positive ยบC * 10
-    '[85,170,3,9,1,80,2,160,255]', //amp
-    '[85,170,3,9,1,38,2,202,255]', //speed
-    '[85,170,3,9,1,71,2,169,255]', //Voltage numeric positive V * 100
-    '[85,170,3,9,1,80,2,160,255]', //amp
-    '[85,170,3,9,1,38,2,202,255]', //speed
-   	'[85,170,3,9,1,185,2,55,255]', //Single Mileage numeric positive in meters
-    '[85,170,3,9,1,80,2,160,255]', //amp 
-    '[85,170,3,9,1,38,2,202,255]', //speed
-	'[85,170,3,9,1,58,2,182,255]', //Single Runtime numeric positive seconds
-	'[85,170,3,9,1,80,2,160,255]', //amp 
-    '[85,170,3,9,1,38,2,202,255]', //speed
-	'[85,170,3,9,1,37,2,203,255]', //remaining mileage in Km*100
-	'[85,170,3,9,1,80,2,160,255]', //amp 
-    '[85,170,3,9,1,38,2,202,255]', //speed
-	'[85,170,3,9,1,182,2,58,255]', //Average speed numeric positive m/h
-	'[85,170,3,9,1,80,2,160,255]', //18-amp 
-    '[85,170,3,9,1,38,2,202,255]', //19-speed
-	'[85,170,3,9,1,112,2,128,255]', //Lock status
-//	[85,170,3,9,1,178,1,63,255], //20-Flags bit 0 -> Limit Speed, bit 1 -> Lock , bit 2 -> Beep, bit 11 -> Activation. Bits from lower significance
-	'[85,170,3,9,3,112,1,127,255]', //21- lock
-    '[85,170,3,9,3,112,0,128,255]',  //22- unlock
-	'[85,170,3,9,1,210,2,30,255]', //23 get Riding Mode
-	'[85,170,4,9,2,210,0,0,30,255]', //24 set Riding Mode 0
-	'[85,170,4,9,2,210,1,0,29,255]', //25 set Riding Mode 1
-	'[85,170,3,9,2,210,2,29,255]', //26 set Riding Mode 2
-	'[85,170,3,9,2,210,3,28,255]', //27 set Riding Mode 3
-	'[85,170,3,9,2,210,4,27,255]', //28 set Riding Mode 4
-	'[85,170,3,9,2,210,5,26,255]', //29 set Riding Mode 5
-	'[85,170,3,9,2,210,6,25,255]', //30 set Riding Mode 6
-	'[85,170,3,9,2,210,7,24,255]', //31 set Riding Mode 7
-	'[85,170,3,9,2,210,8,23,255]', //32 set Riding Mode 8
-	'[85,170,3,9,2,210,9,22,255]'  //33 set Riding Mode 9
-];
-function tgl(){ 
+//toggle on/off
+euc.tgl=function(){ 
   var p=w.pin.MOTOR;
-  //euc off
-  if (euc.val.conn!="OFF" ) {
+  if (euc.conn!="OFF" ) {
     digitalPulse(p,1,[90,60,90]);  
-	if (global["\xFF"].timers[tmp.reconnect] != "undefined" ||  val.conn=="WAIT" || val.conn=="ON") {
-    clearTimeout(tmp.reconnect);
+	if (global["\xFF"].timers[eTmp.reconnect] != "undefined" ||  euc.conn=="WAIT" || euc.conn=="ON") {
+    clearTimeout(eTmp.reconnect); eTmp.reconnect=-1;
     }
-  	val.conn="OFF";
-    NRF.setTxPower(0);
-  //euc on
+  	euc.conn="OFF";
   }else {
     digitalPulse(p,1,100);   
     NRF.setTxPower(4);
-	if (val.conn == "OFF") tmp.count=22; else tmp.count=0;  //unlock
-	val.conn="ON";
-	connect();  
+	if (euc.conn == "OFF") eTmp.count=22; else eTmp.count=0;  //unlock
+	euc.conn="ON";
+	eCon();  
   } 
-  if (fcurr!=-1){
-      if (fcurr==1) faces[fcurr].exit();
-      else faces[fcurr].clear();
-  }
-  fcurr=1;
-  faces[fcurr].init();
-  faces[fcurr].show();
+
+};
 }
-function connect(){
-var euc_var;
-var euc_al;
-var euc_al_s;
-var euc_al_a;
-var euc_al_t;
-var euc_al_b;
-var tt=0;
-var ts=0;
-var ta=0;
-var tr=0;
-var tb=0;
-var te=0; 
-var tv=0; 
-var tm=0; 
-tmp.spd[0]="-1";
-tmp.spd[1]="-1";
-tmp.amp="-1";
-tmp.temp="-1";
-tmp.batt="-1";
-tmp.trpN="-1";  
-val.spdC=col.black;
-tmp.rssi="-70";
-
-if ( global["\xFF"].BLE_GATTS!="undefined") {global["\xFF"].BLE_GATTS.disconnect(); console.log("error"); return;}
-NRF.connect(val.mac,{minInterval:7.5, maxInterval:7.5})
-.then(function(g) {
-   return g.getPrimaryService(0xffe0);
-}).then(function(s) {
-  return s.getCharacteristic(0xffe1);
-}).then(function(c) {
-  tmp.characteristic=c;
-  c.on('characteristicvaluechanged', function(event) {
-  euc_var = event.target.value.getUint8(5, true);
-  // if off button is pressed on euc
-  if (euc_var==0) {
-	  val.conn="WAIT";
-	  digitalPulse(w.pin.MOTOR,1,200);
-      //return;
-  //alarm
-  }else if (euc_var==178) {
-	  tmp[euc_var] = event.target.value.getUint8(6, true);
-
-/*     if (Number(euc_val).toString(2)[1]==1 &&  euc_alarm==0) {
-        euc_alarm=1; 
-        //console.log("EUC_alarm :",euc_val);
-        digitalPulse(w.pin.MOTOR,1,[250,50,250,50,250]);
-		if (fcurr==-1) {
-			g.clear();	
-            g.setFontVector(30);
-			g.drawString("!",9, 30);
-			g.flip();g.on();
-			offid=setTimeout(() => {g.off();}, 2000);
-		}
-	    setTimeout(() => { euc_alarm=0; }, 100);
-      }
-*/
-//  }else if (euc_var==210) {
-//	tmp[euc_var] = event.target.value.getUint8(6, true);
-//    val.rdmd=tmp[euc_var];
-  // rest
-  }else  {  
-    tmp[euc_var]=event.target.value.getUint16(6, true);
-    euc_al=0;
-	//speed
-	if (euc_var==38 && tmp[euc_var]!=ts) {
-      val.spd=(tmp[euc_var]/1000).toFixed(1).toString().split('.');
-		euc_al_s=false;	  
-	  if (val.spd[0]>=alert.spd) {
-		if (euc.val.spd[0]>=euc.alert.spd+5) val.spdC=col.red;	
-		else if (euc.val.spd[0]>=euc.alert.spd+2) val.spdC=col.yellow;
-		else val.spdC=col.white;
-		euc_al=(1+(val.spd[0]|0)-alert.spd);
-		euc_al_s=true;
-      } else val.spdC=col.black;
-      ts=tmp[euc_var];
-    //amp
-    }else  if (euc_var==80 && tmp[euc_var]!=ta) {
-      if (tmp[80]>32768) val.amp=((tmp[80]-65536)/100).toFixed(1); 
-      else val.amp=(tmp[euc_var]/100).toFixed(1);
-	  euc_al_a=false;
-	  if (val.amp>=alert.ampH) {
-		if  (val.amp>=alert.ampH+5 ) val.ampC=col.red;
-		else val.ampC=col.yellow;
-		euc_al=(euc_al+1+(val.amp-alert.ampH))|0;
-		euc_al_a=true;
-	  }else if (val.amp>=10) { val.ampC=col.purple;
-	  }else if ( val.amp<=alert.ampL) {
-		if  (val.amp<=alert.ampL-5 ) val.ampC=col.red;
-		else  val.ampC=col.yellow;
-		euc_al=(euc_al+1+(-(val.amp-alert.ampL)))|0;      
-		euc_al_a=true;
-	  }else if (val.amp<0) val.ampC=col.white; else val.ampC=col.black;
-      ta=tmp[euc_var];
-	//trip
-    }else if (euc_var==185 && tmp[euc_var]!=tt) {
-      if (val.trpN > (tmp[euc_var]/100).toFixed(1)) {
-        val.trpL=Number(val.trpL)+Number(val.trpN);
-        console.log("EUC_trip new :",val.trpL);
-      } 
-      val.trpN=(tmp[euc_var]/100).toFixed(1);
-	  val.trpT=Number(val.trpL)+Number(val.trpN);
-      tt=tmp[euc_var];
-    //battery fixed
-    }else  if (euc_var==71 && tmp[euc_var]!=tb) {
-      val.batt=(((tmp[euc_var]/100)-51.5)*10|0); 
-	  euc_al_t=false;
-	  if ((euc.val.batt) >= 70) val.batC=col.lblue;
-      else  if ((val.batt) >= 40) val.batC=col.purple;
-      else  if ((val.batt) >= alert.batt) val.batC=col.yellow;
-      else  {
-		val.batC=col.red;
-		euc_al++;
-		euc_al_b=true;
-	  }
-      tb=tmp[euc_var];
-    //remaining
-    }else if (euc_var==37 && tmp[euc_var]!=tr) {
-      val.trpR=(tmp[euc_var]/100).toFixed(1);
-      tr=tmp[euc_var];
-     //temp
-    }else if (euc_var==62 && tmp[euc_var]!=te) {
-      val.temp=(tmp[euc_var]/10).toFixed(1);
-      if (val.temp>=alert.temp ) {
-		if (val.temp>=65) val.tmpC=col.red;
-		else val.tmpC=col.yellow;
-		euc_al++;
-		euc_al_t=true;
-	  } else if (val.temp>=50 ) val.tmpC=purple; else val.tmpC=col.lblue;	  
-      te=tmp[euc_var];
-	 //average
-    }else if (euc_var==182 && tmp[euc_var]!=tv) {
-      val.aver=(tmp[euc_var]/1000).toFixed(1);
-      tv=tmp[euc_var];
-    }//runtime
-    else if (euc_var==58 && tmp[euc_var]!=tm) {
-      val.time=(tmp[euc_var]/60).toFixed(0);
-      tm=tmp[euc_var];
-	}//riding Mode
-	else if (euc_var==210 ) {
-	  if (tmp[euc_var] >=10)  digitalPulse(w.pin.MOTOR,1,[100,80,100]);  
-	  else val.rdmd=tmp[euc_var];
-    } //lock
-    else if (euc_var==112 && tmp[euc_var]!=val.lock) {
-      val.lock=tmp[euc_var];
-	  if (val.lock==1) {
-		val.spdC=col.purple;
-		val.ampC=col.purple;
-		val.tmpC=col.purple;
-		val.batC=col.purple;
-        tmp.spd[0]="-1";
-		tmp.amp="-1";
-		tmp.temp="-1";
-		tmp.batt="-1";
-		tmp.trpN="-1";
-      }else {
-		 val.spdC=col.black;
-		val.ampC=col.black;
-		val.tmpC=col.lblue;
-		val.batC=col.lblue;
-		tmp.spd[0]="-1";
-		tmp.amp="-1";
-		tmp.temp="-1";
-		tmp.batt="-1";
-		tmp.trpN="-1";
-      }
-    }
-	//alerts
-      if (euc_al!=0 && alert.on!=true) {  
-         alert.on=true;
-		var a=[200];
-		var i;
-		for (i = 1; i < euc_al ; i++) {
-			a.push(150,100);
-		}
-        digitalPulse(w.pin.MOTOR,1,a);  
-        setTimeout(() => {alert.on=false; }, 2000);
-      }
-    }
-	});
-//  return tmp.characteristic.startNotifications();
-return  c.startNotifications();
-}).then(function() {
-	global["\u00ff"].BLE_GATTS.device.on('gattserverdisconnected', function(reason) {
-    console.log("Disconnected :",reason);
-    if (val.conn!="OFF") {  
-	 console.log("restarting");
-     val.conn="WAIT"; 
-     setTimeout(() => {  connect(); }, 1000);
-    }else {
-	  delete euc.tmp.characteristic;
-      delete global["\xFF"].bleHdl;
-    }
-  });
-//connected 
-  console.log("EUC connected"); 
-  val.conn="READY"; //connected
-  digitalPulse(w.pin.MOTOR,1,[90,40,150,40,90]);
-  startWriting();
-//reconect
-}).catch(function(err)  {
-  console.log("EUC", err);
-  clearInterval(tmp.loop);
-  if (val.conn!="OFF") {
-    console.log("not off");
-    if ( err==="Connection Timeout"  )  {
-	  if (typeof global["\xFF"].timers[tmp.reconnect] !== "undefined") clearTimeout(tmp.reconnect); 
-	  console.log("retrying :timeout");
-	  val.conn="LOST";
-	  if (euc.val.lock==1) digitalPulse(w.pin.MOTOR,1,250);
-	  else digitalPulse(w.pin.MOTOR,1,[250,200,250,200,250]);
-	  tmp.reconnect=setTimeout(() => {
-	    connect(); 
-	  }, 10000);
-	}else if ( err==="Disconnected"|| err==="Not connected")  {
-	  if (typeof global["\xFF"].timers[tmp.reconnect]  !== "undefined") clearTimeout(tmp.reconnect); 
-      console.log("retrying :",err);
-      val.conn="FAR";
-	  if (euc.val.lock==1) digitalPulse(w.pin.MOTOR,1,100);
-	  else digitalPulse(w.pin.MOTOR,1,[100,150,100]);
-      tmp.reconnect=setTimeout(() => {
-	    connect(); 
-      }, 5000);
-    }
-  }
-});
-}
-
-//main loop
-function startWriting() {
- 
-  var euc_still_tmr=0;
-  var euc_still=false;
-  var busy = false;
-  var euc_near=0;
-  var euc_far=0;
-  //gatt.setRSSIHandler();
-  if (typeof tmp.loop !== "undefined") {clearTimeout(tmp.loop);}
-  tmp.loop = setInterval(function() {
-    if (busy  ) return;
-    if (val.conn!="READY") {
-	  busy = true;
-      if (val.conn=="OFF"){
-	  console.log("EUCstartOff");
-      clearInterval(tmp.loop);
-	  tmp.characteristic.writeValue(eval(cmd[21])).then(function() {
-   		val.lock=1;
-		console.log("EUCendOff");
-        digitalPulse(w.pin.MOTOR,1,120);
-//	    delete euc.tmp.characteristic;
-        global["\xFF"].BLE_GATTS.disconnect();
-//        delete global["\xFF"].bleHdl;
-      });
-      return;
-      }  
-    }
-	//check if still
-    if (val.spd[0]==0 && euc_still==false) {
-      euc_still=3;
-      //if (typeof euc_still_tmr !== "undefined") {clearTimeout(euc_still_tmr);}
-      euc_still_tmr=(setTimeout(() => { 
-        euc_still=true;
-      },5000));
-    }else if (val.spd[0]>=1 && euc_still!=false) {
-      clearTimeout(euc_still_tmr);
-      euc_far=0;
-      euc_still=false;
-      changeInterval(tmp.loop,100); 
-    }
-	//proximity auto lock 
-    if (val.alck===1) {
-    global["\xFF"].BLE_GATTS.setRSSIHandler(function(rssi) {tmp.rssi=rssi; });
-    if (tmp.rssi< -(val.far) && euc_still==true && val.lock==0) {
-//      console.log("far start");
-	  euc_far++;
-	  euc_near=0;
-	  if (euc_far > 8 && val.lock==0 ) {
-		if (busy ) return;
-     		busy = true;
-			tmp.characteristic.writeValue(eval(cmd[21])).then(function() {
-				val.lock=1;
-				busy = false;
-		        val.spdC=col.purple;
-		        val.ampC=col.purple;
-		        val.tmpC=col.purple;
-		        val.batC=col.purple;
-				tmp.spd[0]="-1";
-				tmp.spd[1]="-1";
-				tmp.amp="-1";
-				tmp.temp="-1";
-				tmp.batt="-1";
-				tmp.trpN="-1";
-				digitalPulse(w.pin.MOTOR,1,[90,60,90]);
-			});
-      }
-	}else if  (tmp.rssi> -(val.near) && val.spd[0]<=5 && val.lock==1 ) {
-		euc_far=0;
-			if (busy ) return;
-			busy = true;
-			tmp.characteristic.writeValue(eval(cmd[22])).then(function() {
-			  busy = false;
-			  euc_near=0;
-			  val.lock=0;
-		        val.spdC=col.black;
-		        val.ampC=col.black;
-		        val.tmpC=col.lblue;
-		        val.batC=col.lblue;
-				tmp.spd[0]="-1";
-				tmp.spd[1]="-1";
-				tmp.amp="-1";
-				tmp.temp="-1";
-				tmp.batt="-1";
-				tmp.trpN="-1";
-			    digitalPulse(w.pin.MOTOR,1,100);
-				console.log("unlock");
-            });
-	} else  { euc_far=0; euc_near=0; }
-    }
-	//send command
-    if (busy ) return;
-	//only alarms when locked
-    if (val.lock==1 && tmp.count<=21 && val.spd[0]==0) {tmp.count=20;changeInterval(tmp.loop,2000);}
-	//only get alarms-speed when still
-//	else if (euc_still==true && tmp.count<19 ) {tmp.count=19;changeInterval(tmp.loop,500);}
-    else if (euc_still==true && tmp.count<19 ) {changeInterval(tmp.loop,500);}
-    else if  ( euc_still!=true && val.spd[0]<=2)  {changeInterval(tmp.loop,200);	}
-	else if  (val.spd[0]>2 && fcurr==1)  {changeInterval(tmp.loop,50);}
-    else if  (val.spd[0]>2 && fcurr!=1)  {changeInterval(tmp.loop,100);}
-//    console.log("l :"+tmp.count);
-    busy = true;
-//	if (tmp.cmd!=false) {
-	tmp.characteristic.writeValue(eval(cmd[tmp.count])).then(function() {
-
-    tmp.count++;
-      if (tmp.count>=21) tmp.count=0;
-      busy = false;
-    });
-
-  }, 100);  
-  
-}  
-//exports
-//exports.on=on;
-//exports.off=off;
-exports.tgl=tgl; 
-exports.val=val;
-exports.tmp=tmp;
-exports.alert=alert;
-});
-  
-euc=require("euc");  
-//eval(require('Storage').read('euc'));
-//faces
-//Euc main face
-var eucFace = {
+//faces-main face
+face[0] = {
   offms: 15000, //15 sec timeout
+  spd:[],
   init: function(){
     var g=w.gfx;
     g.setColor(1,col.gray);
@@ -483,8 +69,8 @@ var eucFace = {
     g.fillRect(0,158,239,193); //mileage
     g.setColor(0,col.black);
     g.setFont("7x11Numeric7Seg",4);
-    g.drawString(euc.val.temp, 10,3); //temp
-    g.drawString(euc.val.batt,240-(g.stringWidth(euc.val.batt)+10),3); //fixed bat
+    g.drawString(euc.temp, 10,3); //temp
+    g.drawString(euc.batt,240-(g.stringWidth(euc.batt)+10),3); //fixed bat
     g.setFontVector(20); //mileage
     g.drawString("TRIP",1,167); 
     g.drawString("TOT",90,167); 
@@ -493,33 +79,33 @@ var eucFace = {
     //mileage
     g.fillRect(0,194,239,239);
     g.setColor(1,col.gray);
-    if (euc.val.conn=="READY") g.setColor(1,col.lblue);
+    if (euc.conn=="READY") g.setColor(1,col.lblue);
     g.setFont("7x11Numeric7Seg",3);
-    g.drawString(euc.val.trpN,0,205); 
-    g.drawString(euc.val.trpT,(240-(g.stringWidth(euc.val.trpT)))/2,205); 
-    g.drawString(euc.val.trpR,240-(g.stringWidth(euc.val.trpR)+1),205); 
+    g.drawString(euc.trpN,0,205); 
+    g.drawString(euc.trpT,(240-(g.stringWidth(euc.trpT)))/2,205); 
+    g.drawString(euc.trpR,240-(g.stringWidth(euc.trpR)+1),205); 
     g.flip();
-
-    euc.tmp.spd[0]="-1";
-    euc.tmp.spd[1]="-1";
-    euc.tmp.amp="-1";
-    euc.tmp.temp="-1";
-    euc.tmp.batt="-1";
-    euc.tmp.trpN="-1";
-    if(!g.isOn) g.on();
+    this.spd[0]=-1;
+    this.spd[1]=-1;
+    this.amp=-1;
+    this.temp=-1;
+    this.batt=-1;
+    this.trpN=-1;
     this.conn="OFF";
     this.lock=2;
+	if(!g.isOn) g.on();
     this.run=true;
   },
   show : function(o){
   if (!this.run) return;
   var g=w.gfx;
-  if (euc.val.conn=="READY") {
-    //speed 1
-    if (euc.val.spd[0]!=euc.tmp.spd[0]){
-      euc.tmp.spd[0]=euc.val.spd[0];
-        if (euc.val.spdC!=col.black) {
-		  g.setColor(1,euc.val.spdC);
+//connected  
+  if (euc.conn=="READY") {
+	//speed 1
+    if (euc.spd[0]!=this.spd[0]){
+      this.spd[0]=euc.spd[0];
+        if (euc.spdC!=col.black) {
+		  g.setColor(1,euc.spdC);
           g.fillRect(0,54,135,154);
           g.setColor(0,col.black);
         }else { 
@@ -527,24 +113,24 @@ var eucFace = {
           g.fillRect(0,54,135,154);
           g.setColor(1,col.white);
         }
-        if (euc.val.spd[0]==0) {   
+        if (euc.spd[0]==0) {   
 	      g.setFontVector(18);
           g.drawString("AV.SPEED",12,60);
 	      g.setFont("7x11Numeric7Seg",5);
-	      g.drawString(euc.val.aver,(139-(g.stringWidth(euc.val.aver)))/2,90); 
+	      g.drawString(euc.aver,(139-(g.stringWidth(euc.aver)))/2,90); 
           g.flip();
         }else{
           g.setFontVector(84);
-          g.drawString(euc.val.spd[0],(150-(g.stringWidth(euc.val.spd[0])))/2,65); 
-          euc.tmp.spd[0]=euc.val.spd[0];
+          g.drawString(euc.spd[0],(150-(g.stringWidth(euc.spd[0])))/2,65); 
+          this.spd[0]=euc.spd[0];
           g.flip();
         }
     }
-      //Amp
-    if ((euc.val.amp|0)!=euc.tmp.amp) {
-        euc.tmp.amp=(euc.val.amp|0);
-        if  (euc.val.ampC!=col.black ) {
-		  g.setColor(1,euc.val.ampC);
+	//Amp
+    if ((euc.amp|0)!=this.amp) {
+        this.amp=(euc.amp|0);
+        if  (euc.ampC!=col.black ) {
+		  g.setColor(1,euc.ampC);
           g.fillRect(139,54,239,154); 
           g.setColor(0,col.black);
         }else { 
@@ -553,103 +139,103 @@ var eucFace = {
           g.setColor(1,col.white);
         }
         
-        if (((euc.val.amp|0)==0 && euc.val.spd[0]==0) ||  euc.val.lock==1) {  
+        if (((euc.amp|0)==0 && euc.spd[0]==0) ||  euc.lock==1) {  
 	      g.setFontVector(18);
 	      g.drawString("RunTIME",140,60);
 	      g.setFont("7x11Numeric7Seg",5);
-  	      g.drawString(euc.val.time,192-(g.stringWidth(euc.val.time)/2),90); 
+  	      g.drawString(euc.time,192-(g.stringWidth(euc.time)/2),90); 
           g.flip();
         }else{
           g.setFont("7x11Numeric7Seg",6);
-          g.drawString(euc.val.amp|0,(142+(100-g.stringWidth(euc.val.amp|0))/2),73); 
+          g.drawString(euc.amp|0,(142+(100-g.stringWidth(euc.amp|0))/2),73); 
           g.flip();
         }    
     }
-    //Temp
-    if (euc.val.temp!=euc.tmp.temp) {
-      euc.tmp.temp=euc.val.temp;
-	  g.setColor(1,euc.val.tmpC);
+	//Temp
+    if (euc.temp!=this.temp) {
+      this.temp=euc.temp;
+	  g.setColor(1,euc.tmpC);
       g.fillRect(0,0,135,50);       
       g.setColor(0,col.black);
       g.setFont("7x11Numeric7Seg",4);
-      g.drawString(euc.val.temp, 10,3); //temp
+      g.drawString(euc.temp, 10,3); //temp
       g.flip();
     }
-    //Battery
-    if (euc.val.batt!=euc.tmp.batt) {
-   	  euc.tmp.batt=euc.val.batt;
-	  g.setColor(1,euc.val.batC);
+	//Battery
+    if (euc.batt!=this.batt) {
+   	  this.batt=euc.batt;
+	  g.setColor(1,euc.batC);
       g.fillRect(139,0,239,50);
       g.setColor(0,col.black);
       g.setFont("7x11Numeric7Seg",4);
-      g.drawString(euc.val.batt,240-(g.stringWidth(euc.val.batt)+10),3); //fixed bat
+      g.drawString(euc.batt,240-(g.stringWidth(euc.batt)+10),3); //fixed bat
       g.flip();
     }
-    //Mileage
-	if (euc.val.trpN!=euc.tmp.trpN) {
-	  euc.tmp.trpN=euc.val.trpN;
+	//Mileage
+	if (euc.trpN!=this.trpN) {
+	  eTmp.trpN=euc.trpN;
 	  g.setColor(0,col.black);
 	  g.fillRect(0,194,239,239);
       g.setColor(1,col.lblue);
 	  g.setFont("7x11Numeric7Seg",3);
-   	  g.drawString(euc.val.trpN,0,205); 
-	  g.drawString(euc.val.trpT,(240-(g.stringWidth(euc.val.trpT)))/2,205); 
-	  g.drawString(euc.val.trpR,240-(g.stringWidth(euc.val.trpR)+1),205); 
+   	  g.drawString(euc.trpN,0,205); 
+	  g.drawString(euc.trpT,(240-(g.stringWidth(euc.trpT)))/2,205); 
+	  g.drawString(euc.trpR,240-(g.stringWidth(euc.trpR)+1),205); 
 	  g.flip();
     }     
-  // diconnected  
-  } else if (euc.val.conn=="OFF")  {
-    if (euc.val.lock!=this.lock){
-    this.lock=euc.val.lock;
+//diconnected  
+  } else if (euc.conn=="OFF")  {
+    if (euc.lock!=this.lock){
+    this.lock=euc.lock;
     g.setColor(1,col.gray);
     g.fillRect(0,54,135,154);
     g.setColor(0,col.black);
     g.setFontVector(18);
     g.drawString("AV.SPEED",12,60);
     g.setFont("7x11Numeric7Seg",5);
-    g.drawString(euc.val.aver,(139-(g.stringWidth(euc.val.aver)))/2,90); 
+    g.drawString(euc.aver,(139-(g.stringWidth(euc.aver)))/2,90); 
     g.flip();
-    if (euc.val.lock==1) g.setColor(1,col.yellow);
+    if (euc.lock==1) g.setColor(1,col.yellow);
     else  g.setColor(1,col.gray);
     g.fillRect(139,54,239,154); 
     g.setColor(0,col.black); 
 	g.setFontVector(18);
 	g.drawString("RunTIME",140,60);
 	g.setFont("7x11Numeric7Seg",5);
-  	g.drawString(euc.val.time,192-(g.stringWidth(euc.val.time)/2),90); 
+  	g.drawString(euc.time,192-(g.stringWidth(euc.time)/2),90); 
     g.flip();
-	if (euc.val.conn=="OFF" && euc.val.lock==1){
-    this.exit();console.log("faceEUCexited");
+	if (euc.conn=="OFF" && euc.lock==1){
+    this.exit();if (set.cli) console.log("faceEUCexited");
     }
     }
-  // rest
+//rest
   } else  {
-    if (euc.val.conn!=this.conn) {
-    this.conn=euc.val.conn;
+    if (euc.conn!=this.conn) {
+    this.conn=euc.conn;
     g.setColor(1,col.gray);
 	g.fillRect(0,54,135,154);
 	g.setColor(0,col.black);
 	g.setFontVector(18);
     g.drawString("AV.SPEED",12,60);
 	g.setFont("7x11Numeric7Seg",5);
-	g.drawString(euc.val.aver,(139-(g.stringWidth(euc.val.aver)))/2,90); 
+	g.drawString(euc.aver,(139-(g.stringWidth(euc.aver)))/2,90); 
     g.flip();
     g.fillRect(139,54,239,154); 
     g.setColor(1,col.white);     
     g.setFont("Vector",27);
-    g.drawString(euc.val.conn,(142+(100-g.stringWidth(euc.val.conn))/2),85);
+    g.drawString(euc.conn,(142+(100-g.stringWidth(euc.conn))/2),85);
     g.flip();
     g.setColor(1,col.gray);
     g.fillRect(0,0,135,50);
     g.fillRect(139,0,239,50);
     g.setColor(0,col.black);
     g.setFont("7x11Numeric7Seg",4);
-    g.drawString(euc.val.temp, 10,3); //temp
-    g.drawString(euc.val.batt,240-(g.stringWidth(euc.val.batt)+10),3);    
+    g.drawString(euc.temp, 10,3); //temp
+    g.drawString(euc.batt,240-(g.stringWidth(euc.batt)+10),3);    
     g.flip();
     }
   }
-  // refresh 
+//refresh 
   this.tid=setTimeout(function(t){
       t.tid=-1;
       t.show();
@@ -659,7 +245,7 @@ var eucFace = {
   run:false,
   clear : function(){
     var g=w.gfx;
-    g.clear();
+	if (face.appPrev!="euc" || face.appCurr!="euc" || face.pageCurr!=0) g.clear();
     this.exit();
     return true;
   },
@@ -675,8 +261,22 @@ var eucFace = {
     this.clear();
   } 
 };
-//euc settings face
-var eucSetFace = {
+//loop face
+face[1] = {
+  offms:1000,
+  init: function(){
+  return true;
+  },
+  show : function(){
+    face.go("main",0);
+    return true;
+  },
+  clear: function(){
+  return true;
+  },
+};	
+//settings face
+face[5] = {
   offms: 5000,
   init: function(){
     var g=w.gfx;
@@ -698,9 +298,8 @@ var eucSetFace = {
     g.setFont("Vector",35);
     g.drawString("EUC",180-(g.stringWidth("EUC")/2),60); 
 	g.drawString("OFF",180-(g.stringWidth("OFF")/2),140);
-
 	//g.setFont("Vector",80);
-    //g.drawString(euc.val.rdmd,180-(g.stringWidth(euc.val.rdmd)/2),80); //fixed bat
+    //g.drawString(euc.rdmd,180-(g.stringWidth(euc.rdmd)/2),80); //fixed bat
 	g.flip();
     this.rdmd=-1;
     this.alck=-1;
@@ -709,9 +308,9 @@ var eucSetFace = {
   show : function(){
     if (!this.run) return; 
     var g=w.gfx;
-    //autolock
-    if (euc.val.alck != this.alck) {
-	  this.alck=euc.val.alck;
+//autolock
+    if (euc.alck != this.alck) {
+	  this.alck=euc.alck;
       if (this.alck==1) g.setColor(1,col.blue);
       else g.setColor(1,col.gray);
       g.fillRect(0,80,115,155); //left mid
@@ -721,34 +320,33 @@ var eucSetFace = {
       g.drawString("LOCK",58-(g.stringWidth("LOCK")/2),122);
       g.flip();
     }
-    
-    if (euc.val.conn=="READY") {  
-	if (euc.val.rdmd != this.rdmd) {
-	  this.rdmd=euc.val.rdmd;	
+//ride mode    
+    if (euc.conn=="READY") {  
+	if (euc.rdmd != this.rdmd) {
+	  this.rdmd=euc.rdmd;	
       g.setColor(1,col.lblue);
       g.fillRect(120,0,239,239); //right-riding mode     
       g.setColor(0,col.black);
       g.setFont("Vector",88);
-      g.drawString(euc.val.rdmd,180-(g.stringWidth(euc.val.rdmd)/2),73);  
+      g.drawString(euc.rdmd,180-(g.stringWidth(euc.rdmd)/2),73);  
       g.setFont("Vector",35);
-      if (9>euc.val.rdmd) {
-      g.drawString(euc.val.rdmd+1,180-(g.stringWidth(euc.val.rdmd+1)/2),32);  
+      if (9>euc.rdmd) {
+      g.drawString(euc.rdmd+1,180-(g.stringWidth(euc.rdmd+1)/2),32);  
       }
-      if (euc.val.rdmd>0) {
-      g.drawString(euc.val.rdmd-1,180-(g.stringWidth(euc.val.rdmd-1)/2),166); 
+      if (euc.rdmd>0) {
+      g.drawString(euc.rdmd-1,180-(g.stringWidth(euc.rdmd-1)/2),166); 
       }
       g.setFont("Vector",20);
-      if (8>euc.val.rdmd) {
-      g.drawString(euc.val.rdmd+2,180-(g.stringWidth(euc.val.rdmd+2)/2),7); 
+      if (8>euc.rdmd) {
+      g.drawString(euc.rdmd+2,180-(g.stringWidth(euc.rdmd+2)/2),7); 
       }
-      if (euc.val.rdmd>1) {
-      g.drawString(euc.val.rdmd-2,180-(g.stringWidth(euc.val.rdmd-2)/2),208); 
+      if (euc.rdmd>1) {
+      g.drawString(euc.rdmd-2,180-(g.stringWidth(euc.rdmd-2)/2),208); 
       }
       g.flip();
     }
-    
     }
-    //loop
+//loop
     this.tid=setTimeout(function(t,o){
       t.tid=-1;
       t.show();
@@ -774,89 +372,79 @@ var eucSetFace = {
     this.clear();
   }
 };
-faces[1]=eucFace;
-faces[2]=eucSetFace; 
-//inputs
-//euc main input
-touchHandler[1]=function(e,x,y){
-    this.fto=-1;
+//touch-main
+touchHandler[0]=function(e,x,y){
+    this.fto=0;
     this.farg=-1;
+	this.face="euc";
     var p=w.pin.MOTOR;
     if (e==5){ 
 	  digitalPulse(p,1,40);
     }else if  (e==1){
-      this.fnow=true;
-	  if (euc.val.conn=="READY") this.fto=-1;
-	  else this.fto=0;
+	  if (euc.conn!="OFF") {face.go("euc",-1);return;}
+	  else {face.go("main",0);return; }
     }else if  (e==2){
-      digitalPulse(p,1,40);
+	  if (y>160&&x<50) {
+        if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
+        else w.gfx.bri.set(this.bri);
+		digitalPulse(p,1,[30,50,30]);
+     }else if (y>190) {
+		face.go("main",5);return;
+	  } else digitalPulse(p,1,40);
     }else if  (e==3){
       digitalPulse(p,1,40);
-    }else if  (e==4){
-      //if (y<70) w.gfx.bri.set(1);
-      //else if (70<y&&y<170) w.gfx.bri.set();
-      if (y<70&&x<70) {
-        if (w.gfx.bri.lv===2) w.gfx.bri.set(7);
-        else w.gfx.bri.set(2);
-		digitalPulse(p,1,[30,50,30]);
-      }else  {
-		this.fnow=true;
-        this.fto=0;
-	  }
+    }else if  (e==4){		
+	  face.go("main",0);return;
     }else if  (e==12){
-	  //euc on/off
+//euc on/off
 	  if  (y<158) {
-	    euc.tgl();
-	  //euc settings
-	  } else if(euc.val.conn!=="WAIT") {
-          digitalPulse(p,1,140);
- 	      euc.tmp.count=23;
-          this.fnow=true;
-          this.fto=2;
+  	    euc.tgl();
+		face.go("euc",0);return;
+//euc settings
+	  }else if(euc.conn!=="WAIT"){
+        digitalPulse(p,1,140);
+ 	    this.count=23;
+		face.go("euc",5);return;
       }else digitalPulse(p,1,80);
     }
     this.timeout();
 };
-//euc settings input
-touchHandler[2]=function(e,x,y){    this.fto=1;
+//settings
+touchHandler[5]=function(e,x,y){    
+	this.fto=0;
     this.farg=-1;
+	this.face="euc";
     var p=w.pin.MOTOR;
     if (e==5){ 
 	  digitalPulse(p,1,40);
     }else if  (e==1){
       if  (x>=120) {
-        euc.val.rdmd++;
-        if (euc.val.rdmd >9) {euc.val.rdmd=9; digitalPulse(p,1,40);}
+        euc.rdmd++;
+        if (euc.rdmd >9) {euc.rdmd=9; digitalPulse(p,1,40);}
       }else digitalPulse(p,1,40);
     }else if  (e==2){
       if  (x>=120) {
-        euc.val.rdmd--;
-        if (euc.val.rdmd <0) {euc.val.rdmd=0; digitalPulse(p,1,40);}
+        euc.rdmd--;
+        if (euc.rdmd <0) {euc.rdmd=0; digitalPulse(p,1,40);}
       }else digitalPulse(p,1,40);
     }else if  (e==3){
       digitalPulse(p,1,40);
     }else if  (e==4){
-      //if (y<70) w.gfx.bri.set(1);
-      //else if (70<y&&y<170) w.gfx.bri.set();
-      if (y<70&&x<70) {
-        if (w.gfx.bri.lv===2) w.gfx.bri.set(7);
-        else w.gfx.bri.set(2);
-		digitalPulse(p,1,[30,50,30]);
-      }else	this.fnow=true;
+	  face.go("euc",0);return;
     }else if  (e==12){
       //ride mode
       if  (x>120) { 
-        euc.tmp.count=euc.val.rdmd+24;
+        eTmp.count=euc.rdmd+24;
       //reset mileage
       }else if (x<115 && y>145) {
-        console.log("reset mileage");
+        if (set.cli) console.log("reset mileage");
         digitalPulse(p,1,300);  
-        euc.val.trpL="0.0";
+        euc.trpL="0.0";
 	  //toggle EUC auto lock
 	  }else if (x<115 && (80<y&&y<145)) {
-        console.log("toggle alock");
+        if (set.cli) console.log("toggle alock");
         digitalPulse(p,1,300);  
-        euc.val.alck=1-euc.val.alck;
+        euc.alck=1-euc.alck;
       }else digitalPulse(p,1,40);
     }
     this.timeout();
