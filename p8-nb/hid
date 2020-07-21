@@ -33,7 +33,6 @@ face[0] = {
 	g.drawString("STOP",15,100);
 	g.drawString("VOL UP",140,100);   
 	g.drawString("VOL DN",140,140);   
-    if(!g.isOn) g.on();
     g.flip();
 //    this.run=true;
   },

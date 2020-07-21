@@ -73,7 +73,6 @@ face[0]= {
 	this.al2=-2;
 	this.al3=-2;
 	this.run=true; 
-    if(!g.isOn) g.on();
   },
   show : function(){
     if (!this.run) return;

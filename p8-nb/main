@@ -417,12 +417,12 @@ touchHandler[5]=function(e,x,y){
         this.b=w.gfx.bri.lv;
         g.bri.set(7);
         face[5].tor=1;
-        if (offid>=0) {clearTimeout(offid); offid=-1;}
-        offid=setTimeout((f)=>{
-          if (f>=0 && faces[f].off) faces[f].off();
+        if (face.offid>=0) {clearTimeout(face.offid); face.offid=-1;}
+        face.offid=setTimeout((f)=>{
+          //if (f>=0 && face[f].off) face[f].off();
           g.bri.set(this.b);
-          offid=-1;fcurr=-1;
-        },15000,fcurr);
+          face.offid=-1;face.pageCurr=-1;
+        },15000,face.pageCurr);
         return;
       }else if(158<x&&x<239&&160<y&&y<239) {
         this.b=g.bri.lv-1;
@@ -450,13 +450,11 @@ touchHandler[5]=function(e,x,y){
         this.b=g.bri.lv+1;
         if (this.b>7) this.b=7;
         g.bri.set(this.b);
-      }else { 
-        face.go(face.appPrev,face.pagePrev,face.pageArg);return;
-      }  
+      }else digitalPulse(p,1,40);
     }else if  (e==3){
 	  digitalPulse(p,1,40);
     }else if  (e==4){
-       face.go("main",0);return;
+		face.go(face.appPrev,face.pagePrev,face.pageArg);return;
     }else if  (e==12){
       if(158<x&&x<239&&y<75){
         set.hid=1-set.hid;

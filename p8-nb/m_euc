@@ -100,12 +100,12 @@ NRF.connect(euc.mac,{minInterval:7.5, maxInterval:7.5})
         euc_alarm=1; 
         //if (set.cli) console.log("EUC_alarm :",euc_val);
         digitalPulse(w.pin.MOTOR,1,[250,50,250,50,250]);
-		if (fcurr==-1) {
+		if (face.pageCurr==-1) {
 			g.clear();	
             g.setFontVector(30);
 			g.drawString("!",9, 30);
 			g.flip();g.on();
-			offid=setTimeout(() => {g.off();}, 2000);
+			face.offid=setTimeout(() => {g.off();face.offid=-1}, 2000);
 		}
 	    setTimeout(() => { euc_alarm=0; }, 100);
       }

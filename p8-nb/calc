@@ -73,7 +73,6 @@ face[0] = {
     g.drawString("-",205,152);
 	g.drawString("+",201,202); 
     g.flip();
-    if(!g.isOn) g.on();
     this.run=true;
     this.disp=-1;
   },

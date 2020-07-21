@@ -1,8 +1,5 @@
-//handler
-var button;
-var press=true;
-var l1=-1;
-var l2=-1;
+//p8 touch controller type
+const type="TFK"; //TEH|TFK|TIN|-TIG not yet-
 //face
 var face={
   appCurr:"",
@@ -28,17 +25,19 @@ var face={
       if (f!=-1 && face[f].off) face[f].off();
       this.offid=-1;
       this.pageCurr=-1;
+	  if (type!="TEH") i2c.writeTo(0x15,0xa5,3); 
+	  if (type=="TFK") tfk.exit();
     },this.offms,this.pageCurr);
     //start face
     if (arg){
       face[page].init(arg);	
-      if(!w.gfx.isOn) w.gfx.on();
+      if(!w.gfx.isOn) {w.gfx.on();if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);if (type=="TFK") tfk.init();}
 	  face[page].show(arg);
 	  this.pageArg=arg;
 	  return;
     }else{
       face[page].init();	
-      if(!w.gfx.isOn) w.gfx.on();
+      if(!w.gfx.isOn) {w.gfx.on();if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);if (type=="TFK") tfk.init();}
       face[page].show();
     }
   }
@@ -98,7 +97,7 @@ var set={
 		this.atcW=undefined;
 		this.hidM=undefined;
  		NRF.disconnect();
-//        NRF.setServices(undefined, {uart : false});
+        NRF.setServices(undefined, {uart : false});
         NRF.setAdvertising({}, { connectable:false }); 
    		NRF.sleep();
 	} else {
@@ -121,9 +120,13 @@ set.bt=0;
 //set.devices = [];
 NRF.on('connect',function(addr) {
 //  set.devices.push(addr);
-  set.bt=1;
+set.bt=1;
 });
 //button 
+var button;
+var press=true;
+var l1=-1;
+var l2=-1;
 function buttonHandler(s){
   if (global["\xFF"].watches[button]!="undefined") clearWatch(button);
   var p=w.pin.MOTOR;
@@ -178,68 +181,123 @@ var touchHandler = {
     face.offid=setTimeout((f)=>{
       if (f!=-1 && face[f].off) face[f].off();
       face.offid=-1;face.pagePrev=f;face.pageCurr=-1;
+	  if (type!="TEH") i2c.writeTo(0x15,0xa5,3); 
+	  if (type=="TFK") tfk.exit();
     },face.offms,face.pageCurr);
   }
 };
-//touch interrupt
-var i2c=new I2C();
+//touch init
 //var i2c=I2C1;
-i2c.setup({scl:w.pin.TP_SCL, sda:w.pin.TP_SDA, bitrate:200000});
-digitalPulse(w.pin.TP_RESET,1,[5,50]);
-var c,lt,st,xt,yt;
-setWatch(function(s){
-var tp=i2c.readFrom(0x15,7);
-if (face.pageCurr>=0) {
-  var a=tp[1];
-//  console.log(tp,st);
-  if (tp[3]==0) {
-    xt=tp[4];yt=tp[6];lt=1;st=1;
-	return;
-  }else if (tp[3]==255){
-    //digitalPulse(w.pin.MOTOR,1,[30]);
-	if (st) touchHandler[face.pageCurr](5,xt,yt);
-    st=0;
-	return;
-  }else if (a==0) {
-    return;
-  }else if (a==5) {
-    touchHandler[face.pageCurr](a,tp[4],tp[6]);
-	st=0;
-	return;
-  }else if (a==12) {
-    if (lt) touchHandler[face.pageCurr](a,tp[4],tp[6]);
-    lt=0;
-	st=0;
-	return;
-  }else {
-    touchHandler[face.pageCurr](a,xt,yt); 
-	st=0;
-	return;
-  }
-}else if (tp[1]==5) {
-    if (s.time-c<0.25) face.go(face.appCurr,0);
-    c=s.time;
-}else if (tp[1]==1) face.go(face.appCurr,0);
-},w.pin.TP_INT,{repeat:true, edge:"falling"}); 
-
-
-/*
 var i2c=new I2C();
-//var i2c=I2C1;
 i2c.setup({scl:w.pin.TP_SCL, sda:w.pin.TP_SDA, bitrate:100000});
 digitalPulse(w.pin.TP_RESET,1,[5,50]);
 var c;
+if (type=="TEH"){
 setWatch(function(s){
   var tp=i2c.readFrom(0x15,7);
-  console.log(tp);
+console.log(tp);
   if (face.pageCurr>=0) touchHandler[face.pageCurr](tp[1],tp[4],tp[6]);
   else if (tp[1]==5) {
     if (s.time-c<0.25) face.go(face.appCurr,0);
     c=s.time;
   }else if (tp[1]==1) face.go(face.appCurr,0);
 },w.pin.TP_INT,{repeat:true, edge:"rising"}); 
-
-*/
-//eval(require('Storage').read('alarm'));
-
-//eval(require('Storage').read('alarm'));
+}else if (type=="TIN"){
+var lt,xt,yt,tt,tf;
+//var ct=0;
+setWatch(function(s){
+var tp=i2c.readFrom(0x15,7);
+//console.log(tp);
+if (face.pageCurr>=0) {
+  if (tp[3]==0) {
+	if (tt) {clearTimeout(tt);tt=0;}
+    xt=tp[4];yt=tp[6];lt=1;st=1;tf=1;
+	return;
+  }else if (tp[1]==0 && tf) {
+    var a;
+    //ct++;
+    //if (ct>2){
+    a=5;
+	if (tp[6]>=yt+30) a=1;
+	else if (tp[6]<=yt-30) a=2;
+	else if (tp[4]<=xt-30) a=3;
+	else if (tp[4]>=xt+30) a=4;
+//    console.log(tp[4],xt,tp[6],yt,a,ct);
+   	if (tt) {clearTimeout(tt);tt=0;}
+    if (a!=5){
+      touchHandler[face.pageCurr](a,xt,yt);
+      ct=0;
+      tf=0;
+	  return;
+    } else {  
+	tt=setTimeout(()=>{
+       touchHandler[face.pageCurr](a,xt,yt);
+		tt=0;ct=0;
+        tf=0;
+    },20);  
+    }
+    //}
+    return;
+  }else if (tp[1]==5) {
+  if (tt) {clearTimeout(tt);tt=0;}
+    touchHandler[face.pageCurr](5,tp[4],tp[6]);
+    tf=0;
+	return;
+  }else if (tp[1]==12) {
+ 	if (tt) {clearTimeout(tt);tt=0;}
+    if (lt) touchHandler[face.pageCurr](12,tp[4],tp[6]);
+    lt=0;
+    tf=0;
+	return;
+  }
+}else {
+  if(tp[3]==0) tf=1;
+  if (tp[1]==5 && tf) {
+    if (s.time-c<0.25) face.go(face.appCurr,0);
+    c=s.time;tf=0;
+  }else if (tp[1]==1 && tf) {face.go(face.appCurr,0);tf=0;}
+}
+},w.pin.TP_INT,{repeat:true, edge:"falling"}); 
+}else if (type=="TFK"){
+var tfk={
+tid:-1,
+x:0,
+y:0,
+do:0,
+st:1,
+init:function(){
+	var tp=i2c.readFrom(0x15,7);
+	if (tp[3]==128) {
+        if (this.st) {
+          this.st=0;
+          this.do=1;
+          this.x=tp[4];this.y=tp[6];
+          if (face.pageCurr==-1)face.go(face.appCurr,0);
+        }
+        if (tp[1]==0 && this.do==1) {
+            var a=0;
+            if (tp[6]>=this.y+30) a=1;
+	        else if (tp[6]<=this.y-30) a=2;
+	        else if (tp[4]<=this.x-30) a=3;
+	        else if (tp[4]>=this.x+30) a=4;
+            if (a!=0) {
+              this.do=0;
+              touchHandler[face.pageCurr](a,this.x,this.y);
+            }
+        }else {
+            if (tp[1]==5||tp[1]==12)touchHandler[face.pageCurr](tp[1],this.x,this.y);
+        }
+	}else if (tp[3]==255) this.st=1;
+	this.tid=setTimeout(function(t){
+		t.tid=-1;
+		t.init();
+	},5,this);
+},
+exit:function(){
+	this.run=false;
+    if (this.tid>=0) clearTimeout(this.tid);
+    this.tid=-1;
+    return true;
+}
+};	
+}

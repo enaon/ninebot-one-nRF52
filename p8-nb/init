@@ -1,28 +1,23 @@
 E.setFlags({pretokenise:1});
+//watchdog
 E.kickWatchdog();
 function P8KickWd(){
   if(!D17.read())E.kickWatchdog();
 }
 var wdint=setInterval(P8KickWd,1000);
 E.enableWatchdog(15, false);
-
+//
 E.setTimeZone(3);
 var mem = () => {
  var m=process.memory();
  return m.free;
 };
 var erase= () => require("Storage").eraseAll();
-//var error=[];
-
-//startup
 NRF.setAdvertising({}, {name:"espruinoP8"});
-//p8 smart watch
+//themes
 var w;
 var pal;
-var offid=-1;
-var offms=5000;
-var fcurr=-1;
-var fprev=-1;
+//var offms=5000;
 col={
 	black:0,
 	white:4095,
@@ -78,7 +73,6 @@ var colo={
 };
 */
 Modules.addCached("P8",function(){
-const bpp=1;
 const pin = {
   BUTTON: D17,
   MOTOR: D16, 
@@ -102,7 +96,7 @@ const pin = {
 //require("Font8x16").add(Graphics);
 //require('FontTeletext10x18Ascii').add(Graphics);	
 require('Font7x11Numeric7Seg').add(Graphics);
-//pin.CHARGING.mode('input_pullup');
+//battery
 pin.BATTERY.mode('analog');
 const battery = () => 7.1 * (analogRead(pin.BATTERY));
 const charging = () => pin.CHARGING.read();
@@ -114,6 +108,8 @@ const battVoltage=function(s){
 	poke32(hexString,2); // disconnect pin for power saving, otherwise it draws 70uA more 
 	return v;
 };
+/*
+//pin.CHARGING.mode('input_pullup');
 const chargerVoltage=function(s){
     let  c=digitalRead(pin.CHARGING);
 	if (s)   c=6.61207596594*analogRead(pin.CHARGING);
@@ -121,15 +117,6 @@ const chargerVoltage=function(s){
 	poke32(hexString,2); // disconnect pin for power saving, otherwise it draws 70uA more
   return c;
 };
-/*
-//touch enable
-var i2c=new I2C();
-function touchInit() {
-	i2c.setup({scl:pin.TP_SCL, sda:pin.TP_SDA, bitrate:400000});
-	digitalPulse(pin.TP_RESET,1,[5,50]);
-}
-function touchRead(){return i2c.readFrom(0x15,8);}
-function touchWrite(reg,data){i2c.writeTo(0x15,reg,data);}
 */
 //screen driver
 var SPI2 = (function(){
@@ -172,7 +159,7 @@ function lcd_data(arr){
   pin.LCD_CS.set();
 }
 pin.LCD_RST.set();
-//var bpp=1; // powers of two work, 3=8 colors would be nice
+var bpp=1;
 var g=Graphics.createArrayBuffer(240,240,bpp);
 g.isOn=false;
 pal= Uint16Array([0x000,0xfff]);
@@ -273,7 +260,7 @@ module.exports = {
   battery: battery,
   charging: charging,
   battVoltage: battVoltage,
-  chargerVoltage: chargerVoltage,
+//  chargerVoltage: chargerVoltage,
   gfx: g
 };
 });

@@ -93,7 +93,6 @@ face[0] = {
     this.trpN=-1;
     this.conn="OFF";
     this.lock=2;
-	if(!g.isOn) g.on();
     this.run=true;
   },
   show : function(o){
