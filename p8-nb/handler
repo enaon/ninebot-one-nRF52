@@ -17,7 +17,7 @@ var face={
 	if (this.pageCurr==-1&&w.gfx.isOn) w.gfx.clear();
     if (this.offid!=-1) {clearTimeout(this.offid);this.offid=-1;}
     if (this.pagePrev!=-1) face[this.pagePrev].clear();
-  	if (this.pageCurr==-1 && this.pagePrev!=-1) {face[this.pagePrev].off();return;}
+  	if (this.pageCurr==-1 && this.pagePrev!=-1) {if (type=="TFK")tfk.exit();face[this.pagePrev].off();return;}
 	if (app!=this.appPrev) eval(require('Storage').read(app));
     //set offtime
     this.offms=face[page].offms;
@@ -31,13 +31,13 @@ var face={
     //start face
     if (arg){
       face[page].init(arg);	
-      if(!w.gfx.isOn) {w.gfx.on();if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);if (type=="TFK") tfk.init();}
+      if(!w.gfx.isOn) {w.gfx.on();if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);if (type=="TFK") {tfk.run=true;tfk.init();}}
 	  face[page].show(arg);
 	  this.pageArg=arg;
 	  return;
     }else{
       face[page].init();	
-      if(!w.gfx.isOn) {w.gfx.on();if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);if (type=="TFK") tfk.init();}
+      if(!w.gfx.isOn) {w.gfx.on();if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);if (type=="TFK") {tfk.run=true;tfk.init();}}
       face[page].show();
     }
   }
@@ -265,7 +265,9 @@ x:0,
 y:0,
 do:0,
 st:1,
+run:true,
 init:function(){
+	if (!this.run) return;
 	var tp=i2c.readFrom(0x15,7);
 	if (tp[3]==128) {
         if (this.st) {
