@@ -17,7 +17,7 @@ var face={
 	if (this.pageCurr==-1&&w.gfx.isOn) w.gfx.clear();
     if (this.offid!=-1) {clearTimeout(this.offid);this.offid=-1;}
     if (this.pagePrev!=-1) face[this.pagePrev].clear();
-  	if (this.pageCurr==-1 && this.pagePrev!=-1) {face[this.pagePrev].off();return;}
+  	if (this.pageCurr==-1 && this.pagePrev!=-1) {if (type=="TFK")tfk.loop=100;face[this.pagePrev].off();return;}
 	if (app!=this.appPrev) eval(require('Storage').read(app));
     //set offtime
     this.offms=face[page].offms;
@@ -265,11 +265,12 @@ x:0,
 y:0,
 do:0,
 st:1,
+loop:5,
 init:function(){
 	var tp=i2c.readFrom(0x15,7);
 	if (tp[3]==128) {
         if (this.st) {
-          if (face.pageCurr==-1){face.go(face.appCurr,0);return;}
+          if (face.pageCurr==-1){this.loop=5;face.go(face.appCurr,0);return;}
           this.st=0;
           this.do=1;
           this.x=tp[4];this.y=tp[6];
@@ -291,7 +292,7 @@ init:function(){
 	this.tid=setTimeout(function(t){
 		t.tid=-1;
 		t.init();
-	},5,this);
+	},this.loop,this);
 },
 exit:function(){
     if (this.tid>=0) clearTimeout(this.tid);
