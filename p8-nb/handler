@@ -31,13 +31,27 @@ var face={
     //start face
     if (arg){
       face[page].init(arg);	
-      if(!w.gfx.isOn) {w.gfx.on();if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);if (type=="TFK"&&tfk.tid==-1) {tfk.loop=5;tfk.init();}}
+      if(!w.gfx.isOn) {
+		  w.gfx.on();
+		  if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);
+		  if (type=="TFK"){
+			  tfk.loop=5;
+			  if( tfk.tid==-1) tfk.init();
+		  }
+	  }
 	  face[page].show(arg);
 	  this.pageArg=arg;
 	  return;
     }else{
       face[page].init();	
-      if(!w.gfx.isOn) {w.gfx.on();if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);if (type=="TFK"&&tfk.tid==-1) {tfk.loop=5;tfk.init();}}
+      if(!w.gfx.isOn) {
+		  w.gfx.on();
+		  if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);
+		  if (type=="TFK"){
+			  tfk.loop=5;
+			  if( tfk.tid==-1) tfk.init();
+		  }
+	  }
       face[page].show();
     }
   }
