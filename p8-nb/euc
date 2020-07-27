@@ -43,7 +43,7 @@ euc.tgl=function(){
   var p=w.pin.MOTOR;
   if (euc.conn!="OFF" ) {
     digitalPulse(p,1,[90,60,90]);  
-	if (global["\xFF"].timers[eTmp.reconnect] != "undefined" ||  euc.conn=="WAIT" || euc.conn=="ON") {
+	if (eTmp.reconnect>=0 ||  euc.conn=="WAIT" || euc.conn=="ON") {
     clearTimeout(eTmp.reconnect); eTmp.reconnect=-1;
     }
   	euc.conn="OFF";

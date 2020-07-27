@@ -1,22 +1,9 @@
 //main
 //E.setFlags({pretokenise:1});
-//if (set.cli) console.log("main start");
-//NRF.setServices(undefined, {uart : false});
-//NRF.setAdvertising({}, { connectable:false });
-//NRF.on('HID', function() { ... });
-/*
-NRF.on('disconnect',function() {
-set.bt=0;
-});  
-set.devices = [];
-NRF.on('connect',function(addr) {
-  set.devices.push(addr);
-  set.bt=1;
-});
-*/
 //face-main
 face[0] = {
   offms: 5000,
+  wake:0,
   init: function(){
     var g=w.gfx;
     var d=(Date()).toString().split(' ');
@@ -24,7 +11,7 @@ face[0] = {
     g.setColor(1,colo.bck1);
     g.fillRect(0,0,158,50); //date
     g.fillRect(162,0,239,50);//batt
-  g.setFont("Vector",22);
+  g.setFont("Vector",35);
     if (typeof set.push !== 'undefined') g.drawString(set.push,119-(g.stringWidth(set.push))/2,165); //info
     g.fillRect(0,200,78,239); //bottom1 memmory
     g.fillRect(82,200,158,239); //bottom 2 
@@ -34,11 +21,11 @@ face[0] = {
 //    g.fillRect(0,55,100,150);
 //    g.fillRect(105,55,239,150);
     g.setColor(0,colo.btnTxt);
-    g.setFont("Vector",28);
+    g.setFont("Vector",35);
 //    g.drawString(mem(),4,207); //memmory
 	g.drawString("AL",97,207); //Alarms
 //    g.drawString("EUC",167,207); //euc
-    g.setFont("Vector",28);
+    g.setFont("Vector",35);
     g.drawString(d[2]+" "+d[0].toUpperCase(), (81-(g.stringWidth(d[2]+" "+d[0].toUpperCase()))/2) ,9); //date
     g.setFont("7x11Numeric7Seg",4);
     g.drawString(this.v,239-(g.stringWidth(this.v)),3); //batt
@@ -51,7 +38,11 @@ face[0] = {
 	this.bt=-1;
 	alrm.btn=1;
     this.conn=-1;
-    this.run=true;
+//	if (this.wake==1) {
+	  this.run=true;
+      //return;
+//	}
+    this.wake++;
   },
   show : function(){
   if (!this.run) return;
@@ -66,7 +57,7 @@ face[0] = {
     g.setColor(0,colo.bck1);
     g.fillRect(0,55,100,150);
     g.setColor(1,colo.txt);
-    g.setFont("Vector",50);
+    g.setFont("Vector",60);
     g.drawString(t[0],10,75); //hours
 //  g.setFont("Vector",45);
 //  g.drawString(":",100,75);
@@ -76,7 +67,7 @@ face[0] = {
   if (t[1]!=this.min){
     this.min=t[1];
 //  g.drawString(":",100,75);
-    g.setFont("Vector",50);
+    g.setFont("Vector",60);
     g.setColor(0,colo.bck);
     g.fillRect(105,55,210,150);
     g.setColor(1,colo.txt1);//
@@ -87,7 +78,7 @@ face[0] = {
   g.setColor(0,colo.bck);
   g.fillRect(211,55,240,150);
   g.setColor(1,colo.btnTxt);//
-  g.setFont("Vector",26);
+  g.setFont("Vector",35);
   g.drawString(s[0],218,70); //seconds
   g.drawString(s[1],218,108); //seconds
   g.flip(); 
@@ -113,7 +104,7 @@ face[0] = {
     else g.setColor(0,colo.bck3);
 	g.fillRect(0,0,158,50); //date
     g.setColor(1,colo.btnTxt);
-    g.setFont("Vector",28);
+    g.setFont("Vector",35);
     g.drawString(d[2]+" "+d[0].toUpperCase(), (81-(g.stringWidth(d[2]+" "+d[0].toUpperCase()))/2) ,9); //date
 	g.flip();
   }
@@ -123,7 +114,7 @@ face[0] = {
     g.setColor(1,colo.btnDs1);
     g.fillRect(0,200,78,239); //bottom1 memmory
     g.setColor(0,colo.btnTxt);
-    g.setFont("Vector",20);
+    g.setFont("Vector",30);
     g.drawString(mem(),4,207); //memmory
     g.flip();
   }
@@ -137,7 +128,7 @@ face[0] = {
     else  g.setColor(0,colo.btnDs1);
 	g.fillRect(82,200,158,239); //bottom 2 alarms
 	g.setColor(1,this.c);
-	g.setFont("Vector",28);
+	g.setFont("Vector",35);
 	g.drawString("AL",97,207); //Alarms
 	g.flip();
   }
@@ -153,7 +144,7 @@ face[0] = {
     else g.setColor(0,colo.btnDs1);
     g.fillRect(162,200,239,239);
     g.setColor(1,colo.btnTxt);
-    g.setFont("Vector",28);
+    g.setFont("Vector",35);
     g.drawString("EUC",167,207); 
     g.flip();
   }
@@ -177,6 +168,7 @@ face[0] = {
     this.run=false;
     if (this.tid>=0) clearTimeout(this.tid);
     this.tid=-1;
+	this.wake=0;
     return true;
   },
   off: function(){
@@ -211,7 +203,8 @@ face[5] = {
     this.bri=-1;
     var d=(Date()).toString().split(' ');
     var t=(d[4]).toString().split(':');
-    g.setColor(1,colo.bck3);
+    g.clearRect(0,0,239,239); //all
+    g.setColor(0,colo.bck3);
     g.fillRect(0,0,75,75); //atc
     g.fillRect(80,0,155,75); //cli
     g.fillRect(160,0,239,75); //hid
@@ -219,17 +212,31 @@ face[5] = {
     g.fillRect(0,160,75,239); //torch
     g.fillRect(160,80,239,200);//brightness
     g.fillRect(160,201,239,239);//brightness text
-    g.setColor(0,colo.txt3);
-    g.setFont("Vector",22);
-    g.drawString("BT",19,27);   
+    g.setColor(1,colo.txt3);
+    g.setFont("Vector",30);
+    g.drawString("ATC",7,27);   
     g.drawString("CLI",93,27);   
     g.drawString("HID",175,27);   
-    g.drawString("TOR",8,195);
+//    g.drawString("TOR",8,195);
     g.drawString("BRI",175,200);   
-	g.setFont("Vector",18);
+	g.setFont("Vector",25);
     g.drawString("CALC",2,107);
+//        g.fillRect(0,0,239,239); //all
 
     g.flip();
+    g.setColor(0,colo.bck2);
+    g.fillRect(0,80,75,155); //calc
+    g.fillRect(0,160,75,239); //torch
+//    g.fillRect(160,80,239,200);//brightness
+//    g.fillRect(160,201,239,239);//brightness text
+    g.setColor(1,colo.txt1);
+    g.drawString("CALC",2,107);
+    g.setFont("Vector",30);
+//    g.drawString("BRI",175,200);   
+    g.drawString("TOR",8,195);
+    g.flip();
+//    pal[0]=0;
+    
     this.run=true;
   },
   show : function(){
@@ -246,11 +253,11 @@ face[5] = {
 	 if (set.atc!=this.atc) {
       this.atc=set.atc;
       this.c=colo.btnTxt;
-      if (this.atc===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
+      if (this.atc===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
       else g.setColor(0,colo.btnDs1);
       g.fillRect(0,0,75,75);//atc
       g.setColor(1,this.c);
-      g.setFont("Vector",22);
+      g.setFont("Vector",30);
       g.drawString("ATC",7,27);
       g.flip();
     }
@@ -258,11 +265,11 @@ face[5] = {
     if (set.cli!=this.cli) {
       this.cli=set.cli;
       this.c=colo.btnTxt;
-      if (this.cli===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
+      if (this.cli===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
       else g.setColor(0,colo.btnDs1);
       g.fillRect(80,0,155,75); //cli
       g.setColor(1,this.c);
-      g.setFont("Vector",22);
+      g.setFont("Vector",30);
       g.drawString("CLI",93,27);   
       g.flip();
     }
@@ -270,11 +277,11 @@ face[5] = {
     if (set.hid!=this.hid) {
       this.hid=set.hid;
       this.c=colo.btnTxt;
-      if (this.hid===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt;}
+      if (this.hid===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
       else g.setColor(0,colo.btnDs1);
       g.fillRect(160,0,239,75); //hid
       g.setColor(1,this.c);
-      g.setFont("Vector",22);
+      g.setFont("Vector",30);
       g.drawString("HID",176,27);   
       g.flip();
     }
@@ -294,10 +301,14 @@ face[5] = {
       this.bri=g.bri.lv;
       this.c=colo.btnTxt1;
 //      g.setColor(0,colo.bck);
-      g.clearRect(160,80,239,200);//brightness
+      g.clearRect(160,80,239,239);//brightness
       g.setColor(1,this.c);
-      pal[0]=colo.bck3;
-      g.setFont("Vector",35);
+      g.setFont("Vector",30);
+      g.drawString("BRI",175,200);   
+      if (this.bri>5) pal[0]=col.lgray;
+      else if (this.bri>3) pal[0]=col.gray;
+      else  pal[0]=col.dgray;
+      g.setFont("Vector",45);
       g.drawString(g.bri.lv,190,130);   
       g.flip();
     }
@@ -465,21 +476,3 @@ touchHandler[5]=function(e,x,y){
     }
    this.timeout();
 };
-
-//  g.setColor(1); //
-//  g.setColor(2);// Dgreen
-//  g.setColor(3);// Dgrey
-//  g.setColor(4);// Dred
-//  g.setColor(5);// Dpurple
-//  g.setColor(6);// Dorange
-//  g.setColor(7); //grey
-//  g.setColor(8);// Dark
-//  g.setColor(9); //Dblue
-//  g.setColor(10);// green
-//  g.setColor(11);// blue
-//  g.setColor(12);// red
-//  g.setColor(13);// purple
-//  g.setColor(14);// yellow
-//  g.setColor(15);// white
-//if (set.cli) console.log("main end");
-

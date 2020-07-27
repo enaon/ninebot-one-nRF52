@@ -142,7 +142,7 @@ var press=true;
 var l1=-1;
 var l2=-1;
 function buttonHandler(s){
-  if (global["\xFF"].watches[button]!="undefined") clearWatch(button);
+	if (button!=-1) {clearWatch(button);button=-1;}
   var p=w.pin.MOTOR;
   // button down
 if (s.state==true) { 
