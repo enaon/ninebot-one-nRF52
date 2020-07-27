@@ -8,6 +8,12 @@ https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v06.9_p8_
 
 https://github.com/fanoush/ds-d6/tree/master/espruino/DFU/P8
 
+
+#
+##### Use instructions:
+
+Flash espruino using daflasher app from atc1441, then upload at least init, handler and main files to the p8. Init should be uploaded to flash(allways), all other files should be uploaded to strorage by name given here. Select Pretokenise and Minification in the webide settings to save on ram. 
+
 #
 
 #### wip
