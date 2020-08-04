@@ -1,8 +1,12 @@
 //main
 //E.setFlags({pretokenise:1});
 //face-main
+
+
+
+
 face[0] = {
-  offms: 5000,
+  offms: 3000,
   wake:0,
   init: function(){
     var g=w.gfx;
@@ -193,7 +197,7 @@ face[1] = {
 };	
 //	
 face[5] = {
-  offms: 5000,
+  offms: 3000,
   init: function(){
     var g=w.gfx;
     this.cli=-1;
@@ -201,6 +205,7 @@ face[5] = {
     this.hid=-1;
     this.atc=-1;
     this.bri=-1;
+	this.acc=-1;
     var d=(Date()).toString().split(' ');
     var t=(d[4]).toString().split(':');
     g.clearRect(0,0,239,239); //all
@@ -296,7 +301,20 @@ face[5] = {
       g.drawString("CALC",1,107);
       g.flip();
     }
-*/	//brightness level
+*/	
+    //acc on/off
+    if (set.acc!=this.acc) {
+      this.acc=set.acc;
+      this.c=colo.btnTxt;
+      if (this.acc===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
+      else g.setColor(0,colo.btnDs1);
+      g.fillRect(80,80,155,155); //acc
+      g.setColor(1,this.c);
+      g.setFont("Vector",30);
+      g.drawString("ACC",88,107);   
+      g.flip();
+    }
+	//brightness level
     if (g.bri.lv!=this.bri) {
       this.bri=g.bri.lv;
       this.c=colo.btnTxt1;
@@ -423,6 +441,10 @@ touchHandler[5]=function(e,x,y){
 	  }else if(0<x&&x<75&&75<y&&y<157){
 		digitalPulse(p,1,[30,50,30]);
 		face.go("calc",0);return;
+	  }else if(77<x&&x<157&&77<y&&y<157){
+		set.acc=1-set.acc;
+		set.accR();
+		digitalPulse(p,1,[30,50,30]);
       }else if(0<x&&x<75&&158<y&&y<239){
         this.tor=1;
         this.b=w.gfx.bri.lv;

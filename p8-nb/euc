@@ -59,7 +59,7 @@ euc.tgl=function(){
 }
 //faces-main face
 face[0] = {
-  offms: 15000, //15 sec timeout
+  offms: 5000, //15 sec timeout
   spd:[],
   init: function(){
     var g=w.gfx;

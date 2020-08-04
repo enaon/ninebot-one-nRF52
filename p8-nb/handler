@@ -1,61 +1,108 @@
 //p8 touch controller type
-const type="TFK"; //TEH|TFK|TIN|-TIG not yet-
+const type="TEH"; //TEH|TFK|TIN|-TIG not yet-
 //face
 var face={
-  appCurr:"",
-  appPrev:"off",
+  appCurr:"main",
+  appPrev:"main",
   pageCurr:-1,
   pagePrev:-1,	
   pageArg:"",
   offid:-1,
   offms:-1,
+  off:function(page){ 
+      if (this.offid>=0) {clearTimeout(this.offid); this.offid=-1;}
+      if (face[this.pageCurr]!=-1) this.offms=face[this.pageCurr].offms;
+      this.offid=setTimeout((c)=>{
+        this.offid=-1;
+		if (type!="TEH") i2c.writeTo(0x15,0xa5,3); 
+		if (type=="TFK") tfk.exit();
+		if (set.acc&&acc.tid==-1) acc.on();
+		if (c===0) {
+			if (this.appCurr==="main") {
+				if (face[c].off) {face[c].off();this.pageCurr=-1;face.pagePrev=c;}
+			}else face.go(this.appCurr,1);
+		}else if (c>1) face.go(this.appCurr,0);
+	  },this.offms,this.pageCurr);
+  },
   go:function(app,page,arg){
     this.appPrev=this.appCurr;
 	this.pagePrev=this.pageCurr;
     this.appCurr=app;
     this.pageCurr=page;
 	if (this.pagePrev==-1&&w.gfx.isOn) {w.gfx.clear();w.gfx.off();}
-    if (this.offid!=-1) {clearTimeout(this.offid);this.offid=-1;}
     if (this.pagePrev!=-1) face[this.pagePrev].clear();
-  	if (this.pageCurr==-1 && this.pagePrev!=-1) {if (type=="TFK")tfk.loop=100;face[this.pagePrev].off();return;}
+  	if (this.pageCurr==-1 && this.pagePrev!=-1) {
+		if (type=="TFK")tfk.loop=100;
+		face[this.pagePrev].off();
+		if (set.acc&&acc.tid==-1) acc.on();
+		return;
+	}
 	if (app!=this.appPrev) eval(require('Storage').read(app));
     //set offtime
-    this.offms=face[page].offms;
-    this.offid=setTimeout((f)=>{
-      if (f!=-1 && face[f].off) face[f].off();
-      this.offid=-1;
-      this.pageCurr=-1;
-	  if (type!="TEH") i2c.writeTo(0x15,0xa5,3); 
-	  if (type=="TFK") tfk.exit();
-    },this.offms,this.pageCurr);
+	this.off(page);
     //start face
     if (arg){
       face[page].init(arg);	
-      if(!w.gfx.isOn) {
-		  w.gfx.on();
+      if(!w.gfx.isOn) {w.gfx.on();
 		  if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);
-		  if (type=="TFK"){
-			  tfk.loop=5;
-			  if( tfk.tid==-1) tfk.init();
-		  }
+		  if (type=="TFK"){tfk.loop=5;if( tfk.tid==-1) tfk.init();}
 	  }
 	  face[page].show(arg);
 	  this.pageArg=arg;
 	  return;
     }else{
       face[page].init();	
-      if(!w.gfx.isOn) {
-		  w.gfx.on();
+      if(!w.gfx.isOn) {w.gfx.on();
 		  if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);
-		  if (type=="TFK"){
-			  tfk.loop=5;
-			  if( tfk.tid==-1) tfk.init();
-		  }
+		  if (type=="TFK"){tfk.loop=5;if( tfk.tid==-1) tfk.init();}
 	  }
       face[page].show();
     }
   }
 };
+//settings 
+var set={
+  name:"p8enaon",
+  bt:0,
+  cli:1,
+  hid:0,
+  atc:0,
+  acc:1,
+  accR:function(){if (this.acc)acc.on(); else acc.off();},
+  hidM:undefined,
+  upd:function(){
+	if (this.atc==0 && this.cli==0 && this.hid==0) {
+		this.atcR=undefined;
+		this.atcW=undefined;
+		this.hidM=undefined;
+   		NRF.disconnect();
+        NRF.setServices(undefined, {uart : false});
+		NRF.setAdvertising({}, { connectable:false }); 
+//   		NRF.sleep();
+	} else {
+		NRF.setAdvertising({}, { name:this.name,connectable:true });
+		if (set.hid==1 && typeof this.hidM =="undefined")  this.hidM = require("ble_hid_controls");//enable hid
+		if (set.atc ==1) eval(require('Storage').read('atc'));
+		else {
+			NRF.setServices({}, {uart : Boolean(set.cli), hid:(set.hid)?this.hidM.report:undefined});
+		    this.atcR=undefined;
+		    this.atcW=undefined;
+		}
+		if (set.hid==0) this.hidM=undefined;
+	}
+  }
+};
+NRF.setAdvertising({}, {name:set.name});
+
+//ble state
+NRF.on('disconnect',function() {
+set.bt=0;
+});  
+//set.devices = [];
+NRF.on('connect',function(addr) {
+//  set.devices.push(addr);
+set.bt=1;
+});
 //charging notify
 setWatch(function(s){
   var co;
@@ -98,44 +145,6 @@ setWatch(function(s){
 	}  
     if(!g.isOn) g.on();
 },w.pin.CHARGING,{repeat:true, debounce:500,edge:0});  
-//settings 
-var set={
-  bt:0,
-  cli:1,
-  hid:0,
-  atc:0,
-  hidM:undefined,
-  upd:function(){
-	if (this.atc==0 && this.cli==0 && this.hid==0) {
-		this.atcR=undefined;
-		this.atcW=undefined;
-		this.hidM=undefined;
- 		NRF.disconnect();
-        NRF.setServices(undefined, {uart : false});
-        NRF.setAdvertising({}, { connectable:false }); 
-   		NRF.sleep();
-	} else {
-		NRF.setAdvertising({}, { name:"enaonP8",connectable:true });
-		if (set.hid==1 && typeof this.hidM =="undefined")  this.hidM = require("ble_hid_controls");//enable hid
-		if (set.atc ==1) eval(require('Storage').read('atc'));
-		else {
-			NRF.setServices({}, {uart : Boolean(set.cli), hid:(set.hid)?this.hidM.report:undefined});
-		    this.atcR=undefined;
-		    this.atcW=undefined;
-		}
-		if (set.hid==0) this.hidM=undefined;
-	}
-  }
-};
-//ble state
-NRF.on('disconnect',function() {
-set.bt=0;
-});  
-//set.devices = [];
-NRF.on('connect',function(addr) {
-//  set.devices.push(addr);
-set.bt=1;
-});
 //button 
 var button;
 var press=true;
@@ -147,17 +156,7 @@ function buttonHandler(s){
   // button down
 if (s.state==true) { 
     if ( l1 >=0) {clearTimeout(l1); l1=-1;}
-    if ( l2 >=0) {clearTimeout(l2);l2=-1;}
-    if ( face.offid >=0) {clearTimeout(face.offid);face.offid=-1;}
     press=true;
-    //reset ble UART on long press
-	l2=setTimeout(() => {
-        if (digitalRead(BTN)==1) {
-        NRF.setServices({},{uart:false});
-        NRF.setServices({},{uart:true});  
-		l2=setTimeout(() => {reset();}, 1000);
-	    }
-    }, 8000);
 	//toggle EUC on long press
     l1=setTimeout(() => {
       if (typeof euc !== 'undefined' ) {
@@ -170,7 +169,6 @@ if (s.state==true) {
     return;
 }else if (press==true && s.state==false)  { 
     if (l1 >=0) {clearTimeout(l1); l1=-1;}
-    if ( l2 >=0) {clearTimeout(l2);l2=-1;}
 	press=false;
 	if (face.pageCurr==-1) 
 		if (typeof euc !== 'undefined'){
@@ -183,7 +181,6 @@ if (s.state==true) {
     }
 } else {
     if ( l1 >=0) {clearTimeout(l1); l1=-1;}
-    if ( l2 >=0) {clearTimeout(l2); l2=-1;}
 }	
   button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:1});
 }
@@ -191,13 +188,7 @@ button=setWatch(buttonHandler,BTN1, {repeat:false, debounce:10,edge:0});
 //touch 
 var touchHandler = {
   timeout: function(){
-	if (face.offid>=0) {clearTimeout(face.offid); face.offid=-1;}
-    face.offid=setTimeout((f)=>{
-      if (f!=-1 && face[f].off) face[f].off();
-      face.offid=-1;face.pagePrev=f;face.pageCurr=-1;
-	  if (type!="TEH") i2c.writeTo(0x15,0xa5,3); 
-	  if (type=="TFK") tfk.exit();
-    },face.offms,face.pageCurr);
+	face.off();
   }
 };
 //touch init
@@ -209,7 +200,6 @@ var c;
 if (type=="TEH"){
 setWatch(function(s){
   var tp=i2c.readFrom(0x15,7);
-console.log(tp);
   if (face.pageCurr>=0) touchHandler[face.pageCurr](tp[1],tp[4],tp[6]);
   else if (tp[1]==5) {
     if (s.time-c<0.25) face.go(face.appCurr,0);
@@ -315,3 +305,89 @@ exit:function(){
 }
 };	
 }
+//accelerometer(wake on look)
+//i2c.writeTo(0x18,0x7e,0xb6);
+//i2c.writeTo(0x18,0x7d,0x04);
+i2c.writeTo(0x18,0x40,0x17);
+i2c.writeTo(0x18,0x7c,0x03);
+var acc={
+  loop:200,
+  tid:-1,
+  run:-1,
+  on:function(){i2c.writeTo(0x18,0x7d,0x04);i2c.writeTo(0x18,0x12);this.run=1;this.loop=200;this.init();},
+  off:function(){i2c.writeTo(0x18,0x7d,0x04);this.run=-1;},
+  init:function(){
+	if(this.run===-1) return;
+	var data=i2c.readFrom(0x18,6);
+	//console.log(data);
+	if  (data[1]<10||data[1]>=250) {
+		if (230<data[3]&&data[3]<245) {
+          if (!w.gfx.isOn){ if (typeof euc !== 'undefined'){if (euc.conn!="OFF") face.go("euc",0);else face.go(face.appCurr,0);}}
+		  else if (face.pageCurr!=-1) face.off();
+          this.loop=100;
+          //return;
+        }else if (245<data[3]) if (w.gfx.isOn&&face.pageCurr!=-1) face.off(); else this.loop=200;
+        else this.loop=400;
+	}	
+    this.tid=setTimeout(function(t){
+		t.tid=-1;
+		t.init(); 
+    },this.loop,this);
+  }
+};
+acc.on();
+//themes
+col={
+	black:0,
+	white:4095,
+	lblue:1535,
+	blue:143,
+	dblue:1375,
+	blue1:1708,
+	raf:1453,
+	raf1:1708,
+	raf2:1963,
+	raf3:2220,
+	raf4:2474,
+	raf5:3005,
+	olive:170,
+	gray:2730,
+	lgray:3003,
+	dgray:1365,
+	lgreen:1525,
+	red:3840,
+	dred:3925,
+	purple:3935,
+	yellow:4085
+};
+var colo={ txt: 4095, txt1: 1535, txt2: 1365, txt3: 0,
+  hdr: 1368, hTxt: 3003, bck: 1708, bck0: 0, bck1: 3003,
+  bck2: 2730, bck3: 1963, btnEn: 1453, btnEn1: 1535, btnEn2: 3935,
+  btnDs: 2730, btnDs1: 3003, btnDs2: 1963, btnAl: 4085, btnAl1: 3840,
+  btnSt: 3935, btnTxt: 0, btnTxt1: 4095 };
+/*
+var colo={
+	txt:col.white,
+	txt1:col.lblue,
+	txt2:col.dgray,
+	txt3:col.black,
+	hdr:col.dgray+3,
+	hTxt:col.lgray,
+	bck:col.raf1,
+	bck0:col.black,
+	bck1:col.lgray,
+	bck2:col.gray,
+	bck3:col.raf2,
+	btnEn:col.raf,
+	btnEn1:col.lblue,
+	btnEn2:col.purple,
+	btnDs:col.gray,
+	btnDs1:col.lgray,
+	btnDs2:col.raf2,
+	btnAl:col.yellow,
+	btnAl1:col.red,
+	btnSt:col.purple,
+	btnTxt:col.black,
+   	btnTxt1:col.white
+};
+*/

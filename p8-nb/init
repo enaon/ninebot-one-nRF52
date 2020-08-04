@@ -13,65 +13,10 @@ var mem = () => {
  return m.free;
 };
 var erase= () => require("Storage").eraseAll();
-NRF.setAdvertising({}, {name:"espruinoP8"});
-//themes
 var w;
 var pal;
 //var offms=5000;
-col={
-	black:0,
-	white:4095,
-	lblue:1535,
-	blue:143,
-	dblue:1375,
-	blue1:1708,
-	raf:1453,
-	raf1:1708,
-	raf2:1963,
-	raf3:2220,
-	raf4:2474,
-	raf5:3005,
-	olive:170,
-	gray:2730,
-	lgray:3003,
-	dgray:1365,
-	lgreen:1525,
-	red:3840,
-	dred:3925,
-	purple:3935,
-	yellow:4085
-};
-var colo={ txt: 4095, txt1: 1535, txt2: 1365, txt3: 0,
-  hdr: 1368, hTxt: 3003, bck: 1708, bck0: 0, bck1: 3003,
-  bck2: 2730, bck3: 1963, btnEn: 1453, btnEn1: 1535, btnEn2: 3935,
-  btnDs: 2730, btnDs1: 3003, btnDs2: 1963, btnAl: 4085, btnAl1: 3840,
-  btnSt: 3935, btnTxt: 0, btnTxt1: 4095 };
-/*
-var colo={
-	txt:col.white,
-	txt1:col.lblue,
-	txt2:col.dgray,
-	txt3:col.black,
-	hdr:col.dgray+3,
-	hTxt:col.lgray,
-	bck:col.raf1,
-	bck0:col.black,
-	bck1:col.lgray,
-	bck2:col.gray,
-	bck3:col.raf2,
-	btnEn:col.raf,
-	btnEn1:col.lblue,
-	btnEn2:col.purple,
-	btnDs:col.gray,
-	btnDs1:col.lgray,
-	btnDs2:col.raf2,
-	btnAl:col.yellow,
-	btnAl1:col.red,
-	btnSt:col.purple,
-	btnTxt:col.black,
-   	btnTxt1:col.white
-};
-*/
+
 Modules.addCached("P8",function(){
 const pin = {
   BUTTON: D17,
@@ -168,7 +113,13 @@ g.setColor=function(c,v){
   if (c==1) pal[1]=v; else pal[0]=v;
   g.sc(c);
 };
-const INITCMDS = [
+//const INITCMDS = [
+
+g.init=function(f){
+  lcd_cmd([0x11]); // sleep out
+  setTimeout(()=>{
+  g.bri.set(3);
+  [
   // This is an unrotated screen
   [0x36, 0],     // MADCTL
   [0x37,0,0],
@@ -191,41 +142,23 @@ const INITCMDS = [
   [0x2a,0,0,0,239],
   [0x2b,0,0,0,239],
   [0x2c]
-];
+  ].forEach((a)=>{lcd_cmd(a);});
+  if (f !== undefined) f();
+  else {g.clear();g.flip();g.off();} 
+  },120);
+};
+
 g.bri={
 	lv:3,
 	set:function(o){	
-	var l=pin.LCD_BL_L;
-	var m=pin.LCD_BL_M;
-	var h=pin.LCD_BL_H;
 	if (o) this.lv=o; else { this.lv++; if (this.lv>7) this.lv=1; o=this.lv; }
-	if (o===1) { l.reset();m.set();h.set();}
-	else if (o===1) { l.reset();m.set();h.set();}
-	else if (o===2) { l.set();m.reset();h.set();}
-	else if (o===3) { l.reset();m.reset();h.set();}
-	else if (o===4) { l.set();m.set();h.reset();}
-	else if (o===5) { l.reset();m.set();h.reset();}
-	else if (o===6) { l.set();m.reset();h.reset();}
-	else if (o===7) { l.reset();m.reset();h.reset();}
+	digitalWrite([pin.LCD_BL_H,pin.LCD_BL_M,pin.LCD_BL_L],7-o);
 	return o;
 	}
 };
-g.init=function(f){
-  lcd_cmd([0x11]); // sleep out
-  setTimeout(()=>{
-    E.defrag();
-	g.bri.set(3);
-    pin.LCD_CS.reset();
-    INITCMDS.forEach((a)=>{var cmd=E.toString(a);SPI2.cmd(E.getAddressOf(cmd,true),cmd.length);});
-    if (f !== undefined) f();
-    else {g.clear();g.flip();g.off();} 
-  },120);
-};
 g.off=function(){
   lcd_cmd([0x10]);
-  pin.LCD_BL_L.set();
-  pin.LCD_BL_M.set();
-  pin.LCD_BL_H.set();
+  digitalWrite([pin.LCD_BL_H,pin.LCD_BL_M,pin.LCD_BL_L],7);
   g.isOn=false;
 };
 g.on=function(){
@@ -267,11 +200,24 @@ module.exports = {
 w=require("P8");
 //load
 var alrm={start:0};
-w.gfx.init();
 digitalPulse(w.pin.MOTOR,1,[100,30,100,30,100]);
+w.gfx.init();
+//hold the button to stop loading if the p8 falls to a restart loop.
+if (!w.pin.BUTTON.read()) {
 eval(require('Storage').read('handler'));
 //eval(require('Storage').read('hid'));
 eval(require('Storage').read('alarm'));
 eval(require('Storage').read('euc'));
 eval(require('Storage').read('euc.md'));
 eval(require('Storage').read('main'));
+}else{
+  setWatch(function(){
+    NRF.setServices({},{uart:false});
+    NRF.setServices({},{uart:true});  
+	NRF.disconnect();
+    setTimeout(() => {
+      reset();
+    }, 500);
+},w.pin.BUTTON,{repeat:false, edge:"rising"}); 
+}
+  
