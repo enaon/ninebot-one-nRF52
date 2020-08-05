@@ -195,6 +195,22 @@ face[1] = {
   return true;
   },
 };	
+
+
+face[1] = {
+  offms:1000,
+  init: function(){
+  return true;
+  },
+  show : function(){
+    face.go("euc",0);
+    return true;
+  },
+  clear: function(){
+  return true;
+  },
+};	
+
 //	
 face[5] = {
   offms: 3000,

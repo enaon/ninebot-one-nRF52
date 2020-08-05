@@ -38,26 +38,14 @@ var face={
 		return;
 	}
 	if (app!=this.appPrev) eval(require('Storage').read(app));
-    //set offtime
 	this.off(page);
-    //start face
-    if (arg){
-      face[page].init(arg);	
-      if(!w.gfx.isOn) {w.gfx.on();
-		  if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);
-		  if (type=="TFK"){tfk.loop=5;if( tfk.tid==-1) tfk.init();}
-	  }
-	  face[page].show(arg);
-	  this.pageArg=arg;
-	  return;
-    }else{
-      face[page].init();	
-      if(!w.gfx.isOn) {w.gfx.on();
-		  if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);
-		  if (type=="TFK"){tfk.loop=5;if( tfk.tid==-1) tfk.init();}
-	  }
-      face[page].show();
-    }
+	face[page].init(arg);	
+	if(!w.gfx.isOn) {w.gfx.on();
+		if (type!="TEH") digitalPulse(w.pin.TP_RESET,1,[10,50]);
+		if (type=="TFK"){tfk.loop=5;if( tfk.tid==-1) tfk.init();}
+	}
+	face[page].show(arg);
+	this.pageArg=arg;
   }
 };
 //settings 
@@ -72,37 +60,25 @@ var set={
   hidM:undefined,
   upd:function(){
 	if (this.atc==0 && this.cli==0 && this.hid==0) {
-		this.atcR=undefined;
-		this.atcW=undefined;
-		this.hidM=undefined;
-   		NRF.disconnect();
-        NRF.setServices(undefined, {uart : false});
-		NRF.setAdvertising({}, { connectable:false }); 
+		this.atcR=undefined;this.atcW=undefined;
+		this.hidM=undefined;NRF.disconnect();
+        NRF.setServices(undefined,{uart:false});
+		NRF.setAdvertising({},{connectable:false}); 
 //   		NRF.sleep();
 	} else {
 		NRF.setAdvertising({}, { name:this.name,connectable:true });
-		if (set.hid==1 && typeof this.hidM =="undefined")  this.hidM = require("ble_hid_controls");//enable hid
+		if (set.hid==1 && typeof this.hidM =="undefined") this.hidM=require("ble_hid_controls");//enable hid
 		if (set.atc ==1) eval(require('Storage').read('atc'));
-		else {
-			NRF.setServices({}, {uart : Boolean(set.cli), hid:(set.hid)?this.hidM.report:undefined});
-		    this.atcR=undefined;
-		    this.atcW=undefined;
-		}
+		else {NRF.setServices({},{uart:Boolean(set.cli),hid:(set.hid)?this.hidM.report:undefined});
+		    this.atcR=undefined;this.atcW=undefined;}
 		if (set.hid==0) this.hidM=undefined;
 	}
   }
 };
 NRF.setAdvertising({}, {name:set.name});
-
 //ble state
-NRF.on('disconnect',function() {
-set.bt=0;
-});  
-//set.devices = [];
-NRF.on('connect',function(addr) {
-//  set.devices.push(addr);
-set.bt=1;
-});
+NRF.on('disconnect',function() {set.bt=0;});  
+NRF.on('connect',function(addr) {set.bt=1;});
 //charging notify
 setWatch(function(s){
   var co;
@@ -116,31 +92,19 @@ setWatch(function(s){
   }
   if (face.pageCurr<0){
 	if (face.offid==-1){ g.clear();g.flip();}
-	g.setColor(0,col.lgray);
-	g.fillRect(63,0,178,239);
-	g.setColor(1,col.black);
-	g.drawRect(100,58,140,89);
-	g.drawRect(101,59,139,89);
-	g.drawRect(102,60,138,88);
-	g.drawRect(90,88,150,147);
-	g.drawRect(91,89,149,146);
-	g.drawRect(92,90,148,145);
-	g.drawRect(104,145,137,166);
-	g.drawRect(105,146,136,165);
-	g.drawRect(106,147,135,164);
-	g.drawRect(115,166,126,229);
-	g.drawRect(116,166,125,228);
-	g.drawRect(117,166,124,227);
-	g.flip();
-	g.setColor(1,co);
-	g.fillRect(93,91,147,144);
-   	g.setColor(0,col.black);
-	g.flip();
+	g.setColor(0,col.lgray);g.fillRect(63,0,178,239);
+	g.setColor(1,col.black);g.drawRect(100,58,140,89);
+	g.drawRect(101,59,139,89);g.drawRect(102,60,138,88);
+	g.drawRect(90,88,150,147);g.drawRect(91,89,149,146);
+	g.drawRect(92,90,148,145);g.drawRect(104,145,137,166);
+	g.drawRect(105,146,136,165);g.drawRect(106,147,135,164);
+	g.drawRect(115,166,126,229);g.drawRect(116,166,125,228);
+	g.drawRect(117,166,124,227);g.flip();
+	g.setColor(1,co);g.fillRect(93,91,147,144);
+   	g.setColor(0,col.black);g.flip();
 	if (face.offid!==-1) clearTimeout(face.offid);
 	  face.offid=setTimeout(()=>{
-        g.clear();
-		g.off();
-		face.offid=-1;
+        g.clear();g.off();face.offid=-1;
       },2000);
 	}  
     if(!g.isOn) g.on();
@@ -149,25 +113,21 @@ setWatch(function(s){
 var button;
 var press=true;
 var l1=-1;
-var l2=-1;
 function buttonHandler(s){
-	if (button!=-1) {clearWatch(button);button=-1;}
+  if (button!=-1) {clearWatch(button);button=-1;}
   var p=w.pin.MOTOR;
   // button down
-if (s.state==true) { 
+  if (s.state==true) { 
     if ( l1 >=0) {clearTimeout(l1); l1=-1;}
     press=true;
 	//toggle EUC on long press
     l1=setTimeout(() => {
       if (typeof euc !== 'undefined' ) {
-		euc.tgl();
-        face.go("euc",0);
-		press=false;
-	  }
+		euc.tgl();face.go("euc",0);press=false;}
     }, 1000);
     button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:-1});
     return;
-}else if (press==true && s.state==false)  { 
+  }else if (press==true && s.state==false)  { 
     if (l1 >=0) {clearTimeout(l1); l1=-1;}
 	press=false;
 	if (face.pageCurr==-1) 
@@ -179,9 +139,9 @@ if (s.state==true) {
       if (to>=2) to=0;
       face.go(face.appCurr,to);
     }
-} else {
+  } else {
     if ( l1 >=0) {clearTimeout(l1); l1=-1;}
-}	
+  }	
   button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:1});
 }
 button=setWatch(buttonHandler,BTN1, {repeat:false, debounce:10,edge:0});
@@ -191,7 +151,7 @@ var touchHandler = {
 	face.off();
   }
 };
-//touch init
+//touch controller
 //var i2c=I2C1;
 var i2c=new I2C();
 i2c.setup({scl:w.pin.TP_SCL, sda:w.pin.TP_SDA, bitrate:100000});
@@ -306,8 +266,6 @@ exit:function(){
 };	
 }
 //accelerometer(wake on look)
-//i2c.writeTo(0x18,0x7e,0xb6);
-//i2c.writeTo(0x18,0x7d,0x04);
 i2c.writeTo(0x18,0x40,0x17);
 i2c.writeTo(0x18,0x7c,0x03);
 var acc={

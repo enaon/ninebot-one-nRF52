@@ -16,7 +16,6 @@ NRF.setServices({
      },
    },
 }, { advertise: ['0x190A'], uart : true });
-//NRF.setAdvertising({}, {name:"ATCds"});
 
 
 var atcR= function(evt){
