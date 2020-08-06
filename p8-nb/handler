@@ -272,8 +272,10 @@ exit:function(){
 };	
 }
 //accelerometer(wake on look)
-i2c.writeTo(0x18,0x40,0x17);
-i2c.writeTo(0x18,0x7c,0x03);
+if (acctype==="BMA421"){
+	i2c.writeTo(0x18,0x40,0x17);
+	i2c.writeTo(0x18,0x7c,0x03);
+}
 var acc={
   loop:200,
   tid:-1,
