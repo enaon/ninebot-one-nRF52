@@ -304,7 +304,7 @@ var acc={
           //return;
         }else if (250<data[3]) if (w.gfx.isOn&&face.pageCurr!=-1) face.off(); else this.loop=200;
         else this.loop=300;
-   	console.log(data);
+   	//console.log(data);
 	}	
     this.tid=setTimeout(function(t){
 		t.tid=-1;
