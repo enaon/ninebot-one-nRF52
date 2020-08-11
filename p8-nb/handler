@@ -1,6 +1,6 @@
 //p8 touch controller type
-const touchtype="816s"; //716|816|816s
-const acctype="SC7A20"; //BMA421|SC7A20
+const touchtype="816"; //716|816|816s
+const acctype="BMA421"; //BMA421|SC7A20
 //face
 var face={
   appCurr:"main",
@@ -38,6 +38,7 @@ var face={
 		if (touchtype=="716")tfk.loop=100;
 		face[this.pagePrev].off();
 		if (set.acc&&acc.tid==-1) acc.on();
+		if (this.offid>=0) {clearTimeout(this.offid); this.offid=-1;}
 		return;
 	}
 	if (app!=this.appPrev) eval(require('Storage').read(app));
@@ -53,7 +54,7 @@ var face={
 };
 //settings 
 var set={
-  name:"p8enaon-tinb",
+  name:"p8enaon",
   bt:0,
   cli:1,
   hid:0,
@@ -167,7 +168,7 @@ setWatch(function(s){
   else if (tp[1]==5) {
     if (s.time-c<0.25) face.go(face.appCurr,0);
     c=s.time;
-  }else if (tp[1]==1) face.go(face.appCurr,0);
+  }else if (/*tp[1]==1||*/tp[1]==3) face.go(face.appCurr,0);
 },w.pin.TP_INT,{repeat:true, edge:"rising"}); 
 }else if (touchtype=="816s"){
 var lt,xt,yt,tt,tf;

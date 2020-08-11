@@ -391,7 +391,7 @@ touchHandler[0]=function(e,x,y){
 		face.go("main",5);return;
 	  } else digitalPulse(p,1,40);
     }else if  (e==3){
-      digitalPulse(p,1,40);
+		face.go("repelent",0);return;
     }else if  (e==4){		
 	  face.go("main",0);return;
     }else if  (e==12){
