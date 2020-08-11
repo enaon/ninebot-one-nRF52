@@ -77,7 +77,11 @@ eTmp.trpN="-1";
 euc.spdC=col.black;
 eTmp.rssi="-70";
 
-if ( global["\xFF"].BLE_GATTS!="undefined") {global["\xFF"].BLE_GATTS.disconnect(); if (set.cli) console.log("error"); return;}
+if ( global["\xFF"].BLE_GATTS!="undefined") {
+	if (global["\xFF"].BLE_GATTS.connected) global["\xFF"].BLE_GATTS.disconnect();
+	if (set.cli) console.log("error");
+	return;
+}
 NRF.connect(euc.mac,{minInterval:7.5, maxInterval:7.5})
 .then(function(g) {
    return g.getPrimaryService(0xffe0);
