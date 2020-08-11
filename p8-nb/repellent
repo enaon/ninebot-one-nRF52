@@ -64,8 +64,8 @@ face[0]= {
     g.setColor(0,col.black);//header txt
     g.setFont("Vector",25);
 	g.drawString("INSECT",4,3); 
-    g.setFont("Vector",21);
-  	g.drawString("REPELENT",4,28); 
+    g.setFont("Vector",20);
+  	g.drawString("REPELLENT",4,28); 
     g.flip();
 	this.bat=0;
 	this.med=0;
