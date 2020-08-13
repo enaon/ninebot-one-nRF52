@@ -1,7 +1,7 @@
 if (!global.rep){
 global.rep={
 gatt:0,characteristic:0,service:0,device:0,bat:-1,med:-1,sta:0,
-mac:[],go:-1,
+mac:[],go:0,
 find:function(){
   if(global["\xFF"].BLE_GATTS!=undefined) return;
   NRF.requestDevice({ filters: [{serviceData:{fe95:{}} }] }).then(function(d) {
@@ -84,12 +84,25 @@ face[0]= {
   },
   show : function(){
     if (!this.run) return;
+    var g=w.gfx;
     if (rep.mac[rep.go]==undefined){
-      rep.scan();
-      face.go("repellent",5);return;
+	  if (rep.go==-1) {
+		g.setColor(1,col.dgray);
+		g.fillRect(0,55,239,195);//batt
+		g.setColor(0,col.white);
+		g.setFont("Vector",30);
+        g.drawString("DEVICE",120-(g.stringWidth("DEVICE")/2),75); //batt
+		g.drawString("NOT FOUND",120-(g.stringWidth("NOT FOUND")/2),125); //batt
+		g.setFont("Vector",20);
+		g.drawString("TOUCH TO SCAN",120-(g.stringWidth("TOUCH TO SCAN")/2),165); //batt
+		g.flip();
+	  }else{
+		rep.scan();
+		face.go("repellent",5);
+	  }
+	return;
     }
     rep.read();
-    var g=w.gfx;
     if(rep.con!=this.con) {
       this.con=rep.con;
 	  g.setColor(1,col.raf3);
