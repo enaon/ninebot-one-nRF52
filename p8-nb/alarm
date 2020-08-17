@@ -282,7 +282,7 @@ touchHandler[0]=function(e,x,y){
         else w.gfx.bri.set(this.bri);
 		digitalPulse(p,1,[30,50,30]);
       }else if (y>200) {  
-		face.go("main",5);return;
+		face.go("settings",0);return;
 	  } else digitalPulse(p,1,40);
     }else if  (e==3){
 	  if(39<y&&y<105) {
@@ -345,7 +345,7 @@ touchHandler[5]=function(e,x,y){
 		alrm[a].min++;
 		if (alrm[a].min>59) {alrm[a].min=alrm[a].min-60; alrm[a].hour=alrm[a].hour+1;}
       }else if (y>200) {
-		face.go("main",5);return;
+		face.go("settings",0);return;
 	  } else digitalPulse(p,1,40);
     }else if  (e==1){
 	  if(x<30&&y<185) { 
