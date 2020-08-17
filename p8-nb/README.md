@@ -15,7 +15,7 @@ https://github.com/fanoush/ds-d6/tree/master/espruino/DFU/P8
 
 Flash espruino using daflasher app from atc1441, then upload at least init, handler and main files to the p8. Init should be uploaded to flash(allways), all other files should be uploaded to strorage by name given here. Select Pretokenise and Minification in the webide settings to save on ram. 
 
-Change the 'type' variable inside the handler file to match the touch controller on your p8. All types are emulated as an 816(TEH) (gestures happen before finger leaves the screen) by the handler. 
+Change the 'type' variable inside the handler file to match the touch controller and accelerometer on your p8. All types are emulated as an 816(TEH) (gestures happen before finger leaves the screen) by the handler. 
 
 #
 
