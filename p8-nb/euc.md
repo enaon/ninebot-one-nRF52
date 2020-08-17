@@ -1,6 +1,6 @@
 Modules.addCached("Euc",function(){
 
-face.eRun=1;
+//face.eRun=1;
 const eTmp = {
   spd: ["0","0"], 
   amp: "0", 

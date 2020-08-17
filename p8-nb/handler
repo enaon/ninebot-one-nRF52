@@ -1,4 +1,4 @@
-//p8 touch controller type
+//set p8 type
 const touchtype="816"; //716|816|816s
 const acctype="BMA421"; //BMA421|SC7A20
 //face
@@ -16,7 +16,7 @@ var face={
       this.offid=setTimeout((c)=>{
         this.offid=-1;
 		if (set.acc&&acc.tid==-1) acc.on();
-		if (c===0) {
+		if (c===0||c===2) {
 			if (this.appCurr==="main") {
 				if (face[c].off) {
 					if (touchtype!="816") i2c.writeTo(0x15,0xa5,3); 
@@ -41,7 +41,10 @@ var face={
 		if (this.offid>=0) {clearTimeout(this.offid); this.offid=-1;}
 		return;
 	}
-	if (app!=this.appPrev) eval(require('Storage').read(app));
+	if (app!=this.appPrev) {
+      face[1]=0;face[2]=0;face[5]=0;
+      eval(require('Storage').read(app));
+    }
 	this.off(page);
 	face[page].init(arg);	
 	if(!w.gfx.isOn) {w.gfx.on();
@@ -54,11 +57,12 @@ var face={
 };
 //settings 
 var set={
-  name:"p8enaon",
+  name:"p8enaon-teh-b",
   bt:0,
   cli:1,
   hid:0,
   atc:0,
+  tor:0,
   acc:1,
   accR:function(){if (this.acc)acc.on(); else acc.off();},
   hidM:undefined,
@@ -152,7 +156,7 @@ button=setWatch(buttonHandler,BTN1, {repeat:false, debounce:10,edge:0});
 //touch 
 var touchHandler = {
   timeout: function(){
-	face.off();
+	face.off(this.fto);
   }
 };
 //touch controller
@@ -281,9 +285,10 @@ var acc={
   loop:200,
   tid:-1,
   run:-1,
+  up:0,
   on:function(){
 	if (acctype==="BMA421"){i2c.writeTo(0x18,0x7d,0x04);i2c.writeTo(0x18,0x12);
-	}else i2c.writeTo(0x18,0x03);
+	}else i2c.writeTo(0x18,0x01);
 	this.run=1;this.loop=200;this.init();},
   off:function(){if (acctype==="BMA421")i2c.writeTo(0x18,0x7d,0x04);this.run=-1;},
   init:function(){
@@ -291,24 +296,31 @@ var acc={
     var data;
 	if (acctype=="BMA421") data=i2c.readFrom(0x18,6);
     else {
-      data={}; data[1]=i2c.readFrom(0x18,1)+"";
+      data={}; data[3]=i2c.readFrom(0x18,1)+"";
     } 
 	//console.log(data);
-	if  (data[1]<15||data[1]>=250) {
+	if (230<data[3]&&data[3]<250) {
 		if (acctype!="BMA421"){
-		    i2c.writeTo(0x18,1);
-			data[3]=i2c.readFrom(0x18,1)+"";
+		    i2c.writeTo(0x18,3);
+			data[1]=i2c.readFrom(0x18,1)+"";
 		    i2c.writeTo(0x18,3);
 		}
-		if (230<data[3]&&data[3]<250) {
-          if (!w.gfx.isOn){ if (typeof euc !== 'undefined'){if (euc.conn!="OFF") face.go("euc",0);else face.go(face.appCurr,0);}}
-		  else if (face.pageCurr!=-1) face.off();
-          this.loop=500;
-          //return;
-        }else if (250<data[3]) if (w.gfx.isOn&&face.pageCurr!=-1) face.off(); else this.loop=200;
-        else this.loop=300;
-   	//console.log(data);
-	}	
+		if (data[1]<15||data[1]>=250) {
+		  if (!w.gfx.isOn&&this.up==0){ 
+            this.up=1; 
+            if (typeof euc !== 'undefined'&&euc.conn!="OFF") face.go("euc",0);
+            else{ 
+				this.loop=1500;
+				if (face.appCurr=="main") face.go("main",2);
+				else face.go(face.appCurr,0);
+			}
+		  }else if (w.gfx.isOn&&face.pageCurr!=-1) {
+			if (face.appCurr=="main" && face.pageCurr==2) face.go("main",0);
+			else if (set.tor!=1) face.off();
+//			this.loop=500;
+		  }
+		}
+    }else {this.loop=300;this.up=0;}
     this.tid=setTimeout(function(t){
 		t.tid=-1;
 		t.init(); 

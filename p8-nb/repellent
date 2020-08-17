@@ -91,10 +91,10 @@ face[0]= {
 		g.fillRect(0,55,239,195);//batt
 		g.setColor(0,col.white);
 		g.setFont("Vector",30);
-        g.drawString("DEVICE",120-(g.stringWidth("DEVICE")/2),75); //batt
-		g.drawString("NOT FOUND",120-(g.stringWidth("NOT FOUND")/2),125); //batt
+        g.drawString("DEVICE",120-(g.stringWidth("DEVICE")/2),70); //batt
+		g.drawString("NOT FOUND",120-(g.stringWidth("NOT FOUND")/2),115); //batt
 		g.setFont("Vector",20);
-		g.drawString("TOUCH TO SCAN",120-(g.stringWidth("TOUCH TO SCAN")/2),165); //batt
+		g.drawString("TOUCH TO SCAN",120-(g.stringWidth("TOUCH TO SCAN")/2),170); //batt
 		g.flip();
 	  }else{
 		rep.scan();
@@ -124,7 +124,7 @@ face[0]= {
       }else{
       g.setFont("Vector",45);
       g.drawString(this.bat+"%",60-(g.stringWidth(this.bat+"%")/2),95); //batt
-      g.setFont("Vector",24);
+      g.setFont("Vector",23);
       g.drawString((this.bat*1.5|0)+" DAYS",60-(g.stringWidth((this.bat*1.5|0)+" DAYS")/2),170);
       g.setFont("Vector",21);
       g.drawString("BATTERY",60-(g.stringWidth("BATTERY")/2),60); //batt
@@ -145,7 +145,7 @@ face[0]= {
       }else{
       g.setFont("Vector",45);
       g.drawString(this.med+"%",185-(g.stringWidth(this.med+"%")/2),95); //med
-      g.setFont("Vector",24);
+      g.setFont("Vector",23);
       g.drawString((this.med*0.9|0)+" DAYS",183-(g.stringWidth((this.med*0.9|0)+" DAYS")/2),170);
       g.setFont("Vector",21);
       g.drawString("MEDICINE",183-(g.stringWidth("MEDICINE")/2),60); //med
@@ -326,7 +326,7 @@ touchHandler[0]=function(e,x,y){
         else w.gfx.bri.set(this.bri);
 		digitalPulse(p,1,[30,50,30]);
       }else if (y>200) {  
-		face.go("main",5);return;
+		face.go("settings",0);return;
 	  } else digitalPulse(p,1,40);
     }else if  (e==3){
 	  face.go("main",0);return;
@@ -376,7 +376,7 @@ touchHandler[0]=function(e,x,y){
         else w.gfx.bri.set(this.bri);
 		digitalPulse(p,1,[30,50,30]);
       }else if (y>200) {  
-		face.go("main",5);return;
+		face.go("settings",0);return;
 	  } else digitalPulse(p,1,40);
     }else if  (e==3){
 	  digitalPulse(p,1,40);    

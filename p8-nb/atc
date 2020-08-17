@@ -46,6 +46,7 @@ var atcR= function(evt){
 		atcW("BT+VER:sdk11");
 		} else if (srt == "AT+VER") {
 		atcW("AT+VER:"+process.version);
+		digitalPulse(w.pin.MOTOR,1,[80,50,80]);
 		} else if (srt == "AT+SN") {
 		atcW("AT+SN:Espruino");
 		} else if (srt.substring(0, 12) == "AT+CONTRAST=") {

@@ -259,7 +259,7 @@ touchHandler[0]=function(e,x,y){
         else w.gfx.bri.set(this.bri);
 		digitalPulse(p,1,[30,50,30]);
       }else if (y>200) {  
-		face.go("main",5);return;
+		face.go("settings",0);return;
       }else digitalPulse(p,1,40);
 //slide left
     }else if  (e==3){

@@ -388,7 +388,7 @@ touchHandler[0]=function(e,x,y){
         else w.gfx.bri.set(this.bri);
 		digitalPulse(p,1,[30,50,30]);
      }else if (y>190) {
-		face.go("main",5);return;
+		face.go("settings",0);return;
 	  } else digitalPulse(p,1,40);
     }else if  (e==3){
 		face.go("repellent",0);return;
