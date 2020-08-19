@@ -52,7 +52,7 @@ var atcR= function(evt){
 		} else if (srt.substring(0, 12) == "AT+CONTRAST=") {
 		var ct = srt.substring(12);
 		if (ct == "100")
-		set_backlight(1);
+		w.gfx.bri.set(1);
 		else if (ct == "175")
 		w.gfx.bri.set(3);
 		else w.gfx.bri.set(7);

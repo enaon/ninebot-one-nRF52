@@ -204,7 +204,7 @@ face[0] = {
   	g.drawString(euc.time,192-(g.stringWidth(euc.time)/2),90); 
     g.flip();
 	if (euc.conn=="OFF" && euc.lock==1){
-    this.exit();if (set.cli) console.log("faceEUCexited");
+    this.exit(); //if (set.cli) console.log("faceEUCexited");
     }
     }
 //rest
@@ -436,12 +436,12 @@ touchHandler[5]=function(e,x,y){
         eTmp.count=euc.rdmd+24;
       //reset mileage
       }else if (x<115 && y>145) {
-        if (set.cli) console.log("reset mileage");
+        //if (set.cli) console.log("reset mileage");
         digitalPulse(p,1,300);  
         euc.trpL="0.0";
 	  //toggle EUC auto lock
 	  }else if (x<115 && (80<y&&y<145)) {
-        if (set.cli) console.log("toggle alock");
+        //if (set.cli) console.log("toggle alock");
         digitalPulse(p,1,300);  
         euc.alck=1-euc.alck;
       }else digitalPulse(p,1,40);
