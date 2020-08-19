@@ -16,25 +16,54 @@ face[0] = {
 	btnTxt:col.black,
     btnTxt1:col.white
   },
-  init: function(){
+  init: function(){	  
     var g=w.gfx;
-    g.setColor(1,this.col.bck);
-    g.fillRect(0,0,75,75);//play/pause
-    g.fillRect(80,0,155,75);//prev
-    g.fillRect(160,0,239,75); //next
-	g.fillRect(0,80,75,155); //stop
-    g.fillRect(0,160,75,239); //stop
-    g.fillRect(80,80,239,239);//Vol up/dn
-    g.setColor(0,col.black);
+	if (set.hid!=1){
+		g.setColor(0,col.black);
+		g.clearRect(1,0,239,239);
+		g.setColor(1,col.white);
+		g.setFont("Vector",25);
+		g.drawString("HID DISABLED",30,0);
+		g.setFont("Vector",20);
+		g.drawString("LONG PRESS",60,100);
+		g.drawString("TOGGLE IN SETTINGS",10,140);
+		g.drawString("TO ENABLE",60,200);
+		g.flip();	
+	}else{
+	
+	g.clearRect(1,0,239,239);
+	g.flip();
     g.setFont("Vector",18);
-    g.drawString("PLAY",15,27);
-	g.drawString("PREV",93,27);
-	g.drawString("NEXT",170,27);
-	g.drawString("STOP",15,100);
-	g.drawString("VOL UP",140,100);   
-	g.drawString("VOL DN",140,140);   
+    g.setColor(1,this.col.bck);
+	g.fillRect(0,0,75,75);//play/pause
+	g.setColor(0,col.white);
+	g.drawString("PLAY",15,27);
+	g.flip();
+	g.setColor(1,this.col.bck);
+    g.fillRect(80,0,155,75);//prev
+    g.setColor(0,col.white);
+	g.drawString("PREV",98,27);
+	g.flip();	
+	g.setColor(1,this.col.bck);
+    g.fillRect(160,0,239,75); //next
+	g.setColor(0,col.white);
+	g.drawString("NEXT",180,27);
+	g.flip();	
+    g.setColor(1,this.col.bck);
+	g.fillRect(0,80,75,155); //stop
+//    g.fillRect(0,160,75,239); //
+	g.setColor(0,col.white);
+	g.drawString("STOP",15,110);
+	g.flip();
+    g.setColor(1,this.col.bck);
+    g.fillRect(80,80,239,239);//Vol up/dn
+    g.setColor(0,col.white);
+    g.setFont("Vector",22);
+	g.drawString("VOL UP",110,115);   
+	g.drawString("VOL DN",110,190);   
     g.flip();
 //    this.run=true;
+	}
   },
   show : function(){
     if (!this.run) return;
