@@ -241,8 +241,7 @@ touchHandler[0]=function(e,x,y){
 		set.upd();
 		digitalPulse(p,1,[30,50,30]);
       }else if(158<x&&x<239&&y<75){
-		set.hid=1-set.hid;
-		set.upd();
+		face.go("hid",0);return;
 		digitalPulse(p,1,[30,50,30]);
 	  }else if(0<x&&x<75&&75<y&&y<157){
 		digitalPulse(p,1,[30,50,30]);

@@ -304,7 +304,7 @@ var acc={
 		if (acctype!="BMA421"){
 		    i2c.writeTo(0x18,3);
 			data[1]=i2c.readFrom(0x18,1)+"";
-		    i2c.writeTo(0x18,3);
+		    i2c.writeTo(0x18,1);
 		}
 		if (data[1]<15||data[1]>=250) {
 		  if (!w.gfx.isOn&&this.up==0&&face.appCurr!=""){ 
