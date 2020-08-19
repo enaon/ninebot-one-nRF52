@@ -70,7 +70,6 @@ var atcR= function(evt){
 			setTime((date-0).toFixed().substring(0, 10));		
 			//console.log("Time set to :",date);
 			atcW("AT+DT:" + i[1]);
-			set.boot=getTime();
 		} else if (srt.substring(0, 5) == "AT+DT") {
 		}
 };
