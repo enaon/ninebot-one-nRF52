@@ -134,7 +134,7 @@ function buttonHandler(s){
       if (typeof euc !== 'undefined' ) {
 		euc.tgl();face.go("euc",0);press=false;}
     }, 1000);
-    button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:-1});
+    button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:0});
     return;
   }else if (press==true && s.state==false)  { 
     if (l1 >=0) {clearTimeout(l1); l1=-1;}
@@ -151,7 +151,7 @@ function buttonHandler(s){
   } else {
     if ( l1 >=0) {clearTimeout(l1); l1=-1;}
   }	
-  button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:1});
+  button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:0});
 }
 button=setWatch(buttonHandler,BTN1, {repeat:false, debounce:10,edge:0});
 //touch 
