@@ -181,24 +181,27 @@ face[5] = {
     g.setColor(0,col.black);
     g.fillRect(0,0,239,239); //all
     g.setColor(1,colo.txt1);
-    g.setFont("Vector",20);
+    g.setFont("Vector",18);
 	g.drawString("MEM FREE: "+mem.free+"/"+mem.total,120-(g.stringWidth("MEM FREE: "+mem.free+"/"+mem.total)/2),0);  
-	g.drawString("VERSION: "+process.version,120-(g.stringWidth("VERSION: "+process.version)/2),30);  
-	g.drawString("ACC TYPE: "+acctype,120-(g.stringWidth("ACC TYPE: "+acctype)/2),60);  
-    g.drawString("TOUCH TYPE: "+touchtype,120-(g.stringWidth("TOUCH TYPE: "+touchtype)/2),90);  
-    g.drawString("UPTIME: "+d+"D-"+h+"H-"+m+"M",120-(g.stringWidth("UPTIME: "+d+"D-"+h+"H-"+m+"M")/2),120);  
-	g.drawString("FLASH FREE: "+require("Storage").getFree(),120-(g.stringWidth("FLASH FREE: "+require("Storage").getFree())/2),150);  
+	g.drawString("VERSION: "+process.version,120-(g.stringWidth("VERSION: "+process.version)/2),25);  
+	g.drawString("ACC TYPE: "+acctype,120-(g.stringWidth("ACC TYPE: "+acctype)/2),50);  
+    g.drawString("TOUCH TYPE: "+touchtype,120-(g.stringWidth("TOUCH TYPE: "+touchtype)/2),75);  
+    g.drawString("UPTIME: "+d+"D-"+h+"H-"+m+"M",120-(g.stringWidth("UPTIME: "+d+"D-"+h+"H-"+m+"M")/2),100);  
+	g.drawString("FLASH FREE: "+require("Storage").getFree(),120-(g.stringWidth("FLASH FREE: "+require("Storage").getFree())/2),125); 
+	g.drawString("TEMPERATURE: "+E.getTemperature(),120-(g.stringWidth("TEMPERATURE: "+E.getTemperature())/2),150);  
+	g.drawString("NAME: "+set.name,120-(g.stringWidth("NAME: "+set.name)/2),175);  
+	
     g.flip();
     g.setFont("Vector",18);
 	g.setColor(0,col.raf);
-	g.fillRect(0,190,115,239);
+	g.fillRect(0,200,115,239);
 	g.setColor(1,col.white);
-	g.drawString("RESTART",15,205);
+	g.drawString("RESTART",15,213);
     g.flip();	
 	g.setColor(0,col.raf);
-	g.fillRect(125,190,239,239);
+	g.fillRect(125,200,239,239);
 	g.setColor(1,col.white);
-	g.drawString("SHUTDOWN",132,205);
+	g.drawString("SHUTDOWN",132,213);
 	g.flip();
   },
   show : function(){

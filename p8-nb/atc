@@ -68,7 +68,7 @@ var atcR= function(evt){
 			var mi=i[1].toString().substring(10, 12);          
 			var date=new Date(ye,mo,da,ho,mi);
 			setTime((date-0).toFixed().substring(0, 10));		
-			console.log("Time set to :",date);
+			//console.log("Time set to :",date);
 			atcW("AT+DT:" + i[1]);
 		} else if (srt.substring(0, 5) == "AT+DT") {
 		}
@@ -86,7 +86,7 @@ var atcW= function(i) {
      }
      }
     });
-    console.log("send: ",o);	
+    //console.log("send: ",o);	
   }
 };
 

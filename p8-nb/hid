@@ -20,7 +20,7 @@ face[0] = {
     var g=w.gfx;
 	if (set.hid!=1){
 		g.setColor(0,col.black);
-		g.clearRect(1,0,239,239);
+//		g.clearRect(1,0,239,239);
 		g.setColor(1,col.white);
 		g.setFont("Vector",25);
 		g.drawString("HID DISABLED",30,0);
@@ -51,7 +51,6 @@ face[0] = {
 	g.flip();	
     g.setColor(1,this.col.bck);
 	g.fillRect(0,80,75,155); //stop
-//    g.fillRect(0,160,75,239); //
 	g.setColor(0,col.white);
 	g.drawString("STOP",15,110);
 	g.flip();
