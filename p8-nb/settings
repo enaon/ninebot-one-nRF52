@@ -303,6 +303,7 @@ touchHandler[0]=function(e,x,y){
         set.hid=1-set.hid;
         if (set.hid===1) if (set.cli) console.log("hid:1");  
         else if (set.cli) console.log("hid:0");
+		set.upd();
         digitalPulse(p,1,[30,50,30]);
       }
     }
