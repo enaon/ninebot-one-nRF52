@@ -3,8 +3,8 @@ const touchtype="816"; //716|816|816s
 const acctype="BMA421"; //BMA421|SC7A20
 //face
 var face={
-  appCurr:"main",
-  appPrev:"main",
+  appCurr:"",
+  appPrev:"",
   pageCurr:-1,
   pagePrev:-1,	
   pageArg:"",
@@ -64,6 +64,7 @@ var set={
   atc:0,
   tor:0,
   acc:1,
+  boot:getTime(),
   accR:function(){if (this.acc)acc.on(); else acc.off();},
   hidM:undefined,
   upd:function(){
@@ -306,7 +307,7 @@ var acc={
 		    i2c.writeTo(0x18,3);
 		}
 		if (data[1]<15||data[1]>=250) {
-		  if (!w.gfx.isOn&&this.up==0){ 
+		  if (!w.gfx.isOn&&this.up==0&&face.appCurr!=""){ 
             this.up=1; 
             if (typeof euc !== 'undefined'&&euc.conn!="OFF") face.go("euc",0);
             else{ 
@@ -315,6 +316,7 @@ var acc={
 				else face.go(face.appCurr,0);
 			}
 		  }else if (w.gfx.isOn&&face.pageCurr!=-1) {
+
 			if (face.appCurr=="main" && face.pageCurr==2) face.go("main",0);
 			else if (set.tor!=1) face.off();
 //			this.loop=500;
@@ -327,7 +329,7 @@ var acc={
     },this.loop,this);
   }
 };
-acc.on();
+set.accR();
 //themes
 col={
 	black:0,

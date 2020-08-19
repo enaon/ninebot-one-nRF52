@@ -15,8 +15,6 @@ var mem = () => {
 var erase= () => require("Storage").eraseAll();
 var w;
 var pal;
-//var offms=5000;
-
 Modules.addCached("P8",function(){
 const pin = {
   BUTTON: D17,

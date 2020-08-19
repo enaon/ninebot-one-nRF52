@@ -14,8 +14,11 @@ face[0] = {
   g.setColor(0,colo.btnTxt);
   g.setFont("Vector",35);
   g.drawString(d[2]+" "+d[0].toUpperCase(), (81-(g.stringWidth(d[2]+" "+d[0].toUpperCase()))/2) ,9); //date
-  g.setFont("7x11Numeric7Seg",4);
-  g.drawString(this.v,239-(g.stringWidth(this.v)),3); //batt
+  //g.setFont("7x11Numeric7Seg",4);
+  //g.drawString(this.v,239-(g.stringWidth(this.v)),3); //batt
+  if (this.v<0) {g.setFont("Vector",25);g.drawString("EMPTY",242-(g.stringWidth("EMPTY")),10); }//batt  g.flip();
+  else if (this.v<100) g.drawString(this.v+"%",239-(g.stringWidth(this.v+"%")),8); //batt
+  else  {g.setFont("Vector",30);g.drawString("FULL",242-(g.stringWidth("FULL")),10); }//batt  
   g.flip();
   //bottom
   g.setColor(1,col.lgray);
@@ -88,8 +91,11 @@ face[0] = {
       g.setColor(0,col.lgray);
     g.fillRect(162,0,239,50);//batt
     g.setColor(1,colo.btnTxt);
-    g.setFont("7x11Numeric7Seg",4);
-    g.drawString(this.v,240-(g.stringWidth(this.v)),3); //batt
+//    g.setFont("7x11Numeric7Seg",4);
+	if (this.v<0) {g.setFont("Vector",25);g.drawString("EMPTY",242-(g.stringWidth("EMPTY")),10); }//batt  g.flip();
+	else if (this.v<100) g.drawString(this.v+"%",239-(g.stringWidth(this.v+"%")),8); //batt
+    else  {g.setFont("Vector",30);g.drawString("FULL",242-(g.stringWidth("FULL")),10); }//batt  g.flip();
+//    g.drawString(this.v,240-(g.stringWidth(this.v)),3); //batt
     g.flip();
   }
   //bt status on date
