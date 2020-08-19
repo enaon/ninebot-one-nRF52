@@ -21,6 +21,8 @@ Flash espruino using daflasher app from atc1441, then upload at least init, hand
 
 Change the 'type' variable inside the handler file to match the touch controller and accelerometer on your p8. All types are emulated as an 816(TEH) (gestures happen before finger leaves the screen) by the handler. 
 
+type reset() and press enter in the webide left hand side, after last file is uploaded. 
+
 #
 
 #### wip
