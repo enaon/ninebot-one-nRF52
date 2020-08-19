@@ -172,12 +172,10 @@ face[5] = {
 	var d=0;
 	var h=0;
 	var m=0;
-	while (s>60) {
-		s=s-60;m++;
-		if (m>60) {m=m-60; h++;
-		if (h>24) {h=h-24;d++;}
-		}
-	}
+	if (s>864000) {set.boot=getTime();s=(getTime()-set.boot)|0;}
+	while (s>86400) {s=s-86400;d++}
+	while (s>3600) {s=s-3600;h++}
+	while (s>60) {s=s-60;m++}
     g.setColor(0,col.black);
     g.fillRect(0,0,239,239); //all
     g.setColor(1,colo.txt1);
