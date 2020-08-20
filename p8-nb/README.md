@@ -52,6 +52,6 @@ Type reset() and press enter in the webide left hand side, after last file is up
 
 #
 
-#### wip
+#### wip (the inteface on this video is dated, it now looks a lot nicer, will upload a new one sometime in the future)
 
 [![Watch the video](https://img.youtube.com/vi/4hs8I65Fz5g/maxresdefault.jpg)](https://youtu.be/4hs8I65Fz5g)
