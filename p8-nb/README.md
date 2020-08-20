@@ -21,6 +21,9 @@ Flash espruino using daflasher app from atc1441 (follow the link above), then up
 
 Init file should be uploaded to flash(allways), all other files should be uploaded to strorage by name given here, using the webide. 
 
+do not rename them to .js, just copy paste the content of each file to right side of the web ide and upload. 
+
+
 init (which will be renamed to .bootrst by the webide when you select to upload to flash-alwways) and handler files are system files, they take care of p8 hardware and general functions and are required. 
 
 all other files are optional:
@@ -38,13 +41,13 @@ hid provides music controll over bluetooth,
 
 repellent is a way to check medicine/battery/state of a xiaomi insect repellent,
 
-one can leave out any files that he don't need, but it is best to upload all to get the feeling of the interfacem, and then delete the ones that are not wanted. 
+One can leave out any files that he don't need, but it is best to upload all to get the feeling of the interface, and then delete the ones that are not wanted. 
 
 Select Pretokenise and Minification in the webide settings to save on ram. 
 
 Change the 'type' variable inside the handler file to match the touch controller and accelerometer on your p8. All types are emulated as an 816(TEH) (gestures happen before finger leaves the screen) by the handler. 
 
-type reset() and press enter in the webide left hand side, after last file is uploaded. 
+Type reset() and press enter in the webide left hand side, after last file is uploaded. 
 
 #
 
