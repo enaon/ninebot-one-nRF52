@@ -72,7 +72,7 @@ var set={
 		this.atcR=undefined;this.atcW=undefined;
 		this.hidM=undefined;NRF.disconnect();
         NRF.setServices(undefined,{uart:false});
-		NRF.setAdvertising({},{connectable:false}); 
+//		NRF.setAdvertising({},{connectable:false}); 
 //   		NRF.sleep();
 	} else {
 		NRF.setAdvertising({}, { name:this.name,connectable:true });
