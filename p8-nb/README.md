@@ -24,11 +24,12 @@ Init file should be uploaded to flash(allways), all other files should be upload
 do not rename them to .js, just copy paste the content of each file to right side of the web ide and upload. 
 
 
-init (which will be renamed to .bootrst by the webide when you select to upload to flash-alwways) and handler files are system files, they take care of p8 hardware and general functions and are required. 
+init (which will be renamed to .bootrst by the webide when you select to upload to flash-always) and handler files are system files, they take care of p8 hardware and general functions and are required. 
 
-all other files are optional:
+All other files are optional:
 
 atc is to provide support for the d6Notification android app by atc1441, the app can set the time and some more advanced things, for now support is basic,
+
 main provides for a clock face,
 
 alarm provides three settable alarms,
