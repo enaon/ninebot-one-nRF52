@@ -27,10 +27,15 @@ all other files are optional:
 
 atc is to provide support for the d6Notification android app by atc1441, the app can set the time and some more advanced things, for now support is basic,
 main provides for a clock face,
+
 alarm provides three settable alarms,
+
 calc is a simple calculator, 
+
 euc and euc,md provides a dashboard for an ninebot one electric unicycle, 
+
 hid provides music controll over bluetooth, 
+
 repellent is a way to check medicine/battery/state of a xiaomi insect repellent,
 
 one can leave out any files that he don't need, but it is best to upload all to get the feeling of the interfacem, and then delete the ones that are not wanted. 
