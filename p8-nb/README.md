@@ -32,7 +32,7 @@ atc is to provide support for the d6Notification android app by atc1441, the app
 
 main provides for a clock face,
 
-settings provides for a settings face, it can be accessed by a swipe up from botton.
+settings provides for a settings face, it can be accessed by a swipe up from bottom.
 
 alarm provides three settable alarms,
 
