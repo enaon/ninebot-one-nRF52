@@ -1,4 +1,4 @@
-##### How to install espruino to the P8 smart watch:
+##### How to install espruino on the P8 smart watch:
 
 https://github.com/fanoush/ds-d6/tree/master/espruino/DFU/P8
 
