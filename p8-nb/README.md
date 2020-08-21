@@ -18,6 +18,8 @@ Use latest 2v06.100 espruino firmware image, as it provides more flash space.
 
 Flash espruino using daflasher app from atc1441 (follow the link above), then upload at least init, handler and main files to the p8 using the espruino web ide from your chrome pc/phone. 
 
+https://www.espruino.com/ide/
+
 Init file should be uploaded to flash(allways), all other files should be uploaded to strorage by name given here, using the webide. 
 
 do not rename them to .js, just copy paste the content of each file to right side of the web ide and upload. 
