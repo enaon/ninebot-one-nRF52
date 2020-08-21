@@ -85,3 +85,14 @@ Type reset() and press enter in the webide left hand side, after last file is up
 #### wip (the inteface on this video is dated, it now looks a lot nicer, will upload a new one sometime in the future)
 
 [![Watch the video](https://img.youtube.com/vi/4hs8I65Fz5g/maxresdefault.jpg)](https://youtu.be/4hs8I65Fz5g)
+
+![](https://i.ibb.co/yVMrSps/Annotation-2020-08-21-044342.png)
+
+![](https://i.ibb.co/bdRTMmV/Annotation-2020-08-21-044441.png)
+
+![](https://user-content.gitter-static.net/dc3962ecf16c55a92544be663a21291f98842aa2/68747470733a2f2f692e6962622e636f2f506a4d6e72794c2f494d472d32303230303831392d3139333133343530372d4844522e6a7067)
+
+![](https://user-content.gitter-static.net/7f290f0c7ea36ef40f05117d0851c46ae4f535ef/68747470733a2f2f692e6962622e636f2f385059684b37782f494d472d32303230303731342d3230303731383931362e6a7067)
+
+![](https://images-ext-1.discordapp.net/external/nWI7vleTln1aWyIMcokHkIa7LuF1GraS-jlVheS--Vk/https/i.ibb.co/f13dF2F/JPEG-20200819-164603-1450886130.jpg?width=186&height=330)
+
