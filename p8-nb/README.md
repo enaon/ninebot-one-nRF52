@@ -6,7 +6,7 @@ using the app, you will upload three files,
 
 first a custom app that will replace the bootloader of the p8, 
 
-then a file that will upload yet another bottloader, this time compatible with espruino image linked bellow, made by fanoush
+then a file that will upload yet another bottloader, this time compatible with espruino image linked bellow, build by fanoush
 
 and finally the espruino image itself. 
 
