@@ -12,7 +12,7 @@ and finally the espruino image itself.
 
 After the last file is uloaded, daflasher is done, and one can connect to the p8 using the espruino webide from a chrome browser, to continue with uploading the files of this repo. 
 
-The three files needed for the first step are the the following:
+The three files needed for the first step are the following, in this order:
 
 1. https://github.com/atc1441/DaFlasherFiles/blob/master/DaFitBootloader23Hacked.bin
 2. https://github.com/atc1441/DaFlasherFiles/blob/master/FitBootloaderDFU2.0.1.zip
