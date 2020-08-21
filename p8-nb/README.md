@@ -1,8 +1,6 @@
 ##### How to install espruino on the P8 smart watch:
 
-https://github.com/fanoush/ds-d6/tree/master/espruino/DFU/P8
-
-you will need an android smartphone, and an app called DaFlasher from the playstore, made by atc1441.
+You will need an android smartphone, and an app called DaFlasher from the playstore, made by atc1441.
 
 using the app, you will upload three files, 
 
@@ -21,6 +19,16 @@ The three files needed for the first step are the the following:
 3. https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v06.100_p8_SDK11_SD20.zip
 
 the first two files are a one time process, the last file is the espruino firmware image, and one could update just that in the future.
+
+More info on daflasher and how to use here:
+
+https://www.youtube.com/watch?v=gUVEz-pxhgg
+
+More info on p8 and espruino here:
+
+https://github.com/fanoush/ds-d6/tree/master/espruino/DFU/P8
+
+
 #
 ##### Use this firmware image:
 
