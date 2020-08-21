@@ -4,7 +4,7 @@ You will need an android smartphone, and an app called DaFlasher from the playst
 
 using the app, you will upload three files, 
 
-first a custom app that will replace the vbootloader of the p8, 
+first a custom app that will replace the bootloader of the p8, 
 
 then file that will upload yet another bottloader, this time compatible with espruino image linked bellow, made by fanoush
 
