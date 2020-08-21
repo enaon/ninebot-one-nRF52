@@ -66,7 +66,7 @@ alarm provides three settable alarms,
 
 calc is a simple calculator, 
 
-euc and euc,md provides a dashboard for an ninebot one electric unicycle, 
+euc and euc.md provides a dashboard for an ninebot one electric unicycle, 
 
 hid provides music controll over bluetooth, 
 
@@ -74,7 +74,7 @@ repellent is a way to check medicine/battery/state of a xiaomi insect repellent,
 
 One can leave out any files that he don't need, but it is best to upload all to get the feeling of the interface, and then delete the ones that are not wanted. 
 
-Select Pretokenise and Minification in the webide settings to save on ram. 
+Select Pretokenise, Mangle and Minification(online-simple) in the webide settings to save on ram/flash space. 
 
 Change the 'type' variable inside the handler file to match the touch controller and accelerometer on your p8. All types are emulated as an 816(TEH) (gestures happen before finger leaves the screen) by the handler. Change the set.name variable inside the handler file to match your desired name, this will be broadcasted by the bt module.
 
