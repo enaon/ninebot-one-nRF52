@@ -1,4 +1,9 @@
-##### New vector font espruino version, works on this firmware:
+##### How to install espruino to the P8 smart watch:
+
+https://github.com/fanoush/ds-d6/tree/master/espruino/DFU/P8
+
+#
+##### Use this firmware image:
 
 ~~https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v06.9_p8_SDK11_SD20.zip~~
 
@@ -6,13 +11,7 @@
 
 https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v06.100_p8_SDK11_SD20.zip
 
-Use latest espruino image, as it provides more flash space.
-# 
-
-##### More info on installing espruino to the P8 smart watch:
-
-https://github.com/fanoush/ds-d6/tree/master/espruino/DFU/P8
-
+Use latest espruino firmware image, as it provides more flash space.
 
 #
 ##### Use of files in this repo:
