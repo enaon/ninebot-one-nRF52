@@ -16,7 +16,7 @@ Use latest 2v06.100 espruino firmware image, as it provides more flash space.
 #
 ##### Use of files in this repo:
 
-Flash espruino using daflasher app from atc1441 (follow the link above), then upload at least init, handler and main files to the p8 using the espruino web ide from your chrome pc/phone, using web bluetooth. No need to physically connect the watch to anything during the install firmware/install system files process.   
+Flash espruino using daflasher app from atc1441 (follow the link above), then upload at least init, handler and main files to the p8 using the espruino web ide from your chrome pc/phone, by selecting web bluetooth. No need to physically connect the watch to anything during the install firmware/install system files process.   
 
 https://www.espruino.com/ide/
 
