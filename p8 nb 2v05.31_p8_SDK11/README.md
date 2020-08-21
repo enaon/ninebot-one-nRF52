@@ -1,3 +1,9 @@
+####dated, use this instead. 
+
+https://github.com/enaon/ninebot-one-nRF52/tree/master/p8-nb
+#
+
+
 Espruino changed the build in Vector font, this is the last snapshot for the old type. 
 
 Works on this firmware:
