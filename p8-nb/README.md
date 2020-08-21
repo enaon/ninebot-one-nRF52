@@ -49,7 +49,7 @@ One can leave out any files that he don't need, but it is best to upload all to 
 
 Select Pretokenise and Minification in the webide settings to save on ram. 
 
-Change the 'type' variable inside the handler file to match the touch controller and accelerometer on your p8. All types are emulated as an 816(TEH) (gestures happen before finger leaves the screen) by the handler. 
+Change the 'type' variable inside the handler file to match the touch controller and accelerometer on your p8. All types are emulated as an 816(TEH) (gestures happen before finger leaves the screen) by the handler. Change the set.name variable inside the handler file to match your desired name, this will be broadcasted by the bt module.
 
 Type reset() and press enter in the webide left hand side, after last file is uploaded. 
 
