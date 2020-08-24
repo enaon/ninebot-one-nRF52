@@ -10,7 +10,7 @@ then a file that will upload yet another bottloader, this time compatible with t
 
 and finally the espruino image itself. 
 
-After the last file is uloaded, daflasher is done, and one can connect to the p8 using the espruino webide from a chrome browser, to continue with uploading the files of this repo. 
+After the last file is uπloaded, daflasher is done, and one can connect to the p8 using the espruino webide from a chrome browser, to continue with uploading the files of this repo. 
 
 The three files needed for the first step are the following, in this order:
 
@@ -20,11 +20,11 @@ The three files needed for the first step are the following, in this order:
 
 the first two files are a one time process, the last file is the espruino firmware image, and one could update just that in the future.
 
-More info on daflasher and how to use here:
+More info on daflasher and how to use:
 
 https://www.youtube.com/watch?v=gUVEz-pxhgg
 
-More info on p8 and espruino here:
+More info on p8 and espruino:
 
 https://github.com/fanoush/ds-d6/tree/master/espruino/DFU/P8
 
