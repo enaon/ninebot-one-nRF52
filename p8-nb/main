@@ -31,7 +31,13 @@ face[0] = {
   g.drawString("EUC",167,207); //euc
   g.flip();
     //  g.setFont("Vector",35);
-//    if (typeof set.push !== 'undefined') g.drawString(set.push,119-(g.stringWidth(set.push))/2,165); //info
+//    
+  if (typeof set.push !== 'undefined') {
+    g.setColor(1,col.lgray);//
+	g.setFont("Vector",25);
+	g.drawString(set.push,119-(g.stringWidth(set.push))/2,165); //info
+	g.flip();
+  }
   this.hour=-1;
   this.min=-1;
   this.sec=-1;
@@ -307,8 +313,11 @@ touchHandler[0]=function(e,x,y){
     }else if  (e==4){
 		face.go("main",-1);return;
     }else if  (e==12){
+	if (150<y&&y<200){ 	
+		digitalPulse(p,1,180);
+		set.push=undefined;
 	//euc on/off
-	 if (x>162 && y>200){ 
+	}else if (x>162 && y>200){ 
       if (typeof euc !== 'undefined') {  
         euc.tgl();
 		face.go("euc",0);return;

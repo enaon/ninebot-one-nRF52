@@ -188,7 +188,6 @@ face[5] = {
 	g.drawString("FLASH FREE: "+require("Storage").getFree(),120-(g.stringWidth("FLASH FREE: "+require("Storage").getFree())/2),125); 
 	g.drawString("TEMPERATURE: "+E.getTemperature(),120-(g.stringWidth("TEMPERATURE: "+E.getTemperature())/2),150);  
 	g.drawString("NAME: "+set.name,120-(g.stringWidth("NAME: "+set.name)/2),175);  
-	
     g.flip();
     g.setFont("Vector",18);
 	g.setColor(0,col.raf);

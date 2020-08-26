@@ -40,7 +40,8 @@ var atcR= function(evt){
 		} else if (srt == "AT+BATT") {
 		atcW("AT+BATT:"+w.battVoltage(1));
 		} else if (srt.substring(0, 8) == "AT+PUSH=") {
-		atc=i[1];
+		set.push=i[1];
+		digitalPulse(w.pin.MOTOR,1,[80,50,80]);
 		atcW("AT+PUSH:OK");
 		} else if (srt == "BT+VER") {
 		atcW("BT+VER:sdk11");
