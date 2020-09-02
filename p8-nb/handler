@@ -57,7 +57,7 @@ var face={
 };
 //settings 
 var set={
-  name:"p8enaon-teh-b",
+  name:"p8enaon",
   bt:0,
   cli:1,
   hid:0,
@@ -75,11 +75,13 @@ var set={
 //		NRF.setAdvertising({},{connectable:false}); 
 //   		NRF.sleep();
 	} else {
-		NRF.setAdvertising({}, { name:this.name,connectable:true });
+		//NRF.setAdvertising({}, { name:this.name,connectable:true });
 		if (set.hid==1 && this.hidM ==undefined) this.hidM=require("ble_hid_controls");//enable hid
 		if (set.atc ==1) eval(require('Storage').read('atc'));
-		else {NRF.setServices({},{uart:Boolean(set.cli),hid:(set.hid)?this.hidM.report:undefined});
-		    this.atcR=undefined;this.atcW=undefined;}
+		else {
+			NRF.setServices({},{uart:Boolean(set.cli),hid:(set.hid)?this.hidM.report:undefined});
+		    this.atcR=undefined;this.atcW=undefined;
+		}
 		if (set.hid==0) this.hidM=undefined;
 	}
   }

@@ -319,7 +319,7 @@ touchHandler[5]=function(e,x,y){
         if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
         else w.gfx.bri.set(this.bri);
 		digitalPulse(p,1,[30,50,30]);
-     }else if (y>190) {
+      }else if (y>190) {
 		face.go("settings",0);return;
 	  } else digitalPulse(p,1,40);
     }else if  (e==3){
