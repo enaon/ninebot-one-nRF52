@@ -1,0 +1,336 @@
+//settings	
+face[0] = {
+  offms: 3000,
+  init: function(){
+    var g=w.gfx;
+    this.cli=-1;
+    this.bt=-1;
+    this.hid=-1;
+    this.atc=-1;
+    this.bri=-1;
+	this.acc=-1;
+    var d=(Date()).toString().split(' ');
+    var t=(d[4]).toString().split(':');
+    g.clearRect(0,0,239,239); //all
+    g.setColor(0,colo.bck3);
+    g.fillRect(0,0,75,75); //atc
+    g.fillRect(80,0,155,75); //cli
+    g.fillRect(160,0,239,75); //hid
+//    g.fillRect(0,80,75,155); //calc
+//    g.fillRect(0,160,75,239); //torch
+    g.fillRect(80,160,155,239); //info
+    g.fillRect(160,80,239,200);//brightness
+    g.fillRect(160,201,239,239);//brightness text
+    g.setColor(1,colo.txt3);
+    g.setFont("Vector",30);
+    g.drawString("ATC",7,27);   
+    g.drawString("CLI",93,27);   
+    g.drawString("HID",175,27);   
+    g.drawString("BRI",175,195);   
+//	g.setFont("Vector",25);
+//	g.drawString("INFO",88,200);   
+
+//    g.drawString("CALC",2,107);
+    g.flip();
+    g.setColor(0,colo.bck2);
+    g.fillRect(0,80,75,155); //calc
+    g.fillRect(0,160,75,239); //torch
+	    g.fillRect(80,160,155,239); //info
+
+    g.setColor(1,colo.txt1);
+	g.setFont("Vector",25);
+    g.drawString("CALC",2,107);
+    g.setFont("Vector",30);
+    g.drawString("TOR",8,195);
+    g.drawString("INF",96,195);   
+    g.flip();
+    this.run=true;
+  },
+  show : function(){
+    if (!this.run) return;
+    var g=w.gfx;
+    //torch
+    if (this.tor==1) {
+      g.setColor(0,colo.txt);
+      g.fillRect(0,0,239,239); 
+      g.flip();
+      return;
+    }
+    //atc on/off
+	 if (set.atc!=this.atc) {
+      this.atc=set.atc;
+      this.c=colo.btnTxt;
+      if (this.atc===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
+      else g.setColor(0,colo.btnDs1);
+      g.fillRect(0,0,75,75);//atc
+      g.setColor(1,this.c);
+      g.setFont("Vector",30);
+      g.drawString("ATC",7,27);
+      g.flip();
+    }
+    //CLI on/off
+    if (set.cli!=this.cli) {
+      this.cli=set.cli;
+      this.c=colo.btnTxt;
+      if (this.cli===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
+      else g.setColor(0,colo.btnDs1);
+      g.fillRect(80,0,155,75); //cli
+      g.setColor(1,this.c);
+      g.setFont("Vector",30);
+      g.drawString("CLI",93,27);   
+      g.flip();
+    }
+	 //hid on/off
+    if (set.hid!=this.hid) {
+      this.hid=set.hid;
+      this.c=colo.btnTxt;
+      if (this.hid===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
+      else g.setColor(0,colo.btnDs1);
+      g.fillRect(160,0,239,75); //hid
+      g.setColor(1,this.c);
+      g.setFont("Vector",30);
+      g.drawString("HID",176,27);   
+      g.flip();
+    }
+    //acc on/off
+    if (set.acc!=this.acc) {
+      this.acc=set.acc;
+      this.c=colo.btnTxt;
+      if (this.acc===1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
+      else g.setColor(0,colo.bck2);
+      g.fillRect(80,80,155,155); //acc
+      g.setColor(1,this.c);
+      g.setFont("Vector",30);
+      g.drawString("ACC",88,107);   
+      g.flip();
+    }
+	//brightness level
+    if (g.bri.lv!=this.bri) {
+      this.bri=g.bri.lv;
+      this.c=colo.btnTxt1;
+//      g.setColor(0,colo.bck);
+      g.clearRect(160,80,239,239);//brightness
+      g.setColor(1,this.c);
+      g.setFont("Vector",30);
+      g.drawString("BRI",175,195);   
+      if (this.bri>5) pal[0]=col.lgray;
+      else if (this.bri>3) pal[0]=col.gray;
+      else  pal[0]=col.dgray;
+      g.setFont("Vector",45);
+      g.drawString(g.bri.lv,190,130);   
+      g.flip();
+    }
+  //loop
+    this.tid=setTimeout(function(t,o){
+      t.tid=-1;
+      t.show(o);
+    },200,this);
+  },
+  tid:-1,
+  run:false,
+  clear : function(o){
+    var g=w.gfx;
+    pal[0]=colo.bck0;
+    g.clear();
+    this.exit(o);
+    return true;
+  },
+  exit: function(o){
+    this.run=false;
+    if (this.tid>=0) clearTimeout(this.tid);
+    this.tid=-1;
+    return true;
+  },
+  off: function(o){
+    var g=w.gfx;
+    g.off();
+    this.clear(o);
+  }
+};
+
+//
+face[1] = {
+  offms:1000,
+  init: function(){
+  return true;
+  },
+  show : function(){
+    face.go("main",0);
+    return true;
+  },
+  clear: function(){
+  return true;
+  },
+};	
+//info face
+face[5] = {
+  offms: 3000,
+  init: function(){
+    var g=w.gfx;
+	var mem=process.memory();
+	var s=(getTime()-set.boot)|0;
+	var d=0;
+	var h=0;
+	var m=0;
+	if (s>864000) {set.boot=getTime();s=(getTime()-set.boot)|0;}
+	while (s>86400) {s=s-86400;d++}
+	while (s>3600) {s=s-3600;h++}
+	while (s>60) {s=s-60;m++}
+    g.setColor(0,col.black);
+    g.fillRect(0,0,239,239); //all
+    g.setColor(1,colo.txt1);
+    g.setFont("Vector",18);
+	g.drawString("MEM FREE: "+mem.free+"/"+mem.total,120-(g.stringWidth("MEM FREE: "+mem.free+"/"+mem.total)/2),0);  
+	g.drawString("VERSION: "+process.version,120-(g.stringWidth("VERSION: "+process.version)/2),25);  
+	g.drawString("ACC TYPE: "+acctype,120-(g.stringWidth("ACC TYPE: "+acctype)/2),50);  
+    g.drawString("TOUCH TYPE: "+touchtype,120-(g.stringWidth("TOUCH TYPE: "+touchtype)/2),75);  
+    g.drawString("UPTIME: "+d+"D-"+h+"H-"+m+"M",120-(g.stringWidth("UPTIME: "+d+"D-"+h+"H-"+m+"M")/2),100);  
+	g.drawString("FLASH FREE: "+require("Storage").getFree(),120-(g.stringWidth("FLASH FREE: "+require("Storage").getFree())/2),125); 
+	g.drawString("TEMPERATURE: "+E.getTemperature(),120-(g.stringWidth("TEMPERATURE: "+E.getTemperature())/2),150);  
+	g.drawString("NAME: "+set.name,120-(g.stringWidth("NAME: "+set.name)/2),175);  
+    g.flip();
+    g.setFont("Vector",18);
+	g.setColor(0,col.raf);
+	g.fillRect(0,200,115,239);
+	g.setColor(1,col.white);
+	g.drawString("RESTART",15,213);
+    g.flip();	
+	g.setColor(0,col.raf);
+	g.fillRect(125,200,239,239);
+	g.setColor(1,col.white);
+	g.drawString("SHUTDOWN",132,213);
+	g.flip();
+  },
+  show : function(){
+	return;
+  },
+  clear : function(o){
+    var g=w.gfx;
+    pal[0]=colo.bck0;
+    g.clear();
+    this.exit(o);
+    return true;
+  },
+  exit: function(o){
+    return true;
+  },
+  off: function(o){
+    var g=w.gfx;
+    g.off();
+    this.clear(o);
+  }
+};
+
+//touch-settings  
+touchHandler[0]=function(e,x,y){
+    var g=w.gfx;
+    var p=w.pin.MOTOR;
+    if (set.tor==1){
+        g.bri.set(this.b);
+        set.tor=-1;
+        face[0].tor=0;
+        if (face.appPrev=="settings")  face.appPrev="main";face.pagePrev=0;
+        face.go(face.appPrev,face.pagePrev,face.pageArg);return;
+    }else if (e==5){
+      if(x<77&&y<75){
+        set.atc=1-set.atc;
+        set.upd();
+		digitalPulse(p,1,[30,50,30]);
+      }else if(77<x&&x<158&&y<75){
+        set.cli=1-set.cli;
+		set.upd();
+		digitalPulse(p,1,[30,50,30]);
+      }else if(158<x&&x<239&&y<75){
+   		digitalPulse(p,1,[30,50,30]);
+		face.go("hid",0);return;
+	  }else if(0<x&&x<75&&75<y&&y<157){
+		digitalPulse(p,1,[30,50,30]);
+		face.go("calc",0);return;
+	  }else if(77<x&&x<157&&77<y&&y<157){
+		set.acc=1-set.acc;
+		set.accR();
+		digitalPulse(p,1,[30,50,30]);
+      }else if(0<x&&x<75&&158<y&&y<239){
+        set.tor=1;
+        this.b=w.gfx.bri.lv;
+        g.bri.set(7);
+        face[0].tor=1;
+        if (face.offid>=0) {clearTimeout(face.offid); face.offid=-1;}
+        face.offid=setTimeout((f)=>{
+		  face[0].tor=0;
+          set.tor=-1;
+          g.bri.set(this.b);
+		  if (f>=0 && face[f].off) face[f].off();
+          face.offid=-1;face.pageCurr=-1;face.appPrev="main";
+        },15000,face.pageCurr);
+        return;
+	  }else if(77<x&&x<157&&158<y&&y<239){		
+		face.go("settings",5);return;
+      }else if(158<x&&x<239&&160<y&&y<239) {
+        this.b=g.bri.lv-1;
+        if (this.b<1) this.b=1;
+        g.bri.set(this.b);
+      }else if(158<x&&x<239&&77<y&&y<159) {
+        this.b=g.bri.lv+1;
+        if (this.b>7) this.b=7;
+        g.bri.set(this.b);   
+      } else digitalPulse(p,1,40);
+    }else if  (e==1){
+      if(158<x&&x<239&&77<y&&y<239) {
+        this.b=g.bri.lv-1;
+        if (this.b<1) this.b=1;
+        g.bri.set(this.b);
+      }else { 
+        face.go("main",0);return;
+      }  
+    }else if  (e==2){
+	  if (y>160&&x<50) {
+        if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
+        else w.gfx.bri.set(this.bri);
+		digitalPulse(p,1,[30,50,30]);
+      }else if(158<x&&x<239&&77<y&&y<239) {
+        this.b=g.bri.lv+1;
+        if (this.b>7) this.b=7;
+        g.bri.set(this.b);
+      }else digitalPulse(p,1,40);
+    }else if  (e==3){
+	  digitalPulse(p,1,40);
+    }else if  (e==4){
+      if (face.appPrev=="settings")  face.appPrev="main";face.pagePrev=0;
+		face.go(face.appPrev,face.pagePrev,face.pageArg);return;
+    }else if  (e==12){
+      if(158<x&&x<239&&y<75){
+        set.hid=1-set.hid;
+		set.upd();
+        digitalPulse(p,1,[30,50,30]);
+      }
+    }
+   this.timeout();
+};
+
+touchHandler[5]=function(e,x,y){
+    var p=w.pin.MOTOR;
+    if (e==5){
+		digitalPulse(p,1,40);
+    }else if  (e==1){
+		face.go("settings",-1);return;
+    }else if  (e==2){
+	  if (y>160&&x<50) {
+        if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
+        else w.gfx.bri.set(this.bri);
+		digitalPulse(p,1,[30,50,30]);
+      }else if (y>190) {
+		face.go("settings",0);return;
+	  } else digitalPulse(p,1,40);
+    }else if  (e==3){
+      digitalPulse(p,1,40);
+    }else if  (e==4){
+		face.go("settings",0);return;
+    }else if  (e==12){
+	//euc on/off
+	 if (x<120 && y>190) reset();
+	 else if (x>120 && y>190) reset();
+     else digitalPulse(p,1,40);
+    }
+   this.timeout();
+};

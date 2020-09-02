@@ -1,0 +1,389 @@
+if (!global.rep){
+global.rep={
+gatt:0,characteristic:0,service:0,device:0,bat:-1,med:-1,sta:0,
+mac:[],go:0,
+find:function(){
+  if(global["\xFF"].BLE_GATTS!=undefined) return;
+  NRF.requestDevice({ filters: [{serviceData:{fe95:{}} }] }).then(function(d) {
+  rep.device=d;
+  rep.mac[0]=d.id;
+  }).then(function(){rep.read();});  
+},  
+read:function(){
+  if (this.mac==""){this.find();return;}
+  if(global["\xFF"].BLE_GATTS!=undefined) return;
+  NRF.connect(rep.mac[rep.go],{minInterval:7.5, maxInterval:10}
+  ).then(function(g) {
+	rep.gatt = g;
+	return rep.gatt.getPrimaryService("0000fe01-0000-1000-8000-00805f9b34fb");
+  }).then(function(s) {
+	rep.service=s;
+	return rep.service.getCharacteristic("00000002-0000-1000-8000-00805f9b34fb");
+  }).then(function (c) {
+	rep.characteristic=c;
+	return rep.characteristic.readValue();
+  }).then(function () {
+    rep.bat=rep.characteristic.value.buffer[0];
+    rep.med=rep.characteristic.value.buffer[1];
+  }).then(function() {
+	return rep.service.getCharacteristic("00000001-0000-1000-8000-00805f9b34fb");
+  }).then(function (c) {
+	rep.characteristic=c;
+	return rep.characteristic.readValue();
+  }).then(function () {
+    rep.sta=rep.characteristic.value.buffer[0];
+	rep.gatt.disconnect();
+	rep.gatt=0;rep.device=0;rep.characteristic=0;rep.service=0;
+    rep.con=1;
+  });
+},
+scan:function(){
+    this.mac=[];
+  	if(global["\xFF"].BLE_GATTS!=undefined) return;
+	NRF.findDevices(function(devices) {
+      var filter1 = [{serviceData:{"fe95":{}}}];
+      var devices1= NRF.filterDevices(devices, filter1);
+  	    devices1.forEach(function(entry) {
+        rep.mac.push(entry.id);
+	  });
+    }, 2000);
+}
+};
+}
+
+//rep face
+face[0]= {
+  offms: 3000,
+  init: function(){
+    rep.con=0;
+    var g=w.gfx;
+    g.setColor(1,colo.bck1);//header bck
+	g.fillRect(120,0,239,50); //header
+    g.fillRect(0,0,117,50); //status
+    g.fillRect(0,200,239,239); //mac
+    g.setColor(0,col.black);//header txt
+    g.setFont("Vector",25);
+	g.drawString("INSECT",4,3); 
+    g.setFont("Vector",20);
+  	g.drawString("REPELLENT",4,28); 
+    g.flip();
+	this.bat=0;
+	this.med=0;
+	this.sta=-1;
+    this.mac=undefined;
+    this.con=0;
+	if(global["\xFF"].BLE_GATTS==undefined) {
+      this.run=true;
+    }else {
+      g.setFont("Vector",27);
+      g.setColor(1,col.white);
+      g.drawString("ERROR:",120-(g.stringWidth("ERROR:")/2),85);
+      g.drawString("BT IN USE",120-(g.stringWidth("BT IN USE")/2),125);
+      g.flip();
+    }
+  },
+  show : function(){
+    if (!this.run) return;
+    var g=w.gfx;
+    if (rep.mac[rep.go]==undefined){
+	  if (rep.go==-1) {
+		g.setColor(1,col.dgray);
+		g.fillRect(0,55,239,195);//batt
+		g.setColor(0,col.white);
+		g.setFont("Vector",30);
+        g.drawString("DEVICE",120-(g.stringWidth("DEVICE")/2),70); //batt
+		g.drawString("NOT FOUND",120-(g.stringWidth("NOT FOUND")/2),115); //batt
+		g.setFont("Vector",20);
+		g.drawString("TOUCH TO SCAN",120-(g.stringWidth("TOUCH TO SCAN")/2),170); //batt
+		g.flip();
+	  }else{
+		rep.scan();
+		face.go("repellent",5);
+	  }
+	return;
+    }
+    rep.read();
+    if(rep.con!=this.con) {
+      this.con=rep.con;
+	  g.setColor(1,col.raf3);
+      g.fillRect(0,0,117,50);
+	  g.setColor(0,col.lblue);
+      g.setFont("Vector",18);
+  	  g.drawString("CONNECTED",4,15); 
+      g.flip();
+	}
+    if (rep.bat!=this.bat) {
+      this.bat=rep.bat;
+      this.c=col.white;
+      g.setColor(1,col.dgray);
+      g.fillRect(0,55,117,195);//batt
+      g.setColor(0,this.c);
+      if (this.bat==-1){ 
+        g.setFont("Vector",35);
+        g.drawString("WAIT",60-(g.stringWidth("WAIT")/2),95); //batt
+      }else{
+      g.setFont("Vector",45);
+      g.drawString(this.bat+"%",60-(g.stringWidth(this.bat+"%")/2),95); //batt
+      g.setFont("Vector",23);
+      g.drawString((this.bat*1.5|0)+" DAYS",60-(g.stringWidth((this.bat*1.5|0)+" DAYS")/2),170);
+      g.setFont("Vector",21);
+      g.drawString("BATTERY",60-(g.stringWidth("BATTERY")/2),60); //batt
+      }
+  	  g.flip();
+    }
+    if (rep.med!=this.med) {
+      this.med=rep.med;
+      this.c=col.lblue;
+      //if (this.med>=50) 
+      g.setColor(1,col.raf3);
+      //else { g.setColor(1,col.purple);}
+	  g.fillRect(120,55,239,195);//med
+      g.setColor(0,this.c);
+      if (this.med==-1){ 
+        g.setFont("Vector",35);
+        g.drawString("READ",183-(g.stringWidth("READ")/2),95); //batt
+      }else{
+      g.setFont("Vector",45);
+      g.drawString(this.med+"%",185-(g.stringWidth(this.med+"%")/2),95); //med
+      g.setFont("Vector",23);
+      g.drawString((this.med*0.9|0)+" DAYS",183-(g.stringWidth((this.med*0.9|0)+" DAYS")/2),170);
+      g.setFont("Vector",21);
+      g.drawString("MEDICINE",183-(g.stringWidth("MEDICINE")/2),60); //med
+      }
+  	  g.flip();
+    }
+    if (rep.sta!=this.sta) {
+      this.sta=rep.sta;
+      var s;
+      if (this.sta==0) {s="OFF";this.c=col.black;this.b=col.gray;}
+      else if (this.sta==1) {s="ON";this.c=col.white;this.b=col.raf;}
+      else if (this.sta==3) {s="AUTO";this.c=col.yellow;this.b=col.raf;}
+      g.setColor(1,this.b);
+	  g.fillRect(120,0,239,50); //status
+      g.setColor(0,this.c);
+      g.setFont("Vector",35);
+      g.drawString(s,183-(g.stringWidth(s)/2),10); //sta
+  	  g.flip();
+    }
+    if (rep.mac[rep.go]!=this.mac) {
+      this.mac=rep.mac[rep.go];
+      g.setColor(1,col.lgray);
+      g.fillRect(0,200,239,239); //mac
+      g.setColor(0,col.black);
+      g.setFont("Vector",28);
+      g.drawString(rep.mac[rep.go].substring(0,17),120-(g.stringWidth(rep.mac[rep.go].substring(0,17))/2),210);
+      g.flip();
+    }
+    this.tid=setTimeout(function(t){
+      t.tid=-1;
+      t.show();
+    },2000,this);
+  },
+  tid:-1,
+  run:false,
+  clear : function(){
+    var g=w.gfx;
+    pal[0]=col.black;
+    g.clear();
+    this.exit();
+    return true;
+  },
+  exit: function(){
+    this.run=false;
+    if (this.tid>=0) clearTimeout(this.tid);
+    this.tid=-1;
+    return true;
+  },
+  off: function(){
+    var g=w.gfx;
+    g.off();
+    this.clear();
+  }
+};
+//loop face
+face[1] = {
+  offms:1000,
+  init: function(){
+  return true;
+  },
+  show : function(){
+    face.go("main",0);
+    return true;
+  },
+   clear: function(){
+  return true;
+  }
+};	
+//setup face
+face[5] = {
+  offms: 5000,
+  init: function(o){
+    var g=w.gfx;
+    //rep.scan();
+    g.setColor(0,colo.hdr); //header
+    g.fillRect(0,0,239,35); 
+    g.setColor(1,colo.hTxt);
+    g.setFont("Vector",30);
+	g.drawString("SCAN",240-(g.stringWidth("SCAN")),10); 
+    g.setFont("Vector",32);
+    g.flip();
+    this.done=0;
+	this.run=true;
+  },
+  show : function(o){
+    if (!this.run) return;
+    var g=w.gfx;
+    if (rep.mac==""){ 
+      g.setColor(0,colo.hdr); //header
+      g.fillRect(0,0,120,35);
+      g.flip();
+      g.setColor(1,col.lgray);
+      g.fillRect(0,50,239,239); 
+      g.setColor(0,col.white);
+      g.setFont("Vector",32);
+      g.drawString("SCANNING",120-(g.stringWidth("SCANNING")/2),110);
+      this.done=0;
+      rep.go=-1;
+      g.flip();
+    }else if (this.done==0){
+      this.done=1;
+      g.setColor(0,colo.hdr); //header
+      g.fillRect(0,0,120,35);
+      g.setColor(1,col.lgray);
+      g.setFont("Vector",30);
+      g.drawString(rep.mac.length+"/"+rep.mac.length,4,10);
+      g.flip();
+      g.setColor(1,col.lgray);
+      g.fillRect(0,50,239,239); 
+      g.flip();
+      g.setFont("Vector",28);
+      if (rep.mac[0]!=undefined){
+        if (rep.go==0) g.setColor(1,col.raf);
+        else g.setColor(1,col.lgray);
+        g.fillRect(0,50,239,97); 
+        g.setColor(0,col.white);
+        g.drawString(rep.mac[0].substring(0,17),120-(g.stringWidth(rep.mac[0].substring(0,17))/2),60);}
+        g.flip();
+      if (rep.mac[1]!=undefined){
+        if (rep.go==1) g.setColor(1,col.raf);
+        else g.setColor(1,col.gray);
+        g.fillRect(0,97,239,144); 
+        g.setColor(0,col.white);
+        g.drawString(rep.mac[1].substring(0,17),120-(g.stringWidth(rep.mac[1].substring(0,17))/2),107);}
+        g.flip();
+      if (rep.mac[2]!=undefined){
+        if (rep.go==2) g.setColor(1,col.raf);
+        else g.setColor(1,col.lgray);
+        g.fillRect(0,144,239,193); 
+        g.setColor(0,col.white);
+        g.drawString(rep.mac[2].substring(0,17),120-(g.stringWidth(rep.mac[2].substring(0,17))/2),155);}
+        g.flip();
+      if (rep.mac[3]!=undefined){
+        if (rep.go==3) g.setColor(1,col.raf);
+        else g.setColor(1,col.gray);
+        g.fillRect(0,193,239,239); 
+        g.setColor(0,col.white);
+        g.drawString(rep.mac[3].substring(0,17),120-(g.stringWidth(rep.mac[3].substring(0,17))/2),203);}
+        g.flip();
+    }
+    
+    this.tid=setTimeout(function(t){
+      t.tid=-1;
+      t.show(o);
+    },100,this);
+  },
+  tid:-1,
+  run:false,
+  clear : function(){
+    var g=w.gfx;
+    pal[0]=col.black;
+    g.clear();
+    this.exit();
+    return true;
+  },
+  exit: function(){
+    this.run=false;
+    if (this.tid>=0) clearTimeout(this.tid);
+    this.tid=-1;
+    return true;
+  },
+  off: function(){
+    var g=w.gfx;
+    g.off();
+    this.clear();
+  }
+};
+//touch main
+touchHandler[0]=function(e,x,y){
+    var p=w.pin.MOTOR;
+    if (e==5){
+	  face.go("repellent",5);return;
+    }else if  (e==1){
+	  face.go("repellent",-1);return;
+    }else if  (e==2){
+	  if (y>200&&x<50) {
+        if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
+        else w.gfx.bri.set(this.bri);
+		digitalPulse(p,1,[30,50,30]);
+      }else if (y>200) {  
+		face.go("settings",0);return;
+	  } else digitalPulse(p,1,40);
+    }else if  (e==3){
+	  face.go("main",0);return;
+    }else if  (e==4){
+	  face.go("euc",0);return;
+    }else if  (e==12){		
+	  digitalPulse(p,1,40);    
+    }
+    this.timeout();
+};
+//setup 
+
+ touchHandler[5]=function(e,x,y){
+    var p=w.pin.MOTOR;
+    if (e==5){
+	   if (y<=50) rep.scan();
+	   else if(50<y&&y<=97) {
+         if (rep.mac[0]!=undefined) {
+           digitalPulse(p,1,[30,50,30]);
+           rep.go=0;rep.bat=-1;rep.med=-1;
+           face.go("repellent",0);return;
+         } else digitalPulse(p,1,40);
+	   }else if(97<y&&y<=144) {
+         if (rep.mac[1]!=undefined) {
+           digitalPulse(p,1,[30,50,30]);
+           rep.go=1;rep.bat=-1;rep.med=-1;
+           face.go("repellent",0);return;
+         } else digitalPulse(p,1,40);
+       }else if(144<y&&y<=193) {
+         if (rep.mac[2]!=undefined) {
+           digitalPulse(p,1,[30,50,30]);
+           rep.go=2;rep.bat=-1;rep.med=-1;
+           face.go("repellent",0);return;
+         } else digitalPulse(p,1,40);
+       }else if(193<y) {
+         if (rep.mac[3]!=undefined) {
+           digitalPulse(p,1,[30,50,30]);
+           rep.go=3;rep.bat=-1;rep.med=-1;
+           face.go("repellent",0);return;
+         } else digitalPulse(p,1,40);
+       }else digitalPulse(p,1,40);
+    }else if  (e==1){
+	  face.go("repellent",-1);return;
+    }else if  (e==2){
+	  if (y>200&&x<50) {
+        if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
+        else w.gfx.bri.set(this.bri);
+		digitalPulse(p,1,[30,50,30]);
+      }else if (y>200) {  
+		face.go("settings",0);return;
+	  } else digitalPulse(p,1,40);
+    }else if  (e==3){
+	  digitalPulse(p,1,40);    
+    }else if  (e==4){
+	  face.go("repellent",0);return;
+    }else if  (e==12){		
+	  digitalPulse(p,1,40);    
+    }
+    this.timeout();
+};
