@@ -72,10 +72,10 @@ var set={
 		this.atcR=undefined;this.atcW=undefined;
 		this.hidM=undefined;NRF.disconnect();
         NRF.setServices(undefined,{uart:false});
-//		NRF.setAdvertising({},{connectable:false}); 
+		NRF.setAdvertising({},{connectable:false}); 
 //   		NRF.sleep();
 	} else {
-		//NRF.setAdvertising({}, { name:this.name,connectable:true });
+		NRF.setAdvertising({}, { name:this.name,connectable:true });
 		if (set.hid==1 && this.hidM ==undefined) this.hidM=require("ble_hid_controls");//enable hid
 		if (set.atc ==1) eval(require('Storage').read('atc'));
 		else {

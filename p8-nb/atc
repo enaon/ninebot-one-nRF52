@@ -36,6 +36,7 @@ global.push={
       }
     this.no=0;
     }
+	if (require("Storage").getFree()<1000) require("Storage").compact();
     this.list=-1;
   },
 };
@@ -56,16 +57,16 @@ var atcR= function(evt){
       let ti=(""+d[4]+" "+d[0]+" "+d[2]);
       if (push.txt.indexOf(":") >= 0 && push.txt.indexOf(":") <= 20){ //info
         push.from=p[1].substr(0, push.txt.indexOf(':')-1);
-        push.txt=p[1].substr(p[1].indexOf(':')+1);
+        push.txt=p[1].substr(p[1].indexOf(':')+1).replace(/(\n)/gm, " ");
         require("Storage").write("info"+push.no,push.from+"\n"+ti+"\n"+push.txt);
       } else if (p[0]==9) { //notes
         push.from=p[1];
         if (p[2]=="") require("Storage").erase("note"+p[3]);
-        else require("Storage").write("note"+p[3],push.from+"\n"+ti+"\n"+p[2]);
+        else require("Storage").write("note"+p[3],push.from+"\n"+ti+"\n"+p[2]).replace(/(\n)/gm, " ");
       }  else if (p[0]==8) { //todo
         push.from=p[1];
         if (p[2]=="")require("Storage").erase("todo"+p[3]);
-        else require("Storage").write("todo"+p[3],push.from+"\n"+ti+"\n"+p[2]);
+        else require("Storage").write("todo"+p[3],push.from+"\n"+ti+"\n"+p[2]).replace(/(\n)/gm, " ");
       }
       p=undefined;
       d=undefined;

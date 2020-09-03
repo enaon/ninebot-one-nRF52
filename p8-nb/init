@@ -77,8 +77,8 @@ SPI2.disable();SPI2.enable(0x80,0); //8MBit, mode 0
 
 function lcd_cmd(arr){
   var b=E.toString(arr); // flat string buffer
-  if (!b){print("lcd_cmd: OOPS, undefined");E.defrag();b=E.toString(arr); }
-  if (!b){print("lcd_cmd: OOPS again!");E.defrag();b=E.toString(arr); }
+  if (!b){E.defrag();b=E.toString(arr); }
+  if (!b){E.defrag();b=E.toString(arr); }
   pin.LCD_CS.reset();
   SPI2.cmd(E.getAddressOf(b,true),b.length);
   pin.LCD_CS.set();
