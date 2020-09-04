@@ -76,8 +76,74 @@ face[1] = {
 };	
 //info face
 face[5] = {
+  gr2en:function(text) {
+	if (set.gr==1){
+    text = text
+    .replace(/\xCE\xB1/g, 'a')
+    .replace(/\xCE\x91/g, 'A')
+    .replace(/\xCE\xB2/g, 'b')
+    .replace(/\xCE\x92/g, 'B')
+    .replace(/\xCE\xB3/g, 'g')
+    .replace(/\xCE\x93/g, 'G')
+    .replace(/\xCE\xB4/g, 'd')
+    .replace(/\xCE\x94/g, 'D')
+    .replace(/\xCE\xB5/g, 'e')
+    .replace(/\xCE\x95/g, 'E')
+    .replace(/\xCE\xB6/g, 'z')
+    .replace(/\xCE\x96/g, 'Z')
+    .replace(/\xCE\xB7/g, 'h')
+    .replace(/\xCE\x97/g, 'H')
+    .replace(/\xCE\xB8/g, '8')
+    .replace(/\xCE\x98/g, '8')
+    .replace(/\xCE\xB9/g, 'i')
+    .replace(/\xCE\x99/g, 'I')
+    .replace(/\xCE\xBA/g, 'k')
+    .replace(/\xCE\x9A/g, 'K')
+    .replace(/\xCE\xBB/g, 'l')
+    .replace(/\xCE\x9B/g, 'L')
+    .replace(/\xCE\xBC/g, 'm')
+    .replace(/\xCE\x9C/g, 'M')
+    .replace(/\xCE\xBD/g, 'n')
+    .replace(/\xCE\x9D/g, 'N')
+    .replace(/\xCE\xBE/g, 'ks')
+    .replace(/\xCE\x9E/g, 'KS')
+    .replace(/\xCE\xBF/g, 'o')
+    .replace(/\xCE\x9F/g, 'O')
+    .replace(/\xCF\x80/g, 'p')
+    .replace(/\xCE\xA0/g, 'P')
+    .replace(/\xCF\x81/g, 'r')
+    .replace(/\xCE\xA1/g, 'R')
+    .replace(/\xCF\x83/g, 's')
+    .replace(/\xCE\xA3/g, 'S')
+    .replace(/\xCF\x82/g, 's')
+    .replace(/\xCF\x84/g, 't')
+    .replace(/\xCE\xA4/g, 'T')
+    .replace(/\xCF\x85/g, 'u')
+    .replace(/\xCE\xA4/g, 'Y')
+    .replace(/\xCF\x86/g, 'f')
+    .replace(/\xCE\xA6/g, 'F')
+    .replace(/\xCF\x87/g, 'x')
+    .replace(/\xCE\xA7/g, 'X')
+    .replace(/\xCF\x88/g, 'ps')
+    .replace(/\xCE\xA8/g, 'PS')
+    .replace(/\xCF\x89/g, 'w')
+    .replace(/\xCE\xA9/g, 'W')  
+    .replace(/\xCE\xAC/g, 'a')
+    .replace(/\xCE\xAD/g, 'e')
+    .replace(/\xCF\x8C/g, 'o')
+    .replace(/\xCE\xAF/g, 'i')
+    .replace(/\xCE\xAE/g, 'h')
+    .replace(/\xCF\x8D/g, 'u')
+    .replace(/\xCF\x8A/g, 'i')
+    .replace(/\xCF\xAB/g, 'u')
+    .replace(/\xCE\x90/g, 'i')
+    .replace(/\xCE\xB0/g, 'u'); 	
+    return text;
+	}
+  },
   offms: 3000,
   init: function(type){
+    this.reshape=(str,N) => str.split('').reduce((o,c,i) => o+(!i || i%N?'':'\n')+c, '');
     var g=w.gfx;
     if (type==="info") {
       this.list=require("Storage").list("info");
@@ -89,6 +155,7 @@ face[5] = {
     this.type=type;
     this.go=this.list.length-1;
     this.at=this.go;
+    this.del=0;
     g.setColor(1,col.raf3);
     g.fillRect(0,0,239,30);
     g.setColor(0,col.dgray);
@@ -105,12 +172,14 @@ face[5] = {
       g.drawString(lo[0],3,5);
       g.drawString(this.go+1+"/"+this.list.length,239-(g.stringWidth(this.go+1+"/"+this.list.length)),5);
 	  g.flip();
+      g.setFont("Vector",21);
       g.setColor(0,col.dgray);
       g.setColor(1,col.lblue);
-      //var lala=require("Storage").read(this.type+this.list[this.list.length-1].substr(4));
 	  //g.drawString(lo[2].toUpperCase(),120-(g.stringWidth(lo[2].toUpperCase())/2),80);
-  	  g.drawString(lo[2].toUpperCase(),3,50);
+  	  if (set.gr==1) g.drawString(this.reshape(this.gr2en(lo[2]).toUpperCase(),17),3,50);
+	  else g.drawString(this.reshape(lo[2].toUpperCase(),17),3,50);
       g.flip();
+      g.setFont("Vector",24);
       g.setColor(0,col.dgray);
       g.setColor(1,col.lgray);
    	  g.drawString(lo[1],120-(g.stringWidth(lo[1])/2),218);
@@ -122,13 +191,36 @@ face[5] = {
   show : function(){
     if (!this.run||this.list.length==0) return;
     var g=w.gfx;
-    if (this.go!=this.at){
+    if (this.del===1) {
+      this.del=2;
+      g.setColor(1,col.dgray);
+      g.fillRect(0,0,239,60);
+      g.setColor(0,col.lgray);
+      g.setFont("Vector",20);
+      g.drawString("SWIPE LEFT TO",120-(g.stringWidth("SWIPE LEFT TO")/2),15);
+      g.flip();
+      g.setColor(1,col.red);
+      g.fillRect(0,60,239,115);
+      g.setColor(0,col.white);
+      g.setFont("Vector",30);
+      g.drawString("DELETE",120-(g.stringWidth("DELETE")/2),75);
+      g.flip();
+      g.setColor(1,col.dgray);
+      g.fillRect(0,120,239,180);
+      g.setColor(0,col.lgray);
+      g.setFont("Vector",20);
+      g.drawString("OR TAP TO",120-(g.stringWidth("OR TAP TO")/2),140);
+      g.flip();
+      g.setColor(1,col.gray);
+      g.fillRect(0,180,239,239);
+      g.setColor(0,col.white);
+      g.setFont("Vector",30);
+      g.drawString("CANCEL",120-(g.stringWidth("CANCEL")/2),200);
+      g.flip();
+    }else if (this.go!=this.at){
       if (this.go>this.list.length-1) this.go=0;
       if (this.go<0) this.go=this.list.length-1;
       this.at=this.go;
-      //g.setColor(0,col.black);
-     // g.fillRect(0,0,239,239); //all
-      //g.setColor(1,colo.txt1);
       var lo=require("Storage").read(this.type+this.list[this.go].substr(4)).split("\n");
       g.setFont("Vector",24);
       g.setColor(1,col.raf3);
@@ -138,15 +230,17 @@ face[5] = {
       g.drawString(lo[0],3,5);
       g.drawString(this.go+1+"/"+this.list.length,239-(g.stringWidth(this.go+1+"/"+this.list.length)),5);
 	  g.flip();
+      g.setFont("Vector",21);
       g.setColor(0,col.dgray);
-      g.fillRect(0,30,239,200);
+      g.fillRect(0,30,239,210);
       g.setColor(1,col.lblue);
-      //var lala=require("Storage").read(this.type+this.list[this.go].substr(4));
 	  //g.drawString(lo[2].toUpperCase(),120-(g.stringWidth(lo[2].toUpperCase())/2),80);
-   	  g.drawString(lo[2].toUpperCase(),3,50);
+  	  if (set.gr==1) g.drawString(this.reshape(this.gr2en(lo[2]).toUpperCase(),17),3,50);
+	  else g.drawString(this.reshape(lo[2].toUpperCase(),17),3,50);
       g.flip();
+      g.setFont("Vector",24);
       g.setColor(0,col.dgray);
-      g.fillRect(0,200,239,239);
+      g.fillRect(0,210,239,239);
       g.setColor(1,col.lgray);
    	  g.drawString(lo[1],120-(g.stringWidth(lo[1])/2),218);
       g.flip();
@@ -214,7 +308,16 @@ touchHandler[0]=function(e,x,y){
 
 touchHandler[5]=function(e,x,y){
     var p=w.pin.MOTOR;
-    if (e==5){
+    if (face[5].del===2){
+      if  (e==3) {
+        require("Storage").erase(face[5].type+(face[5].list[face[5].go].substr(4)));
+        face[5].list=require("Storage").list(face[5].type);
+        if (face[5].list.length==0){digitalPulse(p,1,80);face.go("push",0);return;} 
+        face[5].go--;
+      } else face[5].at=-1;
+      face[5].del=0;
+      return;
+    }else if (e==5){
 	  digitalPulse(p,1,40);
     }else if  (e==1){
       face[5].go++;
@@ -223,13 +326,8 @@ touchHandler[5]=function(e,x,y){
 	  face[5].go--;
       digitalPulse(p,1,30,50,30);
     }else if  (e==3){
-      if  (face[5].list.length>0){
-        require("Storage").erase(face[5].type+(face[5].list[face[5].go].substr(4)));
-        face[5].list=require("Storage").list(face[5].type);
-        if (face[5].list.length==0){digitalPulse(p,1,80);face.go("push",0);return;} 
-        face[5].go--;
-        digitalPulse(p,1,30,50,30);
-      }else face.go("push",0);return;
+      if  (face[5].list.length>0) face[5].del=1;
+      else {face.go("push",0); return;}
     }else if  (e==4){
 	  face.go("push",0);return;
     }else if  (e==12){

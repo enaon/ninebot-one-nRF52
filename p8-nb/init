@@ -191,8 +191,6 @@ w.gfx.init();
 //hold the button to stop loading if the p8 falls to a restart loop.
 if (!w.pin.BUTTON.read()) {
 eval(require('Storage').read('handler'));
-//eval(require('Storage').read('hid'));
-eval(require('Storage').read('alarm'));
 eval(require('Storage').read('euc'));
 eval(require('Storage').read('euc.md'));
 eval(require('Storage').read('main'));

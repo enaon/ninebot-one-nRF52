@@ -18,14 +18,19 @@ NRF.setServices({
 }, { advertise: ['0x190A'], uart:Boolean(set.cli) });
 
 if (!global.push){
+get=function(type){
+   var list=require("Storage").list(type);
+   if (list.length==0) return 0;
+   else {return Number(list[list.length-1].substr(4));}
+};   
 global.push={
   from:0,
   txt:0,
-  info:0,
-  note:0,
-  todo:0,
   run:0,
   no:0,
+  info:get("info"),
+  note:get("note"),
+  todo:get("todo"),
   clear:function(i,n){
     this.no=0;
     this.list=require("Storage").list(i);
@@ -40,10 +45,9 @@ global.push={
     this.list=-1;
   },
 };
+get=undefined;
 }
-var ee=E.toString();
 var atcR= function(evt){
-  let eof=0;
   let srt=String.fromCharCode.apply(String,evt.data);
   if (push.run==1) {
     push.txt=push.txt+srt;
@@ -56,14 +60,17 @@ var atcR= function(evt){
       let d=(Date()).toString().split(' ');
       let ti=(""+d[4]+" "+d[0]+" "+d[2]);
       if (push.txt.indexOf(":") >= 0 && push.txt.indexOf(":") <= 20){ //info
+        push.info++;
         push.from=p[1].substr(0, push.txt.indexOf(':')-1);
         push.txt=p[1].substr(p[1].indexOf(':')+1).replace(/(\n)/gm, " ");
-        require("Storage").write("info"+push.no,push.from+"\n"+ti+"\n"+push.txt);
+        require("Storage").write("info"+push.info,push.from+"\n"+ti+"\n"+push.txt);
       } else if (p[0]==9) { //notes
+        push.note++;
         push.from=p[1];
         if (p[2]=="") require("Storage").erase("note"+p[3]);
         else require("Storage").write("note"+p[3],push.from+"\n"+ti+"\n"+p[2]).replace(/(\n)/gm, " ");
       }  else if (p[0]==8) { //todo
+        push.todo++;
         push.from=p[1];
         if (p[2]=="")require("Storage").erase("todo"+p[3]);
         else require("Storage").write("todo"+p[3],push.from+"\n"+ti+"\n"+p[2]).replace(/(\n)/gm, " ");
