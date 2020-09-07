@@ -68,25 +68,32 @@ face[0] = {
   g.flip();
   }
   //minutes
-  if (t[1]!=this.min){
+  if (t[1]!=this.min || alrm.btn!==-1 ){
     this.min=t[1];
-//  g.drawString(":",100,75);
     g.setFont("Vector",60);
-    g.setColor(0,colo.bck);
+	this.c=colo.txt1;
+	this.alct=this.c;
+	if (alrm.start==1) {
+    if (alrm[1].tmr!==-1||alrm[2].tmr!==-1||alrm[3].tmr!==-1) {this.alcl=colo.btnEn;}
+  	else if (alrm.buzz!=-1) {this.alcl=colo.btnAl;this.c=colo.txt3;}
+    else  {this.alcl=colo.bck;this.alct=colo.txt3;}
+	}else this.alcl=colo.bck;
+	g.setColor(0,this.alcl);
     g.fillRect(105,55,210,150);
-    g.setColor(1,colo.txt1);//
+	g.setColor(1,this.c);//
     g.drawString(t[1],123,75); //minutes
     g.flip();
   }
   //seconds
-  g.setColor(0,colo.bck);
+//  g.setColor(0,colo.bck);
+  g.setColor(0,this.alcl);
   g.fillRect(211,55,240,150);
   g.setColor(1,colo.btnTxt);//
   g.setFont("Vector",35);
   g.drawString(s[0],218,70); //seconds
   g.drawString(s[1],218,108); //seconds
   g.flip(); 
-  //batt & bt status
+  //batt status
   if (this.v!=this.batt ){
     this.batt=this.v;
     if (digitalRead(w.pin.CHARGING)==1)
@@ -108,7 +115,8 @@ face[0] = {
   if (set.bt != this.bt){
 	this.bt=set.bt;
 	if (this.bt==0)	g.setColor(0,colo.bck1);
-    else g.setColor(0,colo.bck3);
+    else if (this.bt==1)  g.setColor(0,colo.bck3);
+    else  g.setColor(0,colo.btnSt);
 	g.fillRect(0,0,158,50); //date
     g.setColor(1,colo.btnTxt);
     g.setFont("Vector",35);
@@ -129,12 +137,10 @@ face[0] = {
   if (alrm.start==1) {
   if(alrm.btn!==-1){
     alrm.btn=-1;
-    this.c=colo.btnTxt;
-  	if (alrm.buzz!=-1) g.setColor(0,colo.btnAl);
-    else if (alrm[1].tmr!==-1||alrm[2].tmr!==-1||alrm[3].tmr!==-1) {g.setColor(0,colo.btnEn);this.c=colo.btnTxt1;}
-    else  g.setColor(0,colo.btnDs1);
+	if (this.alcl==colo.bck) this.alc=colo.bck1; else this.alc=this.alcl
+	g.setColor(0,this.alc);
 	g.fillRect(82,200,158,239); //bottom 2 alarms
-	g.setColor(1,this.c);
+	g.setColor(1,this.alct);
 	g.setFont("Vector",35);
 	g.drawString("AL",97,207); //Alarms
 	g.flip();
@@ -232,14 +238,14 @@ face[2] = {
   if (t[1]!=this.min){
     this.min=t[1];
     g.setFont("Vector",60);
-    g.setColor(0,colo.bck);
+    g.setColor(0,colo.btnEn);
     g.fillRect(105,55,210,150);
     g.setColor(1,colo.txt1);//
     g.drawString(t[1],123,75); //minutes
     g.flip();
   }
   //seconds
-  g.setColor(0,colo.bck);
+  g.setColor(0,colo.btnEn);
   g.fillRect(211,55,240,150);
   g.setColor(1,col.black);//
   g.setFont("Vector",35);
@@ -274,9 +280,6 @@ face[2] = {
 };	
 //touch-main
 touchHandler[0]=function(e,x,y){
-    this.fto=-1;
-	this.face="main";
-//   this.farg=-1;
     var p=w.pin.MOTOR;
     if (e==5){
 	//alarms
@@ -289,6 +292,9 @@ touchHandler[0]=function(e,x,y){
           digitalPulse(p,1,[30,50,30]);
           face.go("euc",0);return;
         }else digitalPulse(p,1,40);
+      }else if (x>105 && (55<y&&y<150)){ 
+	     digitalPulse(p,1,[30,50,30]);
+         face.go("alarm",0);return;
 	//hid music controls
       }else if (x<158 && y<50){ 
 	   if (typeof hidM!="undefined"){

@@ -328,8 +328,8 @@ touchHandler[5]=function(e,x,y){
 		face.go("settings",0);return;
     }else if  (e==12){
 	//euc on/off
-	 if (x<120 && y>190) reset();
-	 else if (x>120 && y>190) reset();
+	 if (x<120 && y>190) {NRF.disconnect(); reset();}
+	 else if (x>120 && y>190) {NRF.disconnect(); reset();}
      else digitalPulse(p,1,40);
     }
    this.timeout();

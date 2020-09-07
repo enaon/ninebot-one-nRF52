@@ -202,6 +202,6 @@ eval(require('Storage').read('main'));
     setTimeout(() => {
       reset();
     }, 500);
-},w.pin.BUTTON,{repeat:false, edge:"falling"}); 
+},w.pin.BUTTON,{repeat:false, edge:"rising"}); 
 }
   
