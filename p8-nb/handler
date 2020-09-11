@@ -1,21 +1,61 @@
+//handler
+
 //set p8 type
-const touchtype="816"; //716|816|816s
-const acctype="BMA421"; //BMA421|SC7A20
+const touchtype="716"; //716|816|816s
+const acctype="SC7A20"; //BMA421|SC7A20
+//settings - run set.upd() after changing settings to take effect.
+var set={
+  name:"p8-tinb", //Set the name to be broadcasted by the Bluetooth module. 
+  cli:1, //Nordic serial bluetooth access. Enables/disables Espruino Web IDE.
+  hid:0, //enable/disable Bluetooth music controll Service.
+  atc:1, //Notifications service. Enables/disables support for "d6 notification" playstore app from ATC1441.
+  acc:1, //enables/disables wake-screen on wrist-turn. 
+  bt:0, //Incommint BT service status indicator- Not user settable.0=not_connected|1=atc|2=cli
+  tor:0, //Enables/disables totch- Not user settable.
+  ondc:0, //charging indicator-not user settable.
+  boot:getTime(), 
+  accR:function(){if (this.acc)acc.on(); else acc.off();},
+  hidM:undefined, //not user settable.
+  upd:function(){ //run this for settings changes to take effect.
+	if (this.atc==0 && this.cli==0 && this.hid==0) {
+        NRF.setAdvertising({},{connectable:false});
+        NRF.disconnect();
+      	this.atcR=undefined;this.atcW=undefined;this.hidM=undefined;
+	} else {
+		if (set.hid==1 && this.hidM==undefined) this.hidM=require("ble_hid_controls");//enable hid
+        NRF.setAdvertising({},{connectable:false});
+        NRF.disconnect();
+		if (set.atc==1){
+          eval(require('Storage').read('atc'));}
+		else {
+  		    this.atcR=undefined;this.atcW=undefined;
+			NRF.setServices({},{uart:Boolean(set.cli),hid:(set.hid)?this.hidM.report:undefined});
+		}
+   		if (set.hid==0) this.hidM=undefined;
+        NRF.setAdvertising({}, { name:this.name,connectable:true });
+	}
+  }
+};
+//ble state
+NRF.on('disconnect',function() {NRF.disconnect();set.bt=0;});  
+NRF.on('connect',function(addr) {set.bt=2;});
+set.upd(); //comment out for debuging, uncomment for working mode. 
 //face
 var face={
-  appCurr:"",
-  appPrev:"",
+  appCurr:"main",
+  appPrev:"main",
   pageCurr:-1,
   pagePrev:-1,	
   pageArg:"",
   offid:-1,
   offms:-1,
   off:function(page){ 
+      if (this.pageCurr===-1) {print("face-1");return;}
       if (this.offid>=0) {clearTimeout(this.offid); this.offid=-1;}
       if (face[this.pageCurr]!=-1) this.offms=face[this.pageCurr].offms;
       this.offid=setTimeout((c)=>{
         this.offid=-1;
-		if (set.acc&&acc.tid==-1) acc.on();
+		//if (set.acc&&acc.tid==-1) acc.on();
 		if (c===0||c===2) {
 			if (this.appCurr==="main") {
 				if (face[c].off) {
@@ -37,7 +77,6 @@ var face={
   	if (this.pageCurr==-1 && this.pagePrev!=-1) {
 		if (touchtype=="716")tfk.loop=100;
 		face[this.pagePrev].off();
-		if (set.acc&&acc.tid==-1) acc.on();
 		if (this.offid>=0) {clearTimeout(this.offid); this.offid=-1;}
 		return;
 	}
@@ -55,43 +94,12 @@ var face={
 	if(arg) this.pageArg=arg;
   }
 };
-//settings - run set.upd() after changing settings to take effect.
-var set={
-  name:"p8enaon", //Set the name to be broadcasted by the Bluetooth module. 
-  cli:1, //Nordic serial bluetooth access. Enables/disables Espruino Web IDE.
-  hid:0, //enable/disable Bluetooth music controll Service.
-  atc:1, //Notifications service. Enables/disables support for "d6 notification" playstore app from ATC1441.
-  acc:1, //enables/disables wake-screen on wrist-turn. 
-  bt:-1, //Incommint BT service status indicator- Not user settable.-1=init state|0=not_connected|1=atc|2=cli
-  tor:0, //Enables/disables totch- Not user settable.
-  boot:getTime(), 
-  accR:function(){if (this.acc)acc.on(); else acc.off();},
-  hidM:undefined, //not user settable.
-  upd:function(){ //run this for settings changes to take effect.
-	if (this.atc==0 && this.cli==0 && this.hid==0) {
-        NRF.setAdvertising({},{connectable:false});
-        NRF.disconnect();
-      	this.atcR=undefined;this.atcW=undefined;this.hidM=undefined;
-	} else {
-		if (set.hid==1 && this.hidM==undefined) this.hidM=require("ble_hid_controls");//enable hid
-        if (set.bt!=-1)  {NRF.setAdvertising({},{connectable:false});NRF.disconnect();} 
-		if (set.atc==1){
-          eval(require('Storage').read('atc'));}
-		else {
-  		    this.atcR=undefined;this.atcW=undefined;
-			NRF.setServices({},{uart:Boolean(set.cli),hid:(set.hid)?this.hidM.report:undefined});
-		}
-   		if (set.hid==0) this.hidM=undefined;
-        NRF.setAdvertising({}, { name:this.name,connectable:true });
-	}
+//touch 
+var touchHandler = {
+  timeout: function(){
+	face.off(face.pagePrev);
   }
 };
-set.upd();
-if (set.bt<0) set.bt=0; //keep web-ide conection alive while uploading files. 
-//ble state
-NRF.on('disconnect',function() {NRF.disconnect();set.bt=0;});  
-NRF.on('connect',function(addr) {set.bt=2;});
-//NRF.on('connect',function(addr) {if (set.bt==1) NRF.disconnect(); set.bt=2;});
 //charging notify
 setWatch(function(s){
   var co;
@@ -99,9 +107,11 @@ setWatch(function(s){
   if (s.state==1) {
 	digitalPulse(w.pin.MOTOR,1,200); 
 	co=col.raf;
+	set.ondc=1;
   }else {
 	digitalPulse(w.pin.MOTOR,1,[100,80,100]);
   	co=col.black;
+	set.ondc=0;
   }
   if (face.pageCurr<0){
 	if (face.offid==-1){ g.clear();g.flip();}
@@ -158,12 +168,6 @@ function buttonHandler(s){
   button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:0});
 }
 button=setWatch(buttonHandler,BTN1, {repeat:false, debounce:10,edge:0});
-//touch 
-var touchHandler = {
-  timeout: function(){
-	face.off(this.fto);
-  }
-};
 //touch controller
 //var i2c=I2C1;
 var i2c=new I2C();
@@ -244,15 +248,19 @@ st:1,
 loop:5,
 init:function(){
 	var tp=i2c.readFrom(0x15,7);
-	//print(tp);
+//	print(tp);
 	if (tp[3]==128) {
+        if (this.time==-1) this.time=getTime();
         if (this.st) {
           if (face.pageCurr==-1){this.loop=5;face.go(face.appCurr,0);return;}
           this.st=0;
           this.do=1;
           this.x=tp[4];this.y=tp[6];
         }
-        if (tp[1]==0 && this.do==1) {
+        if (getTime()-this.time>1&&this.do==1){ 
+            touchHandler[face.pageCurr](12,this.x,this.y);
+            this.do=0;
+        }else if (tp[1]==0 && this.do==1) {
             var a=0;
             if (tp[6]>=this.y+20) a=1;
 	        else if (tp[6]<=this.y-20) a=2;
@@ -266,9 +274,9 @@ init:function(){
             if (tp[1]==5||tp[1]==12){touchHandler[face.pageCurr](tp[1],this.x,this.y);this.do=0;}
         }
 	}else if (tp[3]==255) {
-		if (this.do===1){touchHandler[face.pageCurr](5,this.x,this.y);this.do=0;}
-		this.st=1;
-	}
+		if (this.do===1){touchHandler[face.pageCurr](5,this.x,this.y);this.do=0;        }
+		this.st=1;this.time=-1;
+    }
 	this.tid=setTimeout(function(t){
 		t.tid=-1;
 		t.init();
@@ -300,9 +308,7 @@ var acc={
 	if(this.run===-1) return;
     var data;
 	if (acctype=="BMA421") data=i2c.readFrom(0x18,6);
-    else {
-      data={}; data[3]=i2c.readFrom(0x18,1)+"";
-    } 
+    else {data={}; data[3]=i2c.readFrom(0x18,1)+"";} 
 	//console.log(data);
 	if (230<data[3]&&data[3]<250) {
 		if (acctype!="BMA421"){
@@ -313,18 +319,18 @@ var acc={
 		if (data[1]<15||data[1]>=250) {
 		  if (!w.gfx.isOn&&this.up==0&&face.appCurr!=""){ 
             this.up=1; 
-            if (typeof euc !== 'undefined'&&euc.conn!="OFF") face.go("euc",0);
+			if  (typeof euc !== 'undefined') {if (euc.conn!="OFF") face.go("euc",0);}
             else{ 
 				this.loop=1500;
 				if (face.appCurr=="main") face.go("main",2);
 				else face.go(face.appCurr,0);
 			}
-		  }else if (w.gfx.isOn&&face.pageCurr!=-1) {
-
+		  }
+          else if (w.gfx.isOn&&face.pageCurr!=-1) {
 			if (face.appCurr=="main" && face.pageCurr==2) face.go("main",0);
 			else if (set.tor!=1) face.off();
 //			this.loop=500;
-		  }
+		  } 
 		}
     }else {this.loop=300;this.up=0;}
     this.tid=setTimeout(function(t){
@@ -333,7 +339,6 @@ var acc={
     },this.loop,this);
   }
 };
-set.accR();
 //themes -todo
 col={
 	black:0,
@@ -352,11 +357,15 @@ col={
 	gray:2730,
 	lgray:3003,
 	dgray:1365,
+	dgray1:1351,
 	lgreen:1525,
 	red:3840,
 	dred:3925,
+	dred1:3888,
 	purple:3935,
-	yellow:4085
+	lyellow:4085,
+	dyellow:4064,
+	yellow:4080
 };
 var colo={ txt: 4095, txt1: 1535, txt2: 1365, txt3: 0,
   hdr: 1368, hTxt: 3003, bck: 1708, bck0: 0, bck1: 3003,
@@ -389,3 +398,5 @@ var colo={
    	btnTxt1:col.white
 };
 */
+//end
+

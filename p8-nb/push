@@ -1,6 +1,6 @@
 //push	
 face[0] = {
-  offms: 3000,
+  offms: 4000,
   init: function(){
     var g=w.gfx;
     g.setColor(1,col.black);
@@ -76,7 +76,7 @@ face[1] = {
 };	
 //info face
 face[5] = {
-  offms: 3000,
+  offms: 10000,
   wrap:function(str,size){
     str=str.split(' ');
     var line="";
@@ -157,16 +157,20 @@ face[5] = {
       g.drawString("SWIPE LEFT TO",120-(g.stringWidth("SWIPE LEFT TO")/2),5);
       g.flip();
       g.setColor(1,col.red);
-      g.fillRect(0,40,239,120);
+      g.fillRect(0,40,239,160);
       g.setColor(0,col.white);
       g.setFont("Vector",26);
       g.drawString("DELETE",120-(g.stringWidth("DELETE")/2),65);
+      g.setFont("Vector",20);
+      g.drawString(this.type.toUpperCase()+" "+(this.go+1),120-(g.stringWidth(this.type.toUpperCase()+" "+(this.go+1))/2),105);
       g.flip();
-      g.setColor(1,col.dgray);
-      g.fillRect(0,120,239,239);
-      g.setColor(0,col.white);
+      g.setColor(1,col.black);
+      g.fillRect(0,160,239,239);
+      g.setColor(0,col.lgray);
+      g.setFont("Vector",18);
+      g.drawString("Or Any other action to",120-(g.stringWidth("Or Any other action to")/2),180);
       g.setFont("Vector",26);
-      g.drawString("CANCEL",120-(g.stringWidth("CANCEL")/2),170);
+      g.drawString("CANCEL",120-(g.stringWidth("CANCEL")/2),215);
       g.flip();
     }else if (this.go!=this.at){
       if (this.go>this.list.length-1) this.go=0;

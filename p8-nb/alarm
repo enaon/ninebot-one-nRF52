@@ -1,5 +1,5 @@
 //Alarms setter
-if (alrm.start==0) {
+if (!global.alrm) {
   global.alrm ={
   buzz:-1,btn:-1,start:1,
   1:{hour:8,min:0,rep:0,snz:0,on:0,set:0,tmr:-1},
@@ -16,7 +16,7 @@ if (alrm.start==0) {
       this.vibr(i);
       this[i].tmr=-1;
       if (this[i].rep===1)this.set(i); 
-    },diff,o); 
+    },(diff-2000),o); 
   },
   clear: function(o){  
     clearTimeout(this[o].tmr);
@@ -25,13 +25,11 @@ if (alrm.start==0) {
   vibr: function(o){
     if (this.buzz!=-1) return; //do something here
 	this.btn=1;
-//    var a=[200];
 	var a=[200,300,100,80,100,80,100,80,100];
     digitalPulse(w.pin.MOTOR,1,a);
     this[o].on=1;
 	this.now=o;
 	this.buzz=setInterval((o)=>{
-//      a.push(300,100,80,100,80,100,80,100);
       digitalPulse(w.pin.MOTOR,1,a); 
     },15000);
   },
@@ -60,9 +58,9 @@ face[0]= {
     var g=w.gfx;
     var d=(Date()).toString().split(' ');
     var t=(d[4]).toString().split(':');
-    g.setColor(0,colo.hdr);//header bck
+    g.setColor(0,col.dgray1);//header bck
     g.fillRect(0,0,239,35); 
-    g.setColor(1,colo.hTxt);//header txt
+    g.setColor(1,col.lblue);//header txt
     g.setFont("Vector",25);
 	g.drawString("ALARMS",4,6); 
     g.setFont("Vector",32);
@@ -171,9 +169,9 @@ face[5] = {
     this.al.curr=o;
     var d=(Date()).toString().split(' ');
     var t=(d[4]).toString().split(':');
-    g.setColor(0,colo.hdr); //header
+    g.setColor(0,col.dgray1); //header
     g.fillRect(0,0,239,35); 
-    g.setColor(1,colo.hTxt);
+    g.setColor(1,col.lblue);
     g.setFont("Vector",25);
 	g.drawString("SET AL"+this.al.curr,4,6); 
     g.setFont("Vector",32);
@@ -259,9 +257,6 @@ face[5] = {
 };
 //touch main
 touchHandler[0]=function(e,x,y){
-	this.face="alarm";
-	this.fto=0;
-    this.farg=-1;
     var p=w.pin.MOTOR;
     if (e==5){
 	   if(39<y&&y<105&&alrm[1].on!==1) {
@@ -316,9 +311,6 @@ touchHandler[0]=function(e,x,y){
 };
 //setup 
 touchHandler[5]=function(e,x,y){
-	this.face="alarm";
-    this.fto=0;
-    this.farg=-1;
     var p=w.pin.MOTOR;
 	var a=face[5].al.curr;
     if (e==5){

@@ -112,10 +112,11 @@ face[0] = {
       g.clearRect(160,80,239,239);//brightness
       g.setColor(1,this.c);
       g.setFont("Vector",30);
-      g.drawString("BRI",175,195);   
-      if (this.bri>5) pal[0]=col.lgray;
-      else if (this.bri>3) pal[0]=col.gray;
-      else  pal[0]=col.dgray;
+      g.drawString("BRI",175,195); 
+	  pal[0]=col.lgray;	  
+      //if (this.bri>5) pal[0]=col.lgray;
+      //else if (this.bri>3) pal[0]=col.gray;
+      //else  pal[0]=col.dgray;
       g.setFont("Vector",45);
       g.drawString(g.bri.lv,190,130);   
       g.flip();
@@ -173,9 +174,9 @@ face[5] = {
 	var h=0;
 	var m=0;
 	if (s>864000) {set.boot=getTime();s=(getTime()-set.boot)|0;}
-	while (s>86400) {s=s-86400;d++}
-	while (s>3600) {s=s-3600;h++}
-	while (s>60) {s=s-60;m++}
+	while (s>86400) {s=s-86400;d++;}
+	while (s>3600) {s=s-3600;h++;}
+	while (s>60) {s=s-60;m++;}
     g.setColor(0,col.black);
     g.fillRect(0,0,239,239); //all
     g.setColor(1,colo.txt1);
@@ -226,11 +227,13 @@ touchHandler[0]=function(e,x,y){
     var g=w.gfx;
     var p=w.pin.MOTOR;
     if (set.tor==1){
+   		digitalPulse(p,1,[30,50,30]);
         g.bri.set(this.b);
         set.tor=-1;
         face[0].tor=0;
         if (face.appPrev=="settings")  face.appPrev="main";face.pagePrev=0;
-        face.go(face.appPrev,face.pagePrev,face.pageArg);return;
+        face.go(face.appPrev,face.pagePrev,face.pageArg);
+        return;
     }else if (e==5){
       if(x<77&&y<75){
         set.atc=1-set.atc;
@@ -263,23 +266,28 @@ touchHandler[0]=function(e,x,y){
 		  if (f>=0 && face[f].off) face[f].off();
           face.offid=-1;face.pageCurr=-1;face.appPrev="main";
         },15000,face.pageCurr);
+   		digitalPulse(p,1,[30,50,30]);
         return;
-	  }else if(77<x&&x<157&&158<y&&y<239){		
+	  }else if(77<x&&x<157&&158<y&&y<239){	
+   		digitalPulse(p,1,[30,50,30]);
 		face.go("settings",5);return;
       }else if(158<x&&x<239&&160<y&&y<239) {
         this.b=g.bri.lv-1;
         if (this.b<1) this.b=1;
         g.bri.set(this.b);
+   		digitalPulse(p,1,[30,50,30]);
       }else if(158<x&&x<239&&77<y&&y<159) {
         this.b=g.bri.lv+1;
         if (this.b>7) this.b=7;
         g.bri.set(this.b);   
+   		digitalPulse(p,1,[30,50,30]);
       } else digitalPulse(p,1,40);
     }else if  (e==1){
       if(158<x&&x<239&&77<y&&y<239) {
         this.b=g.bri.lv-1;
         if (this.b<1) this.b=1;
         g.bri.set(this.b);
+   		digitalPulse(p,1,[30,50,30]);
       }else { 
         face.go("main",0);return;
       }  
@@ -292,7 +300,11 @@ touchHandler[0]=function(e,x,y){
         this.b=g.bri.lv+1;
         if (this.b>7) this.b=7;
         g.bri.set(this.b);
-      }else digitalPulse(p,1,40);
+   		digitalPulse(p,1,[30,50,30]);
+      }else {
+        if (face.appPrev=="settings")  face.appPrev="main";face.pagePrev=0;
+		face.go(face.appPrev,face.pagePrev,face.pageArg);return;
+      }
     }else if  (e==3){
 	  digitalPulse(p,1,40);
     }else if  (e==4){
@@ -307,13 +319,16 @@ touchHandler[0]=function(e,x,y){
     }
    this.timeout();
 };
-
+//
 touchHandler[5]=function(e,x,y){
     var p=w.pin.MOTOR;
     if (e==5){
-		digitalPulse(p,1,40);
+      if (x<120 && y>190) {
+        NRF.disconnect(); 
+	    reset();
+	  } else  digitalPulse(p,1,40);
     }else if  (e==1){
-		face.go("settings",-1);return;
+	  face.go("settings",-1);return;
     }else if  (e==2){
 	  if (y>160&&x<50) {
         if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
@@ -327,9 +342,14 @@ touchHandler[5]=function(e,x,y){
     }else if  (e==4){
 		face.go("settings",0);return;
     }else if  (e==12){
-	//euc on/off
-	 if (x<120 && y>190) {NRF.disconnect(); reset();}
-	 else if (x>120 && y>190) {NRF.disconnect(); reset();}
+	//devmode-shutdown
+	 if (x<120 && y>190) {
+       require("Storage").write("devmode","dev");
+       E.reboot();}
+	 else if (x>120 && y>190) {
+       NRF.disconnect();
+       require("Storage").write("devmode","off");
+       E.reboot();}
      else digitalPulse(p,1,40);
     }
    this.timeout();

@@ -5,8 +5,32 @@ function P8KickWd(){
   if(!D17.read())E.kickWatchdog();
 }
 var wdint=setInterval(P8KickWd,1000);
-E.enableWatchdog(15, false);
-//
+E.enableWatchdog(10, false);
+//load in devmode
+if (BTN1.read() || Boolean(require("Storage").read("devmode"))) { 
+  let mode=(require("Storage").read("devmode"));
+  //print("mode :",mode);
+  if ( mode=="off"){ 
+    require("Storage").write("devmode","done");
+    NRF.setAdvertising({},{connectable:false});
+    NRF.disconnect();
+    NRF.sleep();
+    digitalPulse(D16,1,250);
+  } else {
+    require("Storage").write("devmode","done");
+    NRF.setAdvertising({}, { name:"P8 dev-mode",connectable:true });
+    digitalPulse(D16,1,[100]);
+  }
+  setWatch(function(){
+    require("Storage").erase("devmode");
+    NRF.disconnect();
+    NRF.setServices({},{uart:false});
+    NRF.setServices({},{uart:true}); 
+    setTimeout(() => {
+	 reset();
+    }, 500);
+  },BTN1,{repeat:false, edge:"rising"}); 
+}else{ //load in working mode
 E.setTimeZone(3);
 var mem = () => {
  var m=process.memory();
@@ -104,7 +128,6 @@ g.setColor=function(c,v){
 g.init=function(f){
   lcd_cmd([0x11]); // sleep out
   setTimeout(()=>{
-  g.bri.set(3);
   [
   // This is an unrotated screen
   [0x36, 0],     // MADCTL
@@ -130,10 +153,10 @@ g.init=function(f){
   [0x2c]
   ].forEach((a)=>{lcd_cmd(a);});
   if (f !== undefined) f();
-  else {g.clear();g.flip();g.off();} 
+  else {g.clear();g.flip();g.off();
+       } 
   },120);
 };
-
 g.bri={
 	lv:3,
 	set:function(o){	
@@ -179,29 +202,19 @@ module.exports = {
   battery: battery,
   charging: charging,
   battVoltage: battVoltage,
-//  chargerVoltage: chargerVoltage,
   gfx: g
 };
 });
 w=require("P8");
 //load
-var alrm={start:0};
-digitalPulse(w.pin.MOTOR,1,[100,30,100,30,100]);
 w.gfx.init();
-//hold the button to stop loading if the p8 falls to a restart loop.
-if (!w.pin.BUTTON.read()) {
 eval(require('Storage').read('handler'));
-eval(require('Storage').read('euc'));
-eval(require('Storage').read('euc.md'));
 eval(require('Storage').read('main'));
-}else{
-  setWatch(function(){
-    NRF.setServices({},{uart:false});
-    NRF.setServices({},{uart:true});  
-	NRF.disconnect();
-    setTimeout(() => {
-      reset();
-    }, 500);
-},w.pin.BUTTON,{repeat:false, edge:"rising"}); 
+digitalPulse(w.pin.MOTOR,1,[100,30,100]);
+setTimeout(function(){
+if (global.face) face.go('main',2);
+setTimeout(function(){ if (global.set) set.accR(); },1000); 
+digitalPulse(w.pin.MOTOR,1,[100]);  
+},200); 
 }
   
