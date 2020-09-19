@@ -50,7 +50,10 @@ face[0] = {
     this.exit(o);
     return true;
   },
-  exit: function(o){
+  exit: function(){
+    this.run=false;
+    if (this.tid>=0) clearTimeout(this.tid);
+    this.tid=-1;
     return true;
   },
   off: function(o){

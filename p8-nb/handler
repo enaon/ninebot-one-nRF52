@@ -1,45 +1,81 @@
 //handler
-
 //set p8 type
 const touchtype="716"; //716|816|816s
-const acctype="SC7A20"; //BMA421|SC7A20
+const acctype="BMA421"; //BMA421|SC7A20
 //settings - run set.upd() after changing settings to take effect.
 var set={
-  name:"p8-tinb", //Set the name to be broadcasted by the Bluetooth module. 
+  name:"p8-tb", //Set the name to be broadcasted by the Bluetooth module. 
   cli:1, //Nordic serial bluetooth access. Enables/disables Espruino Web IDE.
   hid:0, //enable/disable Bluetooth music controll Service.
-  atc:1, //Notifications service. Enables/disables support for "d6 notification" playstore app from ATC1441.
+  gb:0,  //Notifications service. Enables/disables support for "GadgetBridge" playstore app.
+  atc:0, //Notifications service. Enables/disables support for "d6 notification" playstore app from ATC1441.
   acc:1, //enables/disables wake-screen on wrist-turn. 
-  bt:0, //Incommint BT service status indicator- Not user settable.0=not_connected|1=atc|2=cli
+  dnd:0, //Do not disturb mode, if ebabled vibrations are off.
+  bt:0, //Incommint BT service status indicator- Not user settable.0=not_connected|1=unknown|2=webide|3=gadgetbridge|4=atc|5=esp32
   tor:0, //Enables/disables totch- Not user settable.
   ondc:0, //charging indicator-not user settable.
+  btsl:0, //bt sleep status-not user settable. 
   boot:getTime(), 
   accR:function(){if (this.acc)acc.on(); else acc.off();},
   hidM:undefined, //not user settable.
+  clin:0,//not settable
   upd:function(){ //run this for settings changes to take effect.
-	if (this.atc==0 && this.cli==0 && this.hid==0) {
-        NRF.setAdvertising({},{connectable:false});
-        NRF.disconnect();
-      	this.atcR=undefined;this.atcW=undefined;this.hidM=undefined;
-	} else {
-		if (set.hid==1 && this.hidM==undefined) this.hidM=require("ble_hid_controls");//enable hid
-        NRF.setAdvertising({},{connectable:false});
-        NRF.disconnect();
-		if (set.atc==1){
-          eval(require('Storage').read('atc'));}
-		else {
-  		    this.atcR=undefined;this.atcW=undefined;
-			NRF.setServices({},{uart:Boolean(set.cli),hid:(set.hid)?this.hidM.report:undefined});
-		}
-   		if (set.hid==0) this.hidM=undefined;
-        NRF.setAdvertising({}, { name:this.name,connectable:true });
-	}
+	if (this.hid==1 && this.hidM==undefined) {
+		Modules.addCached("ble_hid_controls",function(){
+		function b(a,b){NRF.sendHIDReport(a,function(){NRF.sendHIDReport(0,b);});}
+		exports.report=new Uint8Array([5,12,9,1,161,1,21,0,37,1,117,1,149,5,9,181,9,182,9,183,9,205,9,226,129,6,149,2,9,233,9,234,129,2,149,1,129,1,192]);
+		exports.next=function(a){b(1,a);};
+		exports.prev=function(a){b(2,a);};
+		exports.stop=function(a){b(4,a);};
+		exports.playpause=function(a){b(8,a);};
+		exports.mute=function(a){b(16,a);};
+		exports.volumeUp=function(a){b(32,a);};
+		exports.volumeDown=function(a){b(64,a);};});
+		this.hidM=require("ble_hid_controls");
+  	}else if (set.hid==0 &&this.hidM!=undefined) {
+		this.hidM=undefined;
+		if (global["\xFF"].modules.ble_hid_controls) Modules.removeCached("ble_hid_controls");
+    }
+	if (this.atc==1) eval(require('Storage').read('atc'));
+	//else { if (this.atcW) {this.atcW=undefined;this.atcR=undefined;} NRF.setServices(undefined,{uart:Boolean(this.cli),hid:(this.hid)?this.hidM.report:undefined});}
+    else { if (this.atcW) {this.atcW=undefined;this.atcR=undefined;}  NRF.setServices(undefined,{uart:true,hid:(this.hid)?this.hidM.report:undefined});}
+    if (!set.cli&&!set.gb&&!set.atc&&!set.hid) {NRF.sleep();set.btsl=1;}
+    else if (this.bt!=0) NRF.disconnect();
+    else if (set.btsl==1) {NRF.wake();set.btsl=0;}
   }
 };
-//ble state
-NRF.on('disconnect',function() {NRF.disconnect();set.bt=0;});  
-NRF.on('connect',function(addr) {set.bt=2;});
-set.upd(); //comment out for debuging, uncomment for working mode. 
+set.upd();
+function bdis() {
+	E.setConsole(null,{force:true});
+    if (!set.cli&&!set.gb&&!set.atc&&!set.hid){
+      //NRF.setServices(undefined,{uart:false,hid:undefined}); 
+      NRF.sleep();
+      set.btsl=1;
+    }
+	set.bt=0; 
+    Bluetooth.removeListener('data',ccon);
+	digitalPulse(w.pin.MOTOR,1,[100,50,50,50,100]); 
+}
+function bcon() {
+	set.bt=1; 
+    digitalPulse(w.pin.MOTOR,1,100);
+	if (set.cli==1)  Bluetooth.on('data',ccon);
+	}
+function ccon(l){ 
+    var cli="\x03";
+    var gb="\x20\x03";
+        if (l.startsWith(cli)) {set.bt=2;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});
+    print("Welcome.\n** Working mode **\nUse devmode (Settings-Info-long press on Restart) for uploading files."); }
+    else if (l.startsWith(gb)){set.bt=3;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});}
+    if (l.length>5)  NRF.disconnect();
+}
+//E.setConsole(null,{force:true});
+NRF.setAdvertising({}, { name:set.name,connectable:true });
+NRF.on('disconnect',bdis);  
+NRF.on('connect',bcon);
+Modules.removeCached("ble_hid_controls");
+//set.upd();
+
 //face
 var face={
   appCurr:"main",
@@ -47,6 +83,7 @@ var face={
   pageCurr:-1,
   pagePrev:-1,	
   pageArg:"",
+  faceSave:-1,
   offid:-1,
   offms:-1,
   off:function(page){ 
@@ -73,11 +110,14 @@ var face={
     this.appCurr=app;
     this.pageCurr=page;
 	if (this.pagePrev==-1&&w.gfx.isOn) {w.gfx.clear();w.gfx.off();}
-    if (this.pagePrev!=-1) face[this.pagePrev].clear();
+    if (this.pagePrev!=-1) {
+        face[this.pagePrev].clear();
+    }
   	if (this.pageCurr==-1 && this.pagePrev!=-1) {
 		if (touchtype=="716")tfk.loop=100;
-		face[this.pagePrev].off();
-		if (this.offid>=0) {clearTimeout(this.offid); this.offid=-1;}
+		acc.go=0;
+        face[this.pagePrev].off();
+      if (this.offid>=0) {clearTimeout(this.offid); this.offid=-1;}
 		return;
 	}
 	if (app!=this.appPrev) {
@@ -133,41 +173,48 @@ setWatch(function(s){
     if(!g.isOn) g.on();
 },w.pin.CHARGING,{repeat:true, debounce:500,edge:0});  
 //button 
-var button;
+//var button;
 var press=true;
 var l1=-1;
 function buttonHandler(s){
-  if (button!=-1) {clearWatch(button);button=-1;}
   var p=w.pin.MOTOR;
-  // button down
+  if ( l1 >=0) {clearTimeout(l1); l1=-1;}
   if (s.state==true) { 
-    if ( l1 >=0) {clearTimeout(l1); l1=-1;}
     press=true;
 	//toggle EUC on long press
     l1=setTimeout(() => {
+      l1=-1;
       if (typeof euc !== 'undefined' ) {
-		euc.tgl();face.go("euc",0);press=false;}
+		euc.tgl();face.go("euc",0);press=false;
+      }
     }, 1000);
-    button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:0});
-    return;
-  }else if (press==true && s.state==false)  { 
-    if (l1 >=0) {clearTimeout(l1); l1=-1;}
+   }else if (press==true && s.state==false)  { 
 	press=false;
-	if (face.pageCurr==-1) 
-		if (typeof euc !== 'undefined'){
+	if (face.pageCurr==-1) {
+		digitalPulse(D16,1,[60,40,60]);
+		if (global.euc){
 			if (euc.conn!="OFF") face.go("euc",0);else face.go(face.appCurr,0);
 		}else face.go(face.appCurr,0);
-	else { 
+	}else { 
+	  if (face.appCurr=="main"&&face.pagePrev!=-1&&face.pagePrev!=2) {
+        if (set.acc==1) {
+        acc.off();
+        acc.go=0;
+        setTimeout(function(t){
+		  acc.on();
+        },2000);
+        }
+        face.go("main",-1);
+        digitalPulse(D16,1,100);
+      }else{
       var to=face.pageCurr+1;
       if (to>=2) to=0;
       face.go(face.appCurr,to);
+	  }
     }
-  } else {
-    if ( l1 >=0) {clearTimeout(l1); l1=-1;}
-  }	
-  button=setWatch(buttonHandler,BTN1, {repeat:false,debounce:10,edge:0});
+  }
 }
-button=setWatch(buttonHandler,BTN1, {repeat:false, debounce:10,edge:0});
+btn=setWatch(buttonHandler,BTN1, {repeat:true, debounce:10,edge:0});
 //touch controller
 //var i2c=I2C1;
 var i2c=new I2C();
@@ -298,11 +345,12 @@ var acc={
   loop:200,
   tid:-1,
   run:-1,
+  go:1,
   up:0,
   on:function(){
 	if (acctype==="BMA421"){i2c.writeTo(0x18,0x7d,0x04);i2c.writeTo(0x18,0x12);
 	}else i2c.writeTo(0x18,0x01);
-	this.run=1;this.loop=200;this.init();},
+	this.run=1;this.init();},
   off:function(){if (acctype==="BMA421")i2c.writeTo(0x18,0x7d,0x04);this.run=-1;},
   init:function(){
 	if(this.run===-1) return;
@@ -317,22 +365,25 @@ var acc={
 		    i2c.writeTo(0x18,1);
 		}
 		if (data[1]<15||data[1]>=250) {
-		  if (!w.gfx.isOn&&this.up==0&&face.appCurr!=""){ 
-            this.up=1; 
-			if  (typeof euc !== 'undefined') {if (euc.conn!="OFF") face.go("euc",0);}
-            else{ 
-				this.loop=1500;
+          this.up=1;
+          if (this.go){ 
+            if (!w.gfx.isOn&&face.appCurr!=""){  
+			if  (global.euc) {
+              if (euc.conn!="OFF") face.go("euc",0);
+              else{if (face.appCurr=="main") face.go("main",2);else face.go(face.appCurr,0);}
+            }else{ 
 				if (face.appCurr=="main") face.go("main",2);
 				else face.go(face.appCurr,0);
 			}
-		  }
-          else if (w.gfx.isOn&&face.pageCurr!=-1) {
+			this.loop=500;
+		  }else if (w.gfx.isOn&&face.pageCurr!=-1) {
 			if (face.appCurr=="main" && face.pageCurr==2) face.go("main",0);
-			else if (set.tor!=1) face.off();
-//			this.loop=500;
+		    else { if (set.tor==1)w.gfx.bri.set(face[0].cbri); else face.off(); }
+			this.loop=200;
 		  } 
+         }
 		}
-    }else {this.loop=300;this.up=0;}
+    }else {this.loop=300;this.up=0;this.go=1;if (set.tor==1)w.gfx.bri.set(7); }
     this.tid=setTimeout(function(t){
 		t.tid=-1;
 		t.init(); 

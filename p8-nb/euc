@@ -1,6 +1,6 @@
-if (typeof euc =='undefined'){
+if (!global.euc){
 //vars
-var euc= {
+global.euc= {
   spd: ["0","0"], 
   spdC:col.black,
   amp: "0", 
@@ -372,9 +372,6 @@ face[5] = {
 };
 //touch-main
 touchHandler[0]=function(e,x,y){
-    this.fto=0;
-    this.farg=-1;
-	this.face="euc";
     var p=w.pin.MOTOR;
     if (e==5){ 
 	  digitalPulse(p,1,40);
@@ -387,10 +384,10 @@ touchHandler[0]=function(e,x,y){
         else w.gfx.bri.set(this.bri);
 		digitalPulse(p,1,[30,50,30]);
      }else if (y>190) {
-		face.go("settings",0);return;
+	  if (Boolean(require("Storage").read("settings"))) {face.go("settings",0);return;}
 	  } else digitalPulse(p,1,40);
     }else if  (e==3){
-		face.go("repellent",0);return;
+	if (Boolean(require("Storage").read("repellent"))) {face.go("repellent",0);return;}
     }else if  (e==4){		
 	  face.go("main",0);return;
     }else if  (e==12){

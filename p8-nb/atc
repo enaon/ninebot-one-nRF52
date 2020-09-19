@@ -1,24 +1,4 @@
 //atc
-NRF.setServices({
-  0x190A: {
-     0x0001: {
-      value : "RXchar",
-      maxLen : 20,
-      writable : true,
-      onWrite : function(evt) {
-		set.atcR(evt);
-      }
-     },
-    0x0002: {
-      value : "TXchar",
-      maxLen : 20,
-	  readable : true, 
-      notify:true,
-     },
-   },
-}, { advertise: ['0x190A'], uart:Boolean(set.cli),hid:(set.hid)?this.hidM.report:undefined });
-//
-
 var atcR= function(evt){
   //var ll=0; require("Storage").write("evt"+ll,evt); ll++;
   let srt=String.fromCharCode.apply(String,evt.data);
@@ -93,7 +73,7 @@ var atcR= function(evt){
     } else if (srt == "AT+VER") {
       set.atcW("AT+VER:"+process.version);
       digitalPulse(w.pin.MOTOR,1,[80]);
-	  set.bt=1;
+	  set.bt=4;
     } else if (srt == "AT+SN") {
       set.atcW("AT+SN:Espruino");
     } else if (srt.substring(0, 12) == "AT+CONTRAST=") {
@@ -142,6 +122,26 @@ var atcW= function(i) {
     //console.log("send: ",o);	
   }
 };
+
+NRF.setServices({
+  0x190A: {
+     0x0001: {
+      value : "RXchar",
+      maxLen : 20,
+      writable : true,
+      onWrite : function(evt) {
+		set.atcR(evt);
+      }
+     },
+    0x0002: {
+      value : "TXchar",
+      maxLen : 20,
+	  readable : true, 
+      notify:true,
+     },
+   },
+}, { advertise: ['0x190A'], uart:Boolean(set.cli),hid:(set.hid)?this.hidM.report:undefined });
+//
 //global
 if (!global.push){
 get=function(type){

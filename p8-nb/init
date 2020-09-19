@@ -1,4 +1,3 @@
-E.setFlags({pretokenise:1});
 //watchdog
 E.kickWatchdog();
 function P8KickWd(){
@@ -6,6 +5,7 @@ function P8KickWd(){
 }
 var wdint=setInterval(P8KickWd,1000);
 E.enableWatchdog(10, false);
+global.save = function() { throw new Error("You don't need to use save() on P8!"); };
 //load in devmode
 if (BTN1.read() || Boolean(require("Storage").read("devmode"))) { 
   let mode=(require("Storage").read("devmode"));
@@ -18,14 +18,15 @@ if (BTN1.read() || Boolean(require("Storage").read("devmode"))) {
     digitalPulse(D16,1,250);
   } else {
     require("Storage").write("devmode","done");
-    NRF.setAdvertising({}, { name:"P8 dev-mode",connectable:true });
-    digitalPulse(D16,1,[100]);
+    NRF.setAdvertising({}, { name:"Espruino-devmode",connectable:true });
+    digitalPulse(D16,1,100);
+	print("Welcome!\n*** DevMode ***\nShort press the side button\nto restart in WorkingMode");
   }
   setWatch(function(){
     require("Storage").erase("devmode");
-    NRF.disconnect();
     NRF.setServices({},{uart:false});
     NRF.setServices({},{uart:true}); 
+    NRF.disconnect();
     setTimeout(() => {
 	 reset();
     }, 500);
@@ -210,6 +211,7 @@ w=require("P8");
 w.gfx.init();
 eval(require('Storage').read('handler'));
 eval(require('Storage').read('main'));
+eval(require('Storage').read('m_euc'));
 digitalPulse(w.pin.MOTOR,1,[100,30,100]);
 setTimeout(function(){
 if (global.face) face.go('main',2);
