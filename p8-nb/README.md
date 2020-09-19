@@ -16,7 +16,7 @@ The three files needed for the first step are the following, in this order:
 
 1. https://github.com/atc1441/DaFlasherFiles/blob/master/DaFitBootloader23Hacked.bin
 2. https://github.com/atc1441/DaFlasherFiles/blob/master/FitBootloaderDFU2.0.1.zip
-3. https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v06.100_p8_SDK11_SD20.zip
+3. https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v06.129_p8_SDK11_SD20.zip
 
 the first two files are a one time process, the last file is the espruino firmware image, and one could update just that in the future.
 
