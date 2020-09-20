@@ -1,0 +1,36 @@
+//quick apps for settings menu (swipe up to access settings, swipe up again for apps)
+//custom part
+this.appImgNone=E.toArrayBuffer(atob("AQGBAAA="));//empty
+//this.appImgNone=require("heatshrink").decompress(atob("mEwwIolv////+gEBAgIABwEBwAOBAYMDCofAAssH8YFDj//Aoc8nwFDuEeAodgBYngu4FD4AjE4PDAofDwYFD44UCAQPug4FDvkGAod4hwLEngFD//4EYngQc4FDXIrFFaIoAjA="));
+//mosqito repellent
+this.appImg1=require("heatshrink").decompress(atob("mEwwIVSh///Ef//wAQP8n4ID/1/Ar8cgEOApwpUuEAnAFOC4RrB/gFCg5uBAoR6CApARCEYQdCF5PjI4gFcRKQ1dTYzpDeor/DABoA=="));
+this.appImg2=require("heatshrink").decompress(atob("mEwwIKHgP//AFCg///4FCo4FB4EAgfPAoPwAogYBg+OAQP8AQOAEoP+AoUOgF/AoIvB8E/wEMh///kfFQM///+h4FBv4pBg/ggH/8P/4fwEwU/AoMDGQMP8IFBIgMH+P4DIN/wfwAoPBDwP4/EP4ZYB/H8h+HLAP4vgFB+YFCj4+BAomAApMfwYFEgYFEgIvBAoWBHYIdDwIMBAoRWBAoXALIUfw/gMoJTBw/4OIRZC/+D8BlCRIQBBSoYmBn4hBAoJ5B4F/wCVCTwICCwEHBAV//i6BAoK5BcYSlBd4bqBfYgeBdwIAMA=="));
+this.appImg3=require("heatshrink").decompress(atob("mEwwIGDj/gAgUD//+AoUPAok+gEcAoX/Cwv/AoUHAoPADgf/+AtCAoP8AoN/AoIpCAgIeCgP8AgO/wED/AFBj/AgfwAoMP8EH8AFBAYMP4AFBwfwAo2AAoOB/EfwIFHwAFBgIFC/gFLn4FFKgQFFgAXBToYFBwAFHNIIFBjAFBHYPAn/8AoJZBv/+OoJtBNYXwAIJ3CAoQRBZgMDHoP4n/AJgN//l/wBSCJwSnFWYYFCn65EYorRFboTqCPoZoCIIJ0Dj4FEAAY="));  
+
+//this.appImg2=require("heatshrink").decompress(atob("mEwwIjggfAAod//wECgP//+ACAX8n4SCh/AgfwAoMfAQP4AQM+AQN8AQN+AQMeFAVAgEOAoInCh4uB8/QgEHwEB4YnBgeAgfB+IDBGQOA/IPBAoV9AoeBv3EwILCj/ggPgg5IB8EAAoUHAokDAokBGwPgDoMB/AdBAoX8GocB3wFDFQIFCQAMvwfAA4IwB4YVBFoMT84VBFoKdBO4NwgEIVAV4gEERgSVFUIqtFXIrFFaIpxDADw"));
+//this.appImg3=require("heatshrink").decompress(atob("mEwwIQNgMAwGAAoWAwIFCgHAAouDDAdgAogLFC4wFEwPBF4eD8IFD49hCIf2m4FDn/+FIcf/AFDh14Aof8nwQD/kcAoX+hEYh8AgfwhkYg/gA4ISBgH4CgIvCnkwHYN3wEMmED4kx4EGmEHwkw+EEmEeAQM8EwN8hwIBhkd/Eenkf3EP5E+n0Z+EAhBlBjBHBhnGkeYAodhBYljAodmAoccsQFDjFj8cMAoMQsfCAoS/BgyDDkAFKsEHAofggbREeIL/FACQ"));
+//this.appImg4=require("heatshrink").decompress(atob("mEwwMAnAIDnk/Aof4g+AAgMD8EBAIMABIVwgOAhwOBnAFBjgFBjkD4AnCh0H8FwAolgAoMMAoMwC4QFFh/wDoUfj/4/AFBg////gJQQFBKAc//gFJv/+AgUDC4PAFIQFBFIMBAgIkCh//9/3//wBAPP8f//wFBx/xCgZHBAgX+GoN/AoIDBA4IFBD4QnB//B7/zwYwB4+f/PjIIPGEYIFBgOGAoNjAoOMAoNxwAFDmIFMgcYAoXAg4FCjHghwFDuEcAoPwjE4vEYVoMYjngAocP4AFDgeAjDFBjDyBnAFBdIUwdIMMAoNgCgL7CZAUGgAA=="));
+//
+this.appDo1="face.go('calc',0)";
+this.appDo2="face.go('repellent',0)";
+this.appDo3="face.go('euc',0)";
+//this.appDo3="face.go('main',0)";
+//this.appDo4="face.go('main',0)";
+//this.appDo5="face.go('main',0)";
+//this.appDo6="face.go('main',0)";
+
+//face part
+var g=w.gfx;
+var img;
+pal[0]=col.black;
+g.setColor(1,col.raf2);
+g.fillRect(0,0,75,75);g.fillRect(80,0,155,75);g.fillRect(160,0,239,75);
+g.fillRect(0,80,75,155);g.fillRect(80,80,155,155);g.fillRect(160,80,239,155);
+g.flip();
+g.setColor(0,col.white);
+img=(this.appImg1)?this.appImg1:this.appImgNone;g.drawImage(img,13,15);g.flip();
+img=(this.appImg2)?this.appImg2:this.appImgNone;g.drawImage(img,94,15);g.flip();
+img=(this.appImg3)?this.appImg3:this.appImgNone;g.drawImage(img,176,15);g.flip();
+img=(this.appImg4)?this.appImg4:this.appImgNone;g.drawImage(img,13,94);g.flip();
+img=(this.appImg5)?this.appImg5:this.appImgNone;g.drawImage(img,94,94);g.flip();
+img=(this.appImg6)?this.appImg6:this.appImgNone;g.drawImage(img,176,94);g.flip();

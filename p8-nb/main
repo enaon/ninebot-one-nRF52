@@ -27,8 +27,8 @@ face[0] = {
   g.flip();
   //info Pannel
   g.setColor(1,col.gray);
-  g.fillRect(0,200,239,239); //date
-  g.setColor(0,col.black);//
+  g.fillRect(0,200,239,239);
+  g.setColor(0,col.black);
   g.flip();
   
 //push-(wip)    
