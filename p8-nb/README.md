@@ -98,5 +98,5 @@ Type reset() and press enter in the webide left hand side, after last file is up
 
 ![](https://user-content.gitter-static.net/7f290f0c7ea36ef40f05117d0851c46ae4f535ef/68747470733a2f2f692e6962622e636f2f385059684b37782f494d472d32303230303731342d3230303731383931362e6a7067)
 
-![](https://images-ext-1.discordapp.net/external/nWI7vleTln1aWyIMcokHkIa7LuF1GraS-jlVheS--Vk/https/i.ibb.co/f13dF2F/JPEG-20200819-164603-1450886130.jpg?width=186&height=330)
+![](https://i.ibb.co/PMW1tRP/IMG-20200921-105336078.jpg)
 
