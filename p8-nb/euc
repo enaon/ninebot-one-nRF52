@@ -387,9 +387,9 @@ touchHandler[0]=function(e,x,y){
 	  if (Boolean(require("Storage").read("settings"))) {face.go("settings",0);return;}
 	  } else digitalPulse(p,1,40);
     }else if  (e==3){
-	if (Boolean(require("Storage").read("repellent"))) {face.go("repellent",0);return;}
+	if (Boolean(require("Storage").read("repellent"))) {face.go("repellent",0);return;}else face.go("main",0);
     }else if  (e==4){		
-	  face.go("main",0);return;
+	  face.go(face.appPrev,face.pagePrev);return;
     }else if  (e==12){
 //euc on/off
 	  if  (y<158) {

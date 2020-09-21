@@ -4,7 +4,7 @@ const touchtype="716"; //716|816|816s
 const acctype="BMA421"; //BMA421|SC7A20
 //settings - run set.upd() after changing settings to take effect.
 var set={
-  name:"p8-tb", //Set the name to be broadcasted by the Bluetooth module. 
+  name:"p8-atc", //Set the name to be broadcasted by the Bluetooth module. 
   cli:1, //Nordic serial bluetooth access. Enables/disables Espruino Web IDE.
   hid:0, //enable/disable Bluetooth music controll Service.
   gb:0,  //Notifications service. Enables/disables support for "GadgetBridge" playstore app.
@@ -14,7 +14,7 @@ var set={
   bt:0, //Incommint BT service status indicator- Not user settable.0=not_connected|1=unknown|2=webide|3=gadgetbridge|4=atc|5=esp32
   tor:0, //Enables/disables totch- Not user settable.
   ondc:0, //charging indicator-not user settable.
-  btsl:0, //bt sleep status-not user settable. 
+  btsl:0, //bt sleep status-not user settable.
   boot:getTime(), 
   accR:function(){if (this.acc)acc.on(); else acc.off();},
   hidM:undefined, //not user settable.
@@ -59,14 +59,15 @@ function bdis() {
 function bcon() {
 	set.bt=1; 
     digitalPulse(w.pin.MOTOR,1,100);
-	if (set.cli==1)  Bluetooth.on('data',ccon);
+	if (set.cli==1||set.gb==1)  Bluetooth.on('data',ccon);
 	}
 function ccon(l){ 
     var cli="\x03";
     var gb="\x20\x03";
-        if (l.startsWith(cli)) {set.bt=2;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});
+	if (set.cli) {if (l.startsWith(cli)) {set.bt=2;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});
     print("Welcome.\n** Working mode **\nUse devmode (Settings-Info-long press on Restart) for uploading files."); }
-    else if (l.startsWith(gb)){set.bt=3;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});}
+    }
+    if (set.gb) if (l.startsWith(gb)){set.bt=3;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});}
     if (l.length>5)  NRF.disconnect();
 }
 //E.setConsole(null,{force:true});
@@ -84,6 +85,7 @@ var face={
   pagePrev:-1,	
   pageArg:"",
   faceSave:-1,
+  mode:0,
   offid:-1,
   offms:-1,
   off:function(page){ 
@@ -105,6 +107,7 @@ var face={
 	  },this.offms,this.pageCurr);
   },
   go:function(app,page,arg){
+	//var root=this.appPrev;
     this.appPrev=this.appCurr;
 	this.pagePrev=this.pageCurr;
     this.appCurr=app;
@@ -122,8 +125,9 @@ var face={
 	}
 	if (app!=this.appPrev) {
       face[1]=0;face[2]=0;face[5]=0;
+	  this.appRoot=[this.appPrev,this.pagePrev,this.pageArg];
       eval(require('Storage').read(app));
-    }
+    } 
 	this.off(page);
 	face[page].init(arg);	
 	if(!w.gfx.isOn) {w.gfx.on();
@@ -342,6 +346,9 @@ exit:function(){
 if (acctype==="BMA421"){
 	i2c.writeTo(0x18,0x40,0x17);
 	i2c.writeTo(0x18,0x7c,0x03);
+}else if (acctype==="SC7A20"){
+    i2c.writeTo(0x18,0x20,0x47); 
+    i2c.writeTo(0x18,0x23,0x80); 
 }
 var acc={
   loop:200,
@@ -359,14 +366,15 @@ var acc={
     var data;
 	if (acctype=="BMA421") data=i2c.readFrom(0x18,6);
     else {data={}; data[3]=i2c.readFrom(0x18,1)+"";} 
-	//console.log(data);
-	if (230<data[3]&&data[3]<250) {
+	print(data);
+	if (210<data[3]&&data[3]<250) {
 		if (acctype!="BMA421"){
 		    i2c.writeTo(0x18,3);
 			data[1]=i2c.readFrom(0x18,1)+"";
 		    i2c.writeTo(0x18,1);
 		}
-		if (data[1]<15||data[1]>=250) {
+		if (data[1]<20||data[1]>=250) {
+          	print(data);
           this.up=1;
           if (this.go){ 
             if (!w.gfx.isOn&&face.appCurr!=""){  
