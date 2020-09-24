@@ -32,12 +32,6 @@ if (BTN1.read() || Boolean(require("Storage").read("devmode"))) {
     }, 500);
   },BTN1,{repeat:false, edge:"rising"}); 
 }else{ //load in working mode
-E.setTimeZone(3);
-var mem = () => {
- var m=process.memory();
- return m.free;
-};
-var erase= () => require("Storage").eraseAll();
 var w;
 var pal;
 Modules.addCached("P8",function(){
@@ -118,7 +112,8 @@ pin.LCD_RST.set();
 var bpp=1;
 var g=Graphics.createArrayBuffer(240,240,bpp);
 g.isOn=false;
-pal= Uint16Array([0x000,0xfff]);
+if (bpp==2) pal= Uint16Array([0x000,0xf00,0x0f0,0x00f]);
+else pal= Uint16Array([0x000,0xfff]);
 g.sc=g.setColor;
 g.setColor=function(c,v){ 
   if (c==1) pal[1]=v; else pal[0]=v;

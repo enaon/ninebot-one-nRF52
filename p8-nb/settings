@@ -4,7 +4,7 @@ face[0] = {
   init: function(){
     var g=w.gfx;
 	if (face.faceSave==-1) face.faceSave=[face.appPrev,face.pagePrev,face.pageArg];
-    this.cli=-1;this.bt=-1;this.hid=-1;this.atc=-1;this.bri=-1;this.acc=-1;this.dnd=-1;this.sys=1;this.btn2=1;
+    this.cli=-1;this.bt=-1;this.gb=-1;this.hid=-1;this.atc=-1;this.bri=-1;this.acc=-1;this.dnd=-1;this.sys=1;this.btn2=1;
     var img;
     var d=(Date()).toString().split(' ');
     var t=(d[4]).toString().split(':');	
@@ -128,7 +128,8 @@ face[0] = {
     //acc on/off
     if (set.acc!=this.acc) {
       this.acc=set.acc;
-      img = require("heatshrink").decompress(atob("mEwwIurgf///AAoMfAoP4AoM/AoP8AoN/AoP+DQl+AokfAokPAouAAo3gAoMHwEB+AFDgY4CAoMHHAQFBh44CAoJMBAoZMBEAPHzl/9/Agfn31984FB+/+nPjCIJgBgI7CNgIFDv/wAoc/8AFDj/AAoZZBAocHgAFDAAJfDAAQFFMoQACLIQACUIqtFXIrFFAFA="));
+//      img = require("heatshrink").decompress(atob("mEwwIurgf///AAoMfAoP4AoM/AoP8AoN/AoP+DQl+AokfAokPAouAAo3gAoMHwEB+AFDgY4CAoMHHAQFBh44CAoJMBAoZMBEAPHzl/9/Agfn31984FB+/+nPjCIJgBgI7CNgIFDv/wAoc/8AFDj/AAoZZBAocHgAFDAAJfDAAQFFMoQACLIQACUIqtFXIrFFAFA="));
+        img = require("heatshrink").decompress(atob("mEwwJC/AAkPwAECgP//AFCg///4FCj4FBCQU/AoPgAoN/4Ef+AFB/wZBDwMB/gCCgUDBwV+h0HDQU/jkP4AsCvg/Dh/8j5JDAokH/k+Igf4Aoc//E8AoRbBvhhEAoUD//wjAnBwIFBEIRaEn/AgIFDJ4QFIKoQdDAoibDgECbfA="));      
       g.drawImage(img,94,94);
       this.btn(this.acc,80,80,155,155,img,94,94);
     }
@@ -289,8 +290,7 @@ touchHandler[0]=function(e,x,y){
         }else {face[0].btSetOn=1;face[0].btSet=1;digitalPulse(p,1,[30,50,30]);
         face[0].gb=-1;face[0].cli=-1;face[0].bt=-1;face[0].hid=-1;face[0].atc=-1;face[0].bri=-1;face[0].acc=-1;face[0].dnd=-1;face[0].sys=1;face[0].btn2=1;
         }
-        //{set.atc=1-set.atc;set.upd();digitalPulse(p,1,[30,50,30]);}
-      }else if(77<x&&x<158&&y<75){//btn2
+	  }else if(77<x&&x<158&&y<75){//btn2
         if (face[0].btSet) {
           digitalPulse(p,1,[30,50,30]);face[0].btSet=0;
           face[0].gb=-1;face[0].cli=-1;face[0].bt=-1;face[0].hid=-1;face[0].atc=-1;face[0].bri=-1;face[0].acc=-1;face[0].dnd=-1;face[0].sys=1;face[0].btn2=1;
@@ -306,7 +306,7 @@ touchHandler[0]=function(e,x,y){
       }else if(77>x&&77<y&&y<159){//btn4
         if (face.mode) {if (face[0].appDo4) {digitalPulse(p,1,[30,50,30]);eval(face[0].appDo4);return;} else digitalPulse(p,1,40);
         }else if (face[0].btSet) {
-          set.gb=1-set.gb;digitalPulse(p,1,[30,50,30]);
+          set.gb=1-set.gb;set.upd();digitalPulse(p,1,[30,50,30]);
         }else {digitalPulse(p,1,[30,50,30]);face.go("settings",5);return;}
       }else if(77<x&&x<157&&77<y&&y<159){//btn5
         if (face.mode) {if (face[0].appDo5) {digitalPulse(p,1,[30,50,30]);eval(face[0].appDo5);return;} else digitalPulse(p,1,40);
@@ -323,7 +323,7 @@ touchHandler[0]=function(e,x,y){
         g.bri.set(face[0].cbri);   
    		digitalPulse(p,1,[30,50,30]);
         }
-      }else if(0<x&&x<75&&158<y&&y<239){
+      }else if(0<x&&x<75&&158<y&&y<239){//btn7
         set.tor=1;
         face[0].cbri=w.gfx.bri.lv;
         g.bri.set(7);
@@ -338,17 +338,18 @@ touchHandler[0]=function(e,x,y){
         },25000,face.pageCurr);
    		digitalPulse(p,1,[30,50,30]);
         return;  
-      }else if(77<x&&x<157&&158<y&&y<239){	
+      }else if(77<x&&x<157&&158<y&&y<239){//btn8	
    		digitalPulse(p,1,[30,50,30]);
 		face.go("settings",5);return;
-      }else if(158<x&&x<239&&160<y&&y<239){
+      }else if(158<x&&x<239&&160<y&&y<239){//btn9
 		digitalPulse(p,1,[30,50,30]);
 		if (Boolean(require("Storage").read("calc"))) {
           face.go("calc",0);return;}
       } else digitalPulse(p,1,40);
     }else if  (e==1){
-      face[0].btSet=0;
-      if(158<x&&x<239&&77<y&&y<160) {
+	  if (face[0].btSet) {
+	        face[0].btSet=0;
+      }else if(158<x&&x<239&&77<y&&y<160&&!face.mode) {
         face[0].cbri=g.bri.lv-1;
         if (face[0].cbri<1) face[0].cbri=1;
         g.bri.set(face[0].cbri);
@@ -362,7 +363,9 @@ touchHandler[0]=function(e,x,y){
         }
       }  
     }else if  (e==2){
-      if(158<x&&x<239&&77<y&&y<160&&!face.mode) {
+	  if (face[0].btSet) {
+	        face[0].btSet=0;
+      }else if(158<x&&x<239&&77<y&&y<160&&!face.mode) {
         face[0].cbri=g.bri.lv+1;
         if (face[0].cbri>7) face[0].cbri=7;
         g.bri.set(face[0].cbri);
@@ -405,6 +408,7 @@ touchHandler[5]=function(e,x,y){
 	    reset();
 	  } else  digitalPulse(p,1,40);
     }else if  (e==1){
+      face[0].btSetOn=1;
 	  face.go("settings",0);return;
     }else if  (e==2){
 	  if (y>160&&x<50) {
@@ -415,6 +419,7 @@ touchHandler[5]=function(e,x,y){
     }else if  (e==3){
       digitalPulse(p,1,40);
     }else if  (e==4){
+      face[0].btSetOn=1;
 	  face.go("settings",0);return;
     }else if  (e==12){
 	//devmode-shutdown

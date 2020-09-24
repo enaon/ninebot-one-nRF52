@@ -106,22 +106,6 @@ var atcR= function(evt){
   }
 };
 //
-var atcW= function(i) {
-  i = i + "\r\n";
-  while (i.length >0) {
-   var  o = i.substring(0, 20);
-    i = i.substring(20);    
-    NRF.updateServices({
-     0x190A : {
-     0x0002 : {
-       value : o,
-       notify:true
-     }
-     }
-    });
-    //console.log("send: ",o);	
-  }
-};
 
 NRF.setServices({
   0x190A: {
@@ -140,7 +124,26 @@ NRF.setServices({
       notify:true,
      },
    },
-}, { advertise: ['0x190A'], uart:Boolean(set.cli),hid:(set.hid)?this.hidM.report:undefined });
+//}, { advertise: ['0x190A']});
+}, { advertise: ['0x190A'], uart:(set.cli||set.gb)?true:false,hid:(set.hid&&set.hidM)?set.hidM.report:undefined });
+
+var atcW= function(i) {
+  i = i + "\r\n";
+  while (i.length >0) {
+   var  o = i.substring(0, 20);
+    i = i.substring(20);    
+    NRF.updateServices({
+     0x190A : {
+     0x0002 : {
+       value : o,
+       notify:true
+     }
+     }
+    });
+    //console.log("send: ",o);	
+  }
+};
+
 //
 //global
 if (!global.push){

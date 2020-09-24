@@ -77,25 +77,25 @@ face[0] = {
     g.setColor(0,colo.bck1);
     g.fillRect(0,55,100,150);
     g.setColor(1,colo.txt);
-    g.setFont("Vector",60);
-    g.drawString(t[0],10,75); //hours
+    g.setFont("Vector",66);
+    g.drawString(t[0],15,72); //hours
   g.flip();
   }
   //minutes
   if (t[1]!=this.min ){
     this.min=t[1];
-    g.setFont("Vector",60);
+    g.setFont("Vector",66);
 	this.fmin=colo.txt1;
     this.fsec=col.black;
 	if (global.alrm) {
     if (alrm.buzz!=-1) {this.bmin=col.gray;this.fmin=col.yellow;this.fsec=col.gray;this.bsec=col.yellow;}
     else if (alrm[1].tmr!==-1||alrm[2].tmr!==-1||alrm[3].tmr!==-1) {this.bmin=colo.btnEn;this.bsec=colo.btnEn;}
-    else  {this.bmin=col.dgray1;this.fsec=col.lgray;this.bsec=col.dgray1;}
-	}else {this.bmin=col.dgray1;this.fsec=col.lgray;this.bsec=col.dgray1;}
+    else  {this.bmin=col.raf2;this.fsec=col.dgray1;this.bsec=col.raf2;}
+	}else {this.bmin=col.raf2;this.fsec=col.dgray1;this.bsec=col.raf2;}
 	g.setColor(0,this.bmin);
     g.fillRect(105,55,210,150);
 	g.setColor(1,this.fmin);
-    g.drawString(t[1],123,75);
+    g.drawString(t[1],123,72);
     g.flip();
   }
   //seconds
@@ -214,25 +214,25 @@ face[2] = {
     g.setColor(0,colo.bck1);
     g.fillRect(0,55,100,150);
     g.setColor(1,colo.txt);
-    g.setFont("Vector",60);
-    g.drawString(t[0],10,75); //hours
+    g.setFont("Vector",66);
+    g.drawString(t[0],15,72); //hours
   g.flip();
   }
   //minutes
   if (t[1]!=this.min ){
     this.min=t[1];
-    g.setFont("Vector",60);
+    g.setFont("Vector",66);
 	this.fmin=colo.txt1;
     this.fsec=col.black;
 	if (global.alrm) {
     if (alrm.buzz!=-1) {this.bmin=col.gray;this.fmin=col.yellow;this.fsec=col.gray;this.bsec=col.yellow;}
     else if (alrm[1].tmr!==-1||alrm[2].tmr!==-1||alrm[3].tmr!==-1) {this.bmin=colo.btnEn;this.bsec=colo.btnEn;}
-    else  {this.bmin=col.dgray1;this.fsec=col.lgray;this.bsec=col.dgray1;}
-	}else {this.bmin=col.dgray1;this.fsec=col.lgray;this.bsec=col.dgray1;}
+    else  {this.bmin=col.raf2;this.fsec=col.dgray1;this.bsec=col.raf2;}
+	}else {this.bmin=col.raf2;this.fsec=col.dgray1;this.bsec=col.raf2;}
 	g.setColor(0,this.bmin);
     g.fillRect(105,55,210,150);
 	g.setColor(1,this.fmin);
-    g.drawString(t[1],123,75);
+    g.drawString(t[1],123,72);
     g.flip();
   }
   //seconds

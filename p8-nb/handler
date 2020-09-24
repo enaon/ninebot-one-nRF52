@@ -1,10 +1,11 @@
 //handler
 //set p8 type
-const touchtype="716"; //716|816|816s
+const touchtype="716"; //816|816|816s
 const acctype="BMA421"; //BMA421|SC7A20
 //settings - run set.upd() after changing settings to take effect.
 var set={
-  name:"p8-atc", //Set the name to be broadcasted by the Bluetooth module. 
+  name:"p8-tfk", //Set the name to be broadcasted by the Bluetooth module. 
+  zone:3, //Timezone
   cli:1, //Nordic serial bluetooth access. Enables/disables Espruino Web IDE.
   hid:0, //enable/disable Bluetooth music controll Service.
   gb:0,  //Notifications service. Enables/disables support for "GadgetBridge" playstore app.
@@ -12,7 +13,7 @@ var set={
   acc:1, //enables/disables wake-screen on wrist-turn. 
   dnd:0, //Do not disturb mode, if ebabled vibrations are off.
   bt:0, //Incommint BT service status indicator- Not user settable.0=not_connected|1=unknown|2=webide|3=gadgetbridge|4=atc|5=esp32
-  tor:0, //Enables/disables totch- Not user settable.
+  tor:0, //Enables/disables torch- Not user settable.
   ondc:0, //charging indicator-not user settable.
   btsl:0, //bt sleep status-not user settable.
   boot:getTime(), 
@@ -20,7 +21,7 @@ var set={
   hidM:undefined, //not user settable.
   clin:0,//not settable
   upd:function(){ //run this for settings changes to take effect.
-	if (this.hid==1 && this.hidM==undefined) {
+	if (this.hid==1&&this.hidM==undefined) {
 		Modules.addCached("ble_hid_controls",function(){
 		function b(a,b){NRF.sendHIDReport(a,function(){NRF.sendHIDReport(0,b);});}
 		exports.report=new Uint8Array([5,12,9,1,161,1,21,0,37,1,117,1,149,5,9,181,9,182,9,183,9,205,9,226,129,6,149,2,9,233,9,234,129,2,149,1,129,1,192]);
@@ -36,24 +37,27 @@ var set={
 		this.hidM=undefined;
 		if (global["\xFF"].modules.ble_hid_controls) Modules.removeCached("ble_hid_controls");
     }
+	if (!Boolean(require('Storage').read('atc'))) this.atc=0;
 	if (this.atc==1) eval(require('Storage').read('atc'));
-	//else { if (this.atcW) {this.atcW=undefined;this.atcR=undefined;} NRF.setServices(undefined,{uart:Boolean(this.cli),hid:(this.hid)?this.hidM.report:undefined});}
-    else { if (this.atcW) {this.atcW=undefined;this.atcR=undefined;}  NRF.setServices(undefined,{uart:true,hid:(this.hid)?this.hidM.report:undefined});}
-    if (!set.cli&&!set.gb&&!set.atc&&!set.hid) {NRF.sleep();set.btsl=1;}
+	else {
+		NRF.setServices(undefined,{uart:(this.cli||this.gb)?true:false,hid:(this.hid&&this.hidM)?this.hidM.report:undefined });
+		if (this.atcW) {this.atcW=undefined;this.atcR=undefined;} 
+	}
+    if (!set.cli&&!set.gb&&!set.atc&&!set.hid) { if (this.bt!=0) NRF.disconnect(); else{NRF.sleep();set.btsl=1;}}
     else if (this.bt!=0) NRF.disconnect();
-    else if (set.btsl==1) {NRF.wake();set.btsl=0;}
+    else if (set.btsl==1) {NRF.restart();set.btsl=0;}
   }
 };
-set.upd();
+E.setTimeZone(set.zone);
 function bdis() {
+  	set.bt=0; 
+    Bluetooth.removeListener('data',ccon);
 	E.setConsole(null,{force:true});
     if (!set.cli&&!set.gb&&!set.atc&&!set.hid){
-      //NRF.setServices(undefined,{uart:false,hid:undefined}); 
       NRF.sleep();
       set.btsl=1;
-    }
-	set.bt=0; 
-    Bluetooth.removeListener('data',ccon);
+    }	
+
 	digitalPulse(w.pin.MOTOR,1,[100,50,50,50,100]); 
 }
 function bcon() {
@@ -70,13 +74,12 @@ function ccon(l){
     if (set.gb) if (l.startsWith(gb)){set.bt=3;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});}
     if (l.length>5)  NRF.disconnect();
 }
-//E.setConsole(null,{force:true});
+E.setConsole(null,{force:true});
 NRF.setAdvertising({}, { name:set.name,connectable:true });
 NRF.on('disconnect',bdis);  
 NRF.on('connect',bcon);
+set.upd();
 Modules.removeCached("ble_hid_controls");
-//set.upd();
-
 //face
 var face={
   appCurr:"main",
@@ -366,7 +369,7 @@ var acc={
     var data;
 	if (acctype=="BMA421") data=i2c.readFrom(0x18,6);
     else {data={}; data[3]=i2c.readFrom(0x18,1)+"";} 
-	print(data);
+	//print(data);
 	if (210<data[3]&&data[3]<250) {
 		if (acctype!="BMA421"){
 		    i2c.writeTo(0x18,3);
@@ -374,7 +377,7 @@ var acc={
 		    i2c.writeTo(0x18,1);
 		}
 		if (data[1]<20||data[1]>=250) {
-          	print(data);
+          //print(data);
           this.up=1;
           if (this.go){ 
             if (!w.gfx.isOn&&face.appCurr!=""){  
