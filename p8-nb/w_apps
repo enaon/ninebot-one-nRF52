@@ -1,13 +1,6 @@
 //quick apps for settings menu (swipe up to access settings, swipe up again for apps)
 //custom part
 this.appImgNone=E.toArrayBuffer(atob("AQGBAAA="));//empty
-//this.appImgNone=require("heatshrink").decompress(atob("mEwwIolv////+gEBAgIABwEBwAOBAYMDCofAAssH8YFDj//Aoc8nwFDuEeAodgBYngu4FD4AjE4PDAofDwYFD44UCAQPug4FDvkGAod4hwLEngFD//4EYngQc4FDXIrFFaIoAjA="));
-//App images
-/*
-this.appImg2=require("heatshrink").decompress(atob("mEwwIjggfAAod//wECgP//+ACAX8n4SCh/AgfwAoMfAQP4AQM+AQN8AQN+AQMeFAVAgEOAoInCh4uB8/QgEHwEB4YnBgeAgfB+IDBGQOA/IPBAoV9AoeBv3EwILCj/ggPgg5IB8EAAoUHAokDAokBGwPgDoMB/AdBAoX8GocB3wFDFQIFCQAMvwfAA4IwB4YVBFoMT84VBFoKdBO4NwgEIVAV4gEERgSVFUIqtFXIrFFaIpxDADw"));
-this.appImg3=require("heatshrink").decompress(atob("mEwwIQNgMAwGAAoWAwIFCgHAAouDDAdgAogLFC4wFEwPBF4eD8IFD49hCIf2m4FDn/+FIcf/AFDh14Aof8nwQD/kcAoX+hEYh8AgfwhkYg/gA4ISBgH4CgIvCnkwHYN3wEMmED4kx4EGmEHwkw+EEmEeAQM8EwN8hwIBhkd/Eenkf3EP5E+n0Z+EAhBlBjBHBhnGkeYAodhBYljAodmAoccsQFDjFj8cMAoMQsfCAoS/BgyDDkAFKsEHAofggbREeIL/FACQ"));
-this.appImg4=require("heatshrink").decompress(atob("mEwwMAnAIDnk/Aof4g+AAgMD8EBAIMABIVwgOAhwOBnAFBjgFBjkD4AnCh0H8FwAolgAoMMAoMwC4QFFh/wDoUfj/4/AFBg////gJQQFBKAc//gFJv/+AgUDC4PAFIQFBFIMBAgIkCh//9/3//wBAPP8f//wFBx/xCgZHBAgX+GoN/AoIDBA4IFBD4QnB//B7/zwYwB4+f/PjIIPGEYIFBgOGAoNjAoOMAoNxwAFDmIFMgcYAoXAg4FCjHghwFDuEcAoPwjE4vEYVoMYjngAocP4AFDgeAjDFBjDyBnAFBdIUwdIMMAoNgCgL7CZAUGgAA=="));
-*/
 //App actions
 this.appDo1="face.go('calc',0)";
 this.appDo2="face.go('repellent',0)";

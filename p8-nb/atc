@@ -140,7 +140,6 @@ var atcW= function(i) {
      }
      }
     });
-    //console.log("send: ",o);	
   }
 };
 

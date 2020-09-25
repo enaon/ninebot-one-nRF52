@@ -1,5 +1,4 @@
 //main
-
 face[0] = {
   offms: 3000,
   init: function(){
@@ -30,7 +29,6 @@ face[0] = {
   g.fillRect(0,200,239,239);
   g.setColor(0,col.black);
   g.flip();
-  
 //push-(wip)    
   if (typeof set.push !== 'undefined') {
     g.setColor(1,col.gray);//
@@ -172,8 +170,6 @@ face[0] = {
 face[1] = {
   offms:1000,
   init: function(){
-//    if (Boolean(require("Storage").read("euc"))) {face.go("euc",0);}
-//	else if (Boolean(require("Storage").read("alarm"))) {face.go("alarm",0);}
   return true;
   },
   show : function(){

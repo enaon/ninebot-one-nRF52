@@ -1,6 +1,6 @@
 //handler
 //set p8 type
-const touchtype="716"; //816|816|816s
+const touchtype="716"; //716|816|816s
 const acctype="BMA421"; //BMA421|SC7A20
 //settings - run set.upd() after changing settings to take effect.
 var set={
@@ -16,6 +16,7 @@ var set={
   tor:0, //Enables/disables torch- Not user settable.
   ondc:0, //charging indicator-not user settable.
   btsl:0, //bt sleep status-not user settable.
+  hidT:"media", //joy/kb/media
   boot:getTime(), 
   accR:function(){if (this.acc)acc.on(); else acc.off();},
   hidM:undefined, //not user settable.
@@ -33,19 +34,31 @@ var set={
 		exports.volumeUp=function(a){b(32,a);};
 		exports.volumeDown=function(a){b(64,a);};});
 		this.hidM=require("ble_hid_controls");
-  	}else if (set.hid==0 &&this.hidM!=undefined) {
+/*		if (this.hidT=="joy") this.hidM = E.toUint8Array(atob("BQEJBKEBCQGhAAUJGQEpBRUAJQGVBXUBgQKVA3UBgQMFAQkwCTEVgSV/dQiVAoECwMA="));
+		else if (this.hidT=="kb") this.hidM = E.toUint8Array(atob("BQEJBqEBBQcZ4CnnFQAlAXUBlQiBApUBdQiBAZUFdQEFCBkBKQWRApUBdQORAZUGdQgVACVzBQcZAClzgQAJBRUAJv8AdQiVArECwA=="));
+		else this.hidM = E.toUint8Array(atob("BQEJBqEBhQIFBxngKecVACUBdQGVCIEClQF1CIEBlQV1AQUIGQEpBZEClQF1A5EBlQZ1CBUAJXMFBxkAKXOBAAkFFQAm/wB1CJUCsQLABQwJAaEBhQEVACUBdQGVAQm1gQIJtoECCbeBAgm4gQIJzYECCeKBAgnpgQIJ6oECwA=="));
+*/
+  	}else if (this.hid==0 &&this.hidM!=undefined) {
 		this.hidM=undefined;
 		if (global["\xFF"].modules.ble_hid_controls) Modules.removeCached("ble_hid_controls");
     }
 	if (!Boolean(require('Storage').read('atc'))) this.atc=0;
-	if (this.atc==1) eval(require('Storage').read('atc'));
+	if (this.atc) eval(require('Storage').read('atc'));
 	else {
 		NRF.setServices(undefined,{uart:(this.cli||this.gb)?true:false,hid:(this.hid&&this.hidM)?this.hidM.report:undefined });
 		if (this.atcW) {this.atcW=undefined;this.atcR=undefined;} 
 	}
-    if (!set.cli&&!set.gb&&!set.atc&&!set.hid) { if (this.bt!=0) NRF.disconnect(); else{NRF.sleep();set.btsl=1;}}
+	if (this.gb) eval(require('Storage').read('m_gb'));
+	else {
+		this.handleNotificationEvent=undefined;
+		this.handleFindEvent=undefined;
+		this.sendBattery=undefined;
+		this.gbSend=undefined;
+		global.GB=undefined;
+	}		
+    if (!this.cli&&!this.gb&&!this.atc&&!this.hid) { if (this.bt!=0) NRF.disconnect(); else{NRF.sleep();this.btsl=1;}}
     else if (this.bt!=0) NRF.disconnect();
-    else if (set.btsl==1) {NRF.restart();set.btsl=0;}
+    else if (this.btsl==1) {NRF.restart();this.btsl=0;}
   }
 };
 E.setTimeZone(set.zone);
