@@ -1,74 +1,67 @@
 //E.setConsole(Serial1,{force:true});
-
 //if (!Boolean(require('Storage').read('messages.txt'))) require('Storage').write('messages.txt',{"new":"0"});
 if (!Boolean(require('Storage').read('setting.json'))) require('Storage').write('setting.json',{"watchtype":"eucwatch"});
-if(!global.notify) {
-	notify={
-		new:0,
-		messages:[]
-	};
-}	
-/*
-  Bluetooth.line="";
-  Bluetooth.on('data',function(d) {
-    var l = (Bluetooth.line + d).split("\n");
-    Bluetooth.line = l.pop();
-    l.forEach(n=>Bluetooth.emit("line",n));
-  });
-  Bluetooth.on('line',function(l) {
-	print("line: ",l);
-    if (l.startsWith('\x10')) l=l.slice(1);
-	if (l.startsWith('setTime(') && l.endsWith('})') && global.GB)
-		print("date"); //try {eval(l) } catch(e) {}
-    if (l.startsWith('GB({') && l.endsWith('})') && global.GB)
-		{print("gb cmd in");try { global.GB(JSON.parse(l.slice(3,-1))); } catch(e) {}}
-  });
-
-*/
-
 function gbSend(message) {
     Bluetooth.println("");
     Bluetooth.println(JSON.stringify(message));
 }
-
 function sendBattery() {
-    gbSend({ t: "status", bat: E.getBattery() });
+    gbSend({ t: "status", bat: w.battVoltage() });
 }
- function handleNotificationEvent(event) {
-    if (event.t === "notify") {
-	  notify.new++;
-      print("event in: ",event);
-	  //messages.unshift(event);
-	  notify.messages.unshift("{\"src\":\""+event.src+"\",\"title\":\""+event.title+"\",\"body\":\""+event.body+"\"}");
-      if (notify.messages.length>20) notify.messages.pop();
-	  //messages.push("src:"+event.src+",title:"+event.title+",body:"+event.body)
-	  digitalPulse(D16,1,100);
-    } else { // notify-
-	notify.new=0;
-    }
-  } 
-//require('Storage').writeJSON("messages.log",messages)
+function handleNotificationEvent(event) {
+	let d=(Date()).toString().split(' ');
+    let ti=(""+d[4]+" "+d[0]+" "+d[2]);
+	if (event.src==="Phone"&&event.title==="Missed call"){
+	  notify.nCall++;
+  	  notify.New++;	
+	  notify.call.unshift("{\"src\":\""+event.src+"\",\"title\":\""+event.title+"\",\"body\":\""+event.body+"\",\"time\":\""+ti+"\"}");
+      if (notify.call.length>10) notify.call.pop();
+    }else if (event.t === "notify") {
+	  notify.nIm++;
+  	  notify.New++;
+	  notify.im.unshift("{\"src\":\""+event.src+"\",\"title\":\""+event.title+"\",\"body\":\""+event.body+"\",\"time\":\""+ti+"\"}");
+      if (notify.im.length>10) notify.im.pop();
 
+    }
+	digitalPulse(D16,1,[80,50,80]);
+
+} 
+
+function handleWeatherEvent(event) {
+	  notify.nInfo++;
+  	  notify.New++;
+	  notify.wupd=1;
+	  let d=(Date()).toString().split(' ');
+      let ti=(""+d[4]+" "+d[0]+" "+d[2]);
+	  notify.info.unshift("{\"src\":\"Weather\",\"title\":\"Weather Updated\",\"body\":\""+event.loc+"\",\"time\":\""+ti+"\"}");
+      if (notify.info.length>10) notify.info.pop();
+	  digitalPulse(D16,1,[80,50,80]);
+	  notify.weather=event;
+} 
+function handleCallEvent(event) {
+		if (event.cmd==="accept"){
+		notify.in=event;
+		digitalPulse(D16,1,[80,50,80,50,200,50,80,50,80]);
+	  }else {
+		notify.ring=0;notify.in=0;
+	  }
+} 
+//require('Storage').writeJSON("messages.log",messages)
 //if ( JSON.parse(messages[0]).t=="notify") print(1)
 // var _GB = global.GB;
 var find=0;
- function handleFindEvent(event) {
+function handleFindEvent(event) {
     if (event.n===true) {
-	 print("event find start");
-	
 	  if (!find){
-		  find=setInterval(function(){ digitalPulse(D16,1,[100,50,100]); },1000); 
+		  find=setInterval(function(){ digitalPulse(D16,1,[100,50,100,50,100]); },1000); 
 	  }
 	} else { // found
 		clearInterval(find);find=0;
-		print("event found");
     }
-  } 
-
-
-  global.GB = (event) => {
-    switch (event.t) {
-      case "notify":
+} 
+global.GB = (event) => {
+	switch (event.t) {
+	  case "notify":
       case "notify-":
         handleNotificationEvent(event);
 		print("handle evenet");
@@ -80,14 +73,16 @@ var find=0;
         //handleMusicStateUpdate(event);
         break;
       case "call":
-        //handleCallEvent(event);
+        handleCallEvent(event);
         break;
       case "find":
         handleFindEvent(event);
         break;
+	  case "weather":
+        handleWeatherEvent(event);
+        break;
     }
- //   if(_GB)setTimeout(_GB,0,event);
-  };
+};
   
   
   

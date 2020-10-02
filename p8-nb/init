@@ -56,9 +56,6 @@ const pin = {
 //fonts
 require('Font7x11Numeric7Seg').add(Graphics);
 //battery
-pin.BATTERY.mode('analog');
-const battery = () => 7.1 * (analogRead(pin.BATTERY));
-const charging = () => pin.CHARGING.read();
 const battVoltage=function(s){
 	let v=7.1*analogRead(pin.BATTERY);
 	if (s) { v=(v*100-345)*1.43|0; //if (v>=100) v=100;
@@ -194,8 +191,6 @@ g.flip=function(){
 };
 module.exports = {
   pin: pin,
-  battery: battery,
-  charging: charging,
   battVoltage: battVoltage,
   gfx: g
 };

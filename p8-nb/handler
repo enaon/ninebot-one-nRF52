@@ -2,13 +2,29 @@
 //set p8 type
 const touchtype="716"; //716|816|816s
 const acctype="BMA421"; //BMA421|SC7A20
+//notifications
+var notify={
+	New:0,nIm:0,nInfo:0,nCall:0,nMail:0
+};
+notify.im=(Boolean(require('Storage').read('im.log')))?require('Storage').readJSON('im.log'):[];
+notify.info=(Boolean(require('Storage').read('info.log')))?require('Storage').readJSON('info.log'):[];
+notify.call=(Boolean(require('Storage').read('call.log')))?require('Storage').readJSON('call.log'):[];
+function handleInfoEvent(event) {
+	  notify.nInfo++;
+	  notify.New++;
+//      print("Info event in: ",event);
+	  let d=(Date()).toString().split(' ');
+      let ti=(""+d[4]+" "+d[0]+" "+d[2]);
+	  notify.info.unshift("{\"src\":\""+event.src+"\",\"title\":\""+event.title+"\",\"body\":\""+event.body+"\",\"time\":\""+ti+"\"}");
+      if (notify.info.length>10) notify.info.pop();
+}
 //settings - run set.upd() after changing settings to take effect.
 var set={
   name:"p8-tfk", //Set the name to be broadcasted by the Bluetooth module. 
   zone:3, //Timezone
   cli:1, //Nordic serial bluetooth access. Enables/disables Espruino Web IDE.
   hid:0, //enable/disable Bluetooth music controll Service.
-  gb:0,  //Notifications service. Enables/disables support for "GadgetBridge" playstore app.
+  gb:1,  //Notifications service. Enables/disables support for "GadgetBridge" playstore app.
   atc:0, //Notifications service. Enables/disables support for "d6 notification" playstore app from ATC1441.
   acc:1, //enables/disables wake-screen on wrist-turn. 
   dnd:0, //Do not disturb mode, if ebabled vibrations are off.
@@ -63,14 +79,18 @@ var set={
 };
 E.setTimeZone(set.zone);
 function bdis() {
-  	set.bt=0; 
     Bluetooth.removeListener('data',ccon);
 	E.setConsole(null,{force:true});
     if (!set.cli&&!set.gb&&!set.atc&&!set.hid){
       NRF.sleep();
       set.btsl=1;
     }	
-
+	if (set.bt==1) handleInfoEvent({"src":"BT","title":"BT","body":"Disconnected"});
+	else if (set.bt==2) handleInfoEvent({"src":"BT","title":"IDE","body":"Disconnected"});
+	else if (set.bt==3) handleInfoEvent({"src":"BT","title":"GB","body":"Disconnected"});
+	else if (set.bt==4) handleInfoEvent({"src":"BT","title":"ATC","body":"Disconnected"});
+	else if (set.bt==5) handleInfoEvent({"src":"BT","title":"ESP","body":"Disconnected"});
+  	set.bt=0; 
 	digitalPulse(w.pin.MOTOR,1,[100,50,50,50,100]); 
 }
 function bcon() {
@@ -81,10 +101,16 @@ function bcon() {
 function ccon(l){ 
     var cli="\x03";
     var gb="\x20\x03";
-	if (set.cli) {if (l.startsWith(cli)) {set.bt=2;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});
-    print("Welcome.\n** Working mode **\nUse devmode (Settings-Info-long press on Restart) for uploading files."); }
+	if (set.cli) {
+		if (l.startsWith(cli)) {set.bt=2;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});
+		print("Welcome.\n** Working mode **\nUse devmode (Settings-Info-long press on Restart) for uploading files."); 
+		handleInfoEvent({"src":"BT","title":"IDE","body":"Connected"});
+		}
     }
-    if (set.gb) if (l.startsWith(gb)){set.bt=3;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});}
+    if (set.gb) if (l.startsWith(gb)){
+		set.bt=3;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});
+		handleInfoEvent({"src":"BT","title":"GB","body":"Connected"});
+		}
     if (l.length>5)  NRF.disconnect();
 }
 E.setConsole(null,{force:true});

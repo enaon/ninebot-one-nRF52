@@ -1,88 +1,61 @@
 //main
 face[0] = {
   offms: 3000,
+  g:w.gfx,
   init: function(){
-  var g=w.gfx;
   this.v=w.battVoltage(1);
   //top
-  g.setColor(1,col.lgray);
-  g.fillRect(0,0,158,50); //date
-  g.fillRect(162,0,239,50);//batt
-  g.setColor(0,col.black);//
-  g.flip();
+ pal[0]=col.black;
+  this.g.setColor(1,col.lgray);
+  this.g.fillRect(0,0,158,50); //date
+  this.g.fillRect(162,0,239,50);//batt
+  this.g.setColor(0,col.black);
+  if (this.v<0) {this.g.setFont("Vector",22);this.g.drawString("EMPTY",242-(this.g.stringWidth("EMPTY")),15); } 
+  else if (this.v<100) {this.g.setFont("Vector",35);this.g.drawString(this.v+"%",239-(this.g.stringWidth(this.v+"%")),8);} 
+  else  {this.g.setFont("Vector",29);this.g.drawString("FULL",242-(this.g.stringWidth("FULL")),10); } 
+//   this.g.fillRect(210,55,240,150);
+  if (face.pagePrev!=2){this.g.fillRect(0,55,100,150);}
+//  this.g.fillRect(0,213,239,239);
+//  this.g.setColor(0,col.black);//
+  this.g.flip();
+
   //bottom
   //bt status-date
-  this.bt=-1;
-  this.btd();
   //batt-charger state
-  if (set.ondc==1) g.setColor(0,colo.btnSt);
-  else if (this.v<=20) g.setColor(0,colo.btnAl);
-  else g.setColor(0,col.lgray);
-  g.fillRect(162,0,239,50);//batt
-  g.setColor(1,colo.btnTxt);
-  if (this.v<0) {g.setFont("Vector",22);g.drawString("EMPTY",242-(g.stringWidth("EMPTY")),15); } 
-  else if (this.v<100) {g.setFont("Vector",35);g.drawString(this.v+"%",239-(g.stringWidth(this.v+"%")),8);} 
-  else  {g.setFont("Vector",29);g.drawString("FULL",242-(g.stringWidth("FULL")),10); } 
-  g.flip();
-  //info Pannel
-  g.setColor(1,col.gray);
-  g.fillRect(0,200,239,239);
-  g.setColor(0,col.black);
-  g.flip();
-//push-(wip)    
-  if (typeof set.push !== 'undefined') {
-    g.setColor(1,col.gray);//
-	g.setFont("Vector",25);
-	g.drawString(set.push,119-(g.stringWidth(set.push))/2,165); //info
-	g.flip();
-  }
+/*  if (set.ondc==1) this.g.setColor(0,colo.btnSt);
+  else if (this.v<=20) this.g.setColor(0,colo.btnAl);
+  else this.g.setColor(0,col.lgray);
+  this.g.fillRect(162,0,239,50);//batt
+  this.g.setColor(1,colo.btnTxt);
+  if (this.v<0) {this.g.setFont("Vector",22);this.g.drawString("EMPTY",242-(this.g.stringWidth("EMPTY")),15); } 
+  else if (this.v<100) {this.g.setFont("Vector",35);this.g.drawString(this.v+"%",239-(this.g.stringWidth(this.v+"%")),8);} 
+  else  {this.g.setFont("Vector",29);this.g.drawString("FULL",242-(this.g.stringWidth("FULL")),10); } 
+  this.g.flip();
+*/
+  notify.wupd=1;
+  this.bt=-1;
+//  this.bs=0;
+  this.nCall=-1;
+  this.nIm=-1;
+  this.nInfo=-1;
   this.hour=-1;
   this.min=-1;
   this.sec=-1;
-  this.batt=set.ondc;
   this.mem=-1;
-  this.bt=set.bt;
+  this.batt=set.ondc;
+//  this.New=-1;
   this.run=true;
+//  this.batt=-1;
   },
   show : function(){
   if (!this.run) return;
-  var g=w.gfx;
-  var d=(Date()).toString().split(' ');
-  var t=(d[4]).toString().split(':');
-  var s=(t[2]).toString().split('');
-  //bt status on date
-  this.btd();
-  //batt status
-  if (this.batt!=set.ondc ){
-    this.batt=set.ondc;
-    this.v=w.battVoltage(1);
-    if (this.batt==1)
-      g.setColor(0,colo.btnSt);
-    else if (this.v<=20)
-      g.setColor(0,colo.btnAl);
-    else 
-      g.setColor(0,col.lgray);
-    g.fillRect(162,0,239,50);//batt
-    g.setColor(1,colo.btnTxt);
-	if (this.v<0) {g.setFont("Vector",22);g.drawString("EMPTY",242-(g.stringWidth("EMPTY")),15); } 
-    else if (this.v<100) {g.setFont("Vector",35);g.drawString(this.v+"%",239-(g.stringWidth(this.v+"%")),8);} 
-    else  {g.setFont("Vector",29);g.drawString("FULL",242-(g.stringWidth("FULL")),10); } 
-    g.flip();
-  }
-  //hours
-  if (t[0]!=this.hour){
-    this.hour=t[0];
-    g.setColor(0,colo.bck1);
-    g.fillRect(0,55,100,150);
-    g.setColor(1,colo.txt);
-    g.setFont("Vector",66);
-    g.drawString(t[0],15,72); //hours
-  g.flip();
-  }
+  this.d=(Date()).toString().split(' ');
+  this.t=(this.d[4]).toString().split(':');
+  this.s=(this.t[2]).toString().split('');
   //minutes
-  if (t[1]!=this.min ){
-    this.min=t[1];
-    g.setFont("Vector",66);
+  if (this.t[1]!=this.min ){
+    this.min=this.t[1];
+    this.g.setFont("Vector",66);
 	this.fmin=colo.txt1;
     this.fsec=col.black;
 	if (global.alrm) {
@@ -90,67 +63,195 @@ face[0] = {
     else if (alrm[1].tmr!==-1||alrm[2].tmr!==-1||alrm[3].tmr!==-1) {this.bmin=colo.btnEn;this.bsec=colo.btnEn;}
     else  {this.bmin=col.raf2;this.fsec=col.dgray1;this.bsec=col.raf2;}
 	}else {this.bmin=col.raf2;this.fsec=col.dgray1;this.bsec=col.raf2;}
-	g.setColor(0,this.bmin);
-    g.fillRect(105,55,210,150);
-	g.setColor(1,this.fmin);
-    g.drawString(t[1],123,72);
-    g.flip();
+	this.g.setColor(0,this.bmin);
+    this.g.fillRect(105,55,210,150);
+	this.g.setColor(1,this.fmin);
+    this.g.drawString(this.t[1],120,72);
+    this.g.flip();
   }
-  //seconds
-  g.setColor(0,this.bsec);
-  g.fillRect(211,55,240,150);
-  g.setColor(1,this.fsec);//
-  g.setFont("Vector",35);
-  g.drawString(s[0],218,70); //seconds
-  g.drawString(s[1],218,108); //seconds
-  g.flip(); 
- 
+   //seconds
+  this.g.setColor(0,this.bsec);
+  this.g.fillRect(210,55,240,150);
+  this.g.setColor(1,this.fsec);//
+  this.g.setFont("Vector",35);
+  this.g.drawString(this.s[0],218,70); //seconds
+  this.g.drawString(this.s[1],218,108); //seconds
+  this.g.flip(); 
+  //hours
+  if (this.t[0]!=this.hour){
+    this.hour=this.t[0];
+    this.g.setColor(0,colo.bck1);
+    this.g.fillRect(0,55,100,150);
+    this.g.setColor(1,colo.txt);
+    this.g.setFont("Vector",66);
+    this.g.drawString(this.t[0],15,72); //hours
+  this.g.flip();
+  }
+
+  //bt status on date
+  if (notify.ring){
+	if (this.ring!=notify.ring){
+	this.bt=-1;
+	this.g.setColor(0,col.olive);
+	this.g.fillRect(0,0,158,50); //date
+    this.g.setColor(1,col.white);
+    this.g.setFont("Vector",25)
+	this.g.drawString("ANSWER",10,9);
+	this.g.flip();
+	}
+  }else if (set.bt != this.bt){
+	this.bt=set.bt;
+	this.ring=0;
+    var colbt=colo.bck1;
+    if (this.bt==3)  colbt=colo.bck3;
+    else if (this.bt==4)  colbt=col.blue;
+    else if (this.bt==2)  colbt=colo.btnSt;
+    this.g.setColor(0,colbt);
+	this.g.fillRect(0,0,158,50); //date
+    this.g.setColor(1,colo.btnTxt);
+    this.g.setFont("Vector",35);
+	if (this.bt==0&&!set.cli&&!set.atc&&!set.hid&&!set.gb) {
+		this.g.drawString(this.d[2]+" "+this.d[0].toUpperCase(), (81-(this.g.stringWidth(this.d[2]+" "+this.d[0].toUpperCase()))/2) ,9); //date
+		this.g.flip();
+	}else {
+        this.g.setFont("Vector",32);
+	    this.g.drawString(this.d[2]+" "+this.d[0].toUpperCase(), (90-(this.g.stringWidth(this.d[2]+" "+this.d[0].toUpperCase()))/2) ,10); //date
+		this.g.flip();
+	    this.g.setColor(0,colbt);
+		this.g.fillRect(0,0,15,50); //date
+		var colbtf=col.white;
+		var img_bt = E.toArrayBuffer(atob("CxQBBgDgFgJgR4jZMawfAcA4D4NYybEYIwTAsBwDAA=="));
+		if (set.bt==0) colbtf=col.black;
+		//else if (set.bt==3) img_bt=require("heatshrink").decompress(atob("i0WwQFC1WgAgYFDAgIFClQFCwEK1W/AoIPB1f+CAMq1f7/WqwQPB/fq1Gq1/+/4dC/2/CAIaB/YbBAAO///qAoX/B4QbBDQQ7BDQQrBAAWoIIIACIIIVC0ECB4cACAZiBAoRtCAoIDBA"));
+		this.g.setColor(1,colbtf);
+		this.g.drawImage(img_bt,3,13);
+		this.g.flip();
+	}  }
+  //batt status
+  if (notify.ring){
+	if (this.ring!=notify.ring){
+	this.g.setColor(0,col.lgreen);
+	this.g.fillRect(162,0,239,50);//batt
+    this.g.setColor(1,col.white);
+//	this.g.drawImage(img,170,12);
+    this.g.setFont("Vector",25)
+	this.g.drawString("MUTE",170,9);
+	this.g.flip();
+	}
+  }else if (notify.New&&(this.nCall!=notify.nCall||this.nInfo!=notify.nInfo||this.nIm!=notify.nIm)){
+    this.batt=set.ondc;
+	if (notify.nCall)  {
+        this.colf=col.white;this.colb=col.red;this.str=notify.nCall;this.bs="nCall";
+        img = require("heatshrink").decompress(atob("jEYwIGDg4CBh4CBj+AAQPAgE/AQoLBn4RBnwCEj4CEh4RBh4XBg/g8ED+P4gP//kAAQV/AQM/AQMf/EAgfgIgQA="));
+	}else if (notify.nIm)  {
+		this.colf=col.white;this.colb=col.raf;this.str=notify.nIm;this.bs="nIm";
+        img = require("heatshrink").decompress(atob("jEYwIPMv///wCFj///EP//w4f/4fw/8P/F+j/+jATBwP/BoICBAA4mIHZAA="));
+	}else if (notify.nInfo)  {
+		this.colf=col.white;this.colb=col.olive;this.str=notify.nInfo;this.bs="nInfo";
+        img = require("heatshrink").decompress(atob("jEYwIHEv0AgP/wEH//gh//+Ef8/4j/D/E/4/8n///l///+v/nAQPDARM/4YXBAQIgCEwQsCGQQ4CHwQACA=="));
+	}else { this.batt=-1; this.bs=0;}
+		this.g.setColor(0,this.colb);
+		this.g.fillRect(162,0,239,50);//batt
+        this.g.setColor(1,this.colf);
+		this.g.drawImage(img,170,12);
+		if (this.str>9) {
+			this.g.setFont("7x11Numeric7Seg",3);
+			this.g.drawString("9",200,9);
+	        this.g.setFont("Vector",25);
+			this.g.drawString("+",225,14);
+		}else{
+			this.g.setFont("7x11Numeric7Seg",3);
+			this.g.drawString(this.str,210,9);
+		}
+		this.g.flip();
+  }else if (this.batt!=set.ondc ){
+    this.batt=set.ondc;
+    this.v=w.battVoltage(1);
+    if (this.batt==1)
+      this.g.setColor(0,colo.btnSt);
+    else if (this.v<=20)
+      this.g.setColor(0,colo.btnAl);
+    else 
+      this.g.setColor(0,col.lgray);
+    this.g.fillRect(162,0,239,50);//batt
+    this.g.setColor(1,colo.btnTxt);
+	if (this.v<0) {this.g.setFont("Vector",22);this.g.drawString("EMPTY",242-(this.g.stringWidth("EMPTY")),15); } 
+    else if (this.v<100) {this.g.setFont("Vector",35);this.g.drawString(this.v+"%",239-(this.g.stringWidth(this.v+"%")),8);} 
+    else  {this.g.setFont("Vector",29);this.g.drawString("FULL",242-(this.g.stringWidth("FULL")),10); } 
+    this.g.flip();
+  }
+  this.widg();
   //loop
     this.tid=setTimeout(function(t){
       t.tid=-1;
       t.show();
     },200,this);
   },
-  btd:function(){  
-    var g=w.gfx;
-    var d=(Date()).toString().split(' ');
-    var t=(d[4]).toString().split(':');
-    var s=(t[2]).toString().split('');
-	if (set.bt != this.bt){
-	this.bt=set.bt;
-    var colbt=colo.bck1;
-    if (this.bt==3)  colbt=colo.bck3;
-    else if (this.bt==4)  colbt=col.blue;
-    else if (this.bt==2)  colbt=colo.btnSt;
-    g.setColor(0,colbt);
-	g.fillRect(0,0,158,50); //date
-    g.setColor(1,colo.btnTxt);
-    g.setFont("Vector",35);
-	if (this.bt==0&&!set.cli&&!set.atc&&!set.hid&&!set.gb) {
-		g.drawString(d[2]+" "+d[0].toUpperCase(), (81-(g.stringWidth(d[2]+" "+d[0].toUpperCase()))/2) ,9); //date
-		g.flip();
-	}else {
-        g.setFont("Vector",32);
-	    g.drawString(d[2]+" "+d[0].toUpperCase(), (90-(g.stringWidth(d[2]+" "+d[0].toUpperCase()))/2) ,10); //date
-		g.flip();
-	    g.setColor(0,colbt);
-		g.fillRect(0,0,15,50); //date
-		var colbtf=col.white;
-		var img_bt = E.toArrayBuffer(atob("CxQBBgDgFgJgR4jZMawfAcA4D4NYybEYIwTAsBwDAA=="));
-		if (set.bt==0) colbtf=col.black;
-		//else if (set.bt==3) img_bt=require("heatshrink").decompress(atob("i0WwQFC1WgAgYFDAgIFClQFCwEK1W/AoIPB1f+CAMq1f7/WqwQPB/fq1Gq1/+/4dC/2/CAIaB/YbBAAO///qAoX/B4QbBDQQ7BDQQrBAAWoIIIACIIIVC0ECB4cACAZiBAoRtCAoIDBA"));
-		g.setColor(1,colbtf);
-		g.drawImage(img_bt,3,13);
-		g.flip();
+  widg:function(){
+    //push-(wip)   
+	if (notify.ring){
+	if (this.ring!=notify.ring){
+	  this.ring=notify.ring;
+	  this.g.setColor(0,col.black);
+  	  this.g.clearRect(0,151,239,239);
+      this.g.setColor(1,col.white);
+      this.g.setFont("Vector",26)
+      if (notify.in.name.length>16) this.msg.title=notify.in.name.substr(0,13)+"...";
+      this.g.drawString(this.msg.title,122-(this.g.stringWidth(this.msg.title))/2,168); //Name
+      if (notify.in.number.length>16) this.msg.title=notify.in.number.substr(0,13)+"...";
+	  this.g.drawString(this.msg.title,122-(this.g.stringWidth(this.msg.title))/2,210); //Number
+	  this.g.flip();
 	}
-  }
+	}else if (this.nCall!=notify.nCall||this.nInfo!=notify.nInfo||this.nIm!=notify.nIm) {
+      this.nInfo=notify.nInfo;
+      this.nCall=notify.nCall;
+      this.nIm=notify.nIm;
+      this.New=notify.New;
+      if (notify.nCall||notify.nIm||notify.nInfo){
+		this.g.setColor(0,col.black);
+		this.g.clearRect(0,151,239,239);		  
+        if (notify.nCall)  {this.msg=JSON.parse(notify.call[0]);this.cf=col.red;}
+	    else if (notify.nIm)  {this.msg=JSON.parse(notify.im[0]);this.cf=col.lblue;}
+        else if (notify.nInfo)  {this.msg=JSON.parse(notify.info[0]);this.cf=col.raf2;}
+	    this.g.setColor(1,col.white);//
+	    this.g.setFont("Vector",27);
+		if (this.msg.title.length>16) this.msg.title=this.msg.title.substr(0,13)+"...";
+	    this.g.drawString(this.msg.title,122-(this.g.stringWidth(this.msg.title))/2,168); //info
+		if (this.msg.body.length>16) this.msg.body=this.msg.body.substr(0,13)+"...";
+	    this.g.drawString(this.msg.body,122-(this.g.stringWidth(this.msg.body))/2,210); //info
+	    this.g.flip();
+      //}else this.widp=1;
+      }else if (notify.wupd&&notify.weather&&!this.New){
+		var img;
+		//this.widp=1;
+		notify.wupd=0;  	
+		this.g.setColor(0,col.black);
+		this.g.clearRect(0,151,239,239);
+		this.g.setColor(1,col.white);//
+		this.g.setFont("Vector",25);
+		this.g.drawString(notify.weather.txt,119-(this.g.stringWidth(notify.weather.txt))/2,165); //info
+		//temp
+		img = require("heatshrink").decompress(atob("jkwwIEBgwCBgf8AYP/+EAj//wEB//4gE/x/AgfgvkAnkDAwPAngGBgIGCjgGP+IGB5+cAwP5AysH5+egH8/Pwj+Px+D8H4vk8j+D4+D/kevF/+Pnh//h/wMIP/NAOP+IGI+4UCvH/DYOH/0eFIXj8EAvkfgEPwH8gfwg///yLB//ATIcASoI"));
+		this.g.drawImage(img,20,200,{scale:0.6});
+		this.g.drawString(notify.weather.temp/10,60,205); //info
+		//hum   
+       img = require("heatshrink").decompress(atob("lkwwILIsAEDgwKE+AEDj+AAgUB/AKDn/AAgUH/wKDv/gAgUP34aD/IbDj8PEwUD8H8BQV+g4bCg/AnwKC/EDIQRABIQUBBAImCCYMPIQIlBgF8BQICBA4Q0Cj4aDLwQHBBoQSBPoIYBnkbhkD4ED4MYwE8gF4iOQgPgg+BjcAjwKBjcgBQWAogKDgHfBQcJiAKCgMRBQcxBQU8gUTGwRfB8A2BPYSABC4IFBFIJXEgCXBRISXCvzECRwIjBgP/h6OCh///7VD/7WDaAgADA="));
+		this.g.drawImage(img,145,200,{scale:0.6});
+		this.g.drawString(notify.weather.hum,190,205); //info
+		this.g.flip();
+	  }else {
+//		this.g.setColor(1,col.raf2);
+		this.g.setColor(0,col.black);
+		this.g.fillRect(0,151,239,239);
+		this.g.flip();
+	  }
+    }
   },
   tid:-1,
   run:false,
   clear : function(){
-    var g=w.gfx;
     pal[0]=colo.bck0;
-    g.clear();
+    this.g.clear();
     this.exit();
     return true;
   },
@@ -161,8 +262,7 @@ face[0] = {
     return true;
   },
   off: function(){
-    var g=w.gfx;
-    g.off();
+    this.g.off();
     this.clear();
   }
 };
@@ -181,43 +281,52 @@ face[1] = {
   return true;
   },
   off: function(){
-    var g=w.gfx;
-    g.off();
+    this.g.off();
   }
 };	
 //
 face[2] = {
   offms:2000,
-  init: function(){
-    var g=w.gfx;
+  g:w.gfx,
+  init: function(){ 
     this.hour=-1;
     this.min=-1;
     this.sec=-1;
     this.run=true; 
-	g.setColor(0,col.black);
-    g.fillRect(0,0,239,239);
-    g.flip();
+	this.g.setColor(0,col.black);
+    this.g.fillRect(0,0,239,239);
+    this.g.flip();
+	//push-(wip)    
+  if (notify.New) {
+	if (notify.nCall)  {this.msg=JSON.parse(notify.call[0]);this.cf=col.red;}
+	else if (notify.nIm)  {this.msg=JSON.parse(notify.im[0]);this.cf=col.lblue;}
+	else if (notify.nInfo)  {this.msg=JSON.parse(notify.info[0]);this.cf=col.raf2;}
+   	this.g.setColor(0,col.black);
+	this.g.setColor(1,this.cf);//
+	this.g.setFont("Vector",25);
+	this.g.drawString(this.msg.title,119-(this.g.stringWidth(this.msg.title))/2,165); //info
+	this.g.flip();
+  }
   },
   show : function(){
   if (!this.run) return;
-  var g=w.gfx;
-  var d=(Date()).toString().split(' ');
-  var t=(d[4]).toString().split(':');
-  var s=(t[2]).toString().split('');
+  this.d=(Date()).toString().split(' ');
+  this.t=(this.d[4]).toString().split(':');
+  this.s=(this.t[2]).toString().split('');
   //hours
-  if (t[0]!=this.hour){
-    this.hour=t[0];
-    g.setColor(0,colo.bck1);
-    g.fillRect(0,55,100,150);
-    g.setColor(1,colo.txt);
-    g.setFont("Vector",66);
-    g.drawString(t[0],15,72); //hours
-  g.flip();
+  if (this.t[0]!=this.hour){
+    this.hour=this.t[0];
+    this.g.setColor(0,colo.bck1);
+    this.g.fillRect(0,55,100,150);
+    this.g.setColor(1,colo.txt);
+    this.g.setFont("Vector",66);
+    this.g.drawString(this.t[0],15,72); //hours
+  this.g.flip();
   }
   //minutes
-  if (t[1]!=this.min ){
-    this.min=t[1];
-    g.setFont("Vector",66);
+  if (this.t[1]!=this.min ){
+    this.min=this.t[1];
+    this.g.setFont("Vector",66);
 	this.fmin=colo.txt1;
     this.fsec=col.black;
 	if (global.alrm) {
@@ -225,20 +334,21 @@ face[2] = {
     else if (alrm[1].tmr!==-1||alrm[2].tmr!==-1||alrm[3].tmr!==-1) {this.bmin=colo.btnEn;this.bsec=colo.btnEn;}
     else  {this.bmin=col.raf2;this.fsec=col.dgray1;this.bsec=col.raf2;}
 	}else {this.bmin=col.raf2;this.fsec=col.dgray1;this.bsec=col.raf2;}
-	g.setColor(0,this.bmin);
-    g.fillRect(105,55,210,150);
-	g.setColor(1,this.fmin);
-    g.drawString(t[1],123,72);
-    g.flip();
+	this.g.setColor(0,this.bmin);
+    this.g.fillRect(105,55,210,150);
+	this.g.setColor(1,this.fmin);
+    this.g.drawString(this.t[1],120,72);
+    this.g.flip();
   }
   //seconds
-  g.setColor(0,this.bsec);
-  g.fillRect(211,55,240,150);
-  g.setColor(1,this.fsec);//
-  g.setFont("Vector",35);
-  g.drawString(s[0],218,70); //seconds
-  g.drawString(s[1],218,108); //seconds
-  g.flip(); 
+  this.g.setColor(0,this.bsec);
+  this.g.fillRect(210,55,240,150);
+  this.g.setColor(1,this.fsec);//
+  this.g.setFont("Vector",35);
+  this.g.drawString(this.s[0],218,70); //seconds
+  this.g.drawString(this.s[1],218,108); //seconds
+  this.g.flip(); 
+  
   //loop
   this.tid=setTimeout(function(t){
       t.tid=-1;
@@ -248,7 +358,6 @@ face[2] = {
   tid:-1,
   run:false,
   clear : function(){
-    var g=w.gfx;
     pal[0]=colo.bck0;
     this.exit();
     return true;
@@ -260,8 +369,7 @@ face[2] = {
     return true;
   },
   off: function(){
-    var g=w.gfx;
-    g.off();
+    this.g.off();
     this.clear();
   }
 };	
@@ -273,10 +381,19 @@ touchHandler[0]=function(e,x,y){
 	     digitalPulse(p,1,[30,50,30]);
 		if (Boolean(require("Storage").read("alarm"))) {face.go("alarm",0);return;}
 	//hid music controls
-      }else if (x>158 && y<50){ 
-		if (set.hidM){
+      }else if (x>158 && y<50){//batt
+		if (face[0].bs){
+		notify[face[0].bs]=0;
+        if (!notify.nInfo&&!notify.nCall&&!notify.nIm) {face[0].batt=-1;face[0].bs=0;notify.New=0;}
+		digitalPulse(p,1,[30,50,30]);
+		}else if (set.hidM){
         digitalPulse(p,1,[30,50,30]);
 		if (Boolean(require("Storage").read("hid"))) {face.go("hid",0);return;}
+		}else digitalPulse(p,1,40);
+	  }else if (y>151&&face[0].bs){ 
+		if (Boolean(require("Storage").read("notify"))) {
+          digitalPulse(p,1,[30,50,30]);	
+          face.go("notify",5,face[0].bs.substr(1).toLowerCase());return;
 		}else digitalPulse(p,1,40);
 	  }else digitalPulse(p,1,40);
     }else if  (e==1){
@@ -293,11 +410,12 @@ touchHandler[0]=function(e,x,y){
 		if (Boolean(require("Storage").read("euc"))) {face.go("euc",0);return;}
 		else if (Boolean(require("Storage").read("alarm"))) {face.go("alarm",0);return;}
     }else if  (e==4){
-		if (Boolean(require("Storage").read("push"))) {face.go("push",0);return;}
+		if (Boolean(require("Storage").read("notify"))) {face.go("notify",0);return;}
     }else if  (e==12){
 	if (150<y&&y<200){ 	
 		digitalPulse(p,1,180);
-		set.push=undefined;
+//		set.push=undefined;
+		notify.New=0;notify.nInfo=0;notify.nCall=0;notify.nIm=0;notify.nMail=0;
 	}else if (x>162 && y>200){ 
       digitalPulse(p,1,40);
 	//alarms
