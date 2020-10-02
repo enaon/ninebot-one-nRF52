@@ -330,7 +330,10 @@ touchHandler[5]=function(e,x,y){
       if  (e==3) {
         if (notify[face[5].type].length==1) notify[face[5].type]=[];
         else notify[face[5].type].splice(face[5].at,1);
-        if (notify[face[5].type].length==0){digitalPulse(p,1,80); notify["n"+face[5].type.substr(0,1).toUpperCase()+face[5].type.substr(1)]=0; face.go("notify",0);return;} 
+        if (notify[face[5].type].length==0){
+			digitalPulse(p,1,80); notify["n"+face[5].type.substr(0,1).toUpperCase()+face[5].type.substr(1)]=0; 
+			if (!notify.nCall&&!notify.nIm&&!notify.nInfo) notify.New=0;
+			face.go("notify",0);return;} 
         face[5].go--;
       } else face[5].at=-1;
       face[5].del=0;
