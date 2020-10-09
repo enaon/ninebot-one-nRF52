@@ -1,89 +1,32 @@
-if (!global.euc){
-//vars
-global.euc= {
-  spd: ["0","0"], 
-  spdC:col.black,
-  amp: "0", 
-  ampC: col.black, 
-  batt: "0", 
-  batC: col.lgreen, 
-  temp: "0.0", 
-  tmpC: col.lgreen, 
-  trpC: col.black, 
-  trpN: "0.0", 
-  trpL: "0.0", 
-  trpT: "0.0", 
-  trpR: "0.0",
-  aver:"0.0",
-  rdmd:0,
-  time:"0",
-  lock: -1,
-  alrm: 0,
-  conn: "OFF",
-  alck: 0,
-  far: 83,
-  near: 65,
-  mac: "20:91:48:4c:49:d1 public", //enaon
-//  mac: "88:C2:55:32:F6:5B public", //manowar
-//  mac: "20:91:48:AB:2A:AD public", //megadeath
-//  mac: "20:91:48:BC:91:3B public", //poet
-};
-//alerts
-euc.alert = {
-  spd: 23,
-  temp: 60,
-  batt: 20,
-  ampH: 18,
-  ampL: -6,
-  on: false,
-};
-//toggle on/off
-euc.tgl=function(){ 
-  var p=w.pin.MOTOR;
-  if (euc.conn!="OFF" ) {
-    digitalPulse(p,1,[90,60,90]);  
-	if (eTmp.reconnect>=0 ||  euc.conn=="WAIT" || euc.conn=="ON") {
-    clearTimeout(eTmp.reconnect); eTmp.reconnect=-1;
-    }
-  	euc.conn="OFF";
-  }else {
-    digitalPulse(p,1,100);   
-    NRF.setTxPower(4);
-	if (euc.conn == "OFF") eTmp.count=22; else eTmp.count=0;  //unlock
-	euc.conn="ON";
-	eCon();  
-  } 
-
-};
-}
+//euc
 //faces-main face
 face[0] = {
   offms: 5000, //15 sec timeout
+  g:w.gfx,
   spd:[],
   init: function(){
-    var g=w.gfx;
-    g.setColor(1,col.gray);
-    g.fillRect(0,0,135,50); //temp
-    g.fillRect(139,0,239,50); //batt      
-    g.fillRect(0,158,239,193); //mileage
-    g.setColor(0,col.black);
-    g.setFont("7x11Numeric7Seg",4);
-    g.drawString(euc.temp, 10,3); //temp
-    g.drawString(euc.batt,240-(g.stringWidth(euc.batt)+10),3); //fixed bat
-    g.setFontVector(20); //mileage
-    g.drawString("TRIP",1,167); 
-    g.drawString("TOT",90,167); 
-    g.drawString("LEFT",171,167); 
-    g.flip();
+    this.g.setColor(1,col("gray"));
+    this.g.fillRect(0,0,135,50); //temp
+    this.g.fillRect(139,0,239,50); //batt      
+    this.g.fillRect(0,158,239,193); //mileage
+    this.g.setColor(0,col("black"));
+    this.g.setFont("7x11Numeric7Seg",4);
+    this.g.drawString(euc.temp, 10,3); //temp
+    this.g.drawString(euc.batt,240-(this.g.stringWidth(euc.batt)+10),3); //fixed bat
+    this.g.setFontVector(20); //mileage
+    this.g.drawString("TRIP",1,167); 
+    this.g.drawString("TOT",90,167); 
+    this.g.drawString("LEFT",171,167); 
+    this.g.flip();
     //mileage
-    g.fillRect(0,194,239,239);
-    g.setColor(1,col.gray);
-    if (euc.conn=="READY") g.setColor(1,col.lblue);
-    g.setFont("7x11Numeric7Seg",3);
-    g.drawString(euc.trpN,0,205); 
-    g.drawString(euc.trpT,(240-(g.stringWidth(euc.trpT)))/2,205); 
-    g.drawString(euc.trpR,240-(g.stringWidth(euc.trpR)+1),205); 
-    g.flip();
+    this.g.fillRect(0,194,239,239);
+    this.g.setColor(1,col("gray"));
+    if (euc.conn=="READY") this.g.setColor(1,col("lblue"));
+    this.g.setFont("7x11Numeric7Seg",3);
+    this.g.drawString(euc.trpN,0,205); 
+    this.g.drawString(euc.trpT,(240-(this.g.stringWidth(euc.trpT)))/2,205); 
+    this.g.drawString(euc.trpR,240-(this.g.stringWidth(euc.trpR)+1),205); 
+    this.g.flip();
     this.spd[0]=-1;
     this.spd[1]=-1;
     this.amp=-1;
@@ -96,112 +39,111 @@ face[0] = {
   },
   show : function(o){
   if (!this.run) return;
-  var g=w.gfx;
 //connected  
   if (euc.conn=="READY") {
 	//speed 1
     if (euc.spd[0]!=this.spd[0]){
       this.spd[0]=euc.spd[0];
-        if (euc.spdC!=col.black) {
-		  g.setColor(1,euc.spdC);
-          g.fillRect(0,54,135,154);
-          g.setColor(0,col.black);
+        if (euc.spdC!=col("black")) {
+		  this.g.setColor(1,euc.spdC);
+          this.g.fillRect(0,54,135,154);
+          this.g.setColor(0,col("black"));
         }else { 
-		  g.setColor(0,col.back);
-          g.fillRect(0,54,135,154);
-          g.setColor(1,col.white);
+		  this.g.setColor(0,col("back"));
+          this.g.fillRect(0,54,135,154);
+          this.g.setColor(1,col("white"));
         }
         if (euc.spd[0]==0) {   
-	      g.setFontVector(18);
-          g.drawString("AV.SPEED",12,60);
-	      g.setFont("7x11Numeric7Seg",5);
-	      g.drawString(euc.aver,(139-(g.stringWidth(euc.aver)))/2,90); 
-          g.flip();
+	      this.g.setFontVector(18);
+          this.g.drawString("AV.SPEED",12,60);
+	      this.g.setFont("7x11Numeric7Seg",5);
+	      this.g.drawString(euc.aver,(139-(this.g.stringWidth(euc.aver)))/2,90); 
+          this.g.flip();
         }else{
-          g.setFontVector(84);
-          g.drawString(euc.spd[0],(150-(g.stringWidth(euc.spd[0])))/2,65); 
+          this.g.setFontVector(84);
+          this.g.drawString(euc.spd[0],(150-(this.g.stringWidth(euc.spd[0])))/2,65); 
           this.spd[0]=euc.spd[0];
-          g.flip();
+          this.g.flip();
         }
     }
 	//Amp
     if ((euc.amp|0)!=this.amp) {
         this.amp=(euc.amp|0);
-        if  (euc.ampC!=col.black ) {
-		  g.setColor(1,euc.ampC);
-          g.fillRect(139,54,239,154); 
-          g.setColor(0,col.black);
+        if  (euc.ampC!=col("black") ) {
+		  this.g.setColor(1,euc.ampC);
+          this.g.fillRect(139,54,239,154); 
+          this.g.setColor(0,col("black"));
         }else { 
-		  g.setColor(0,col.back);
-          g.fillRect(139,54,239,154); 
-          g.setColor(1,col.white);
+		  this.g.setColor(0,col("back"));
+          this.g.fillRect(139,54,239,154); 
+          this.g.setColor(1,col("white"));
         }
         
         if (((euc.amp|0)==0 && euc.spd[0]==0) ||  euc.lock==1) {  
-	      g.setFontVector(18);
-	      g.drawString("RunTIME",140,60);
-	      g.setFont("7x11Numeric7Seg",5);
-  	      g.drawString(euc.time,192-(g.stringWidth(euc.time)/2),90); 
-          g.flip();
+	      this.g.setFontVector(18);
+	      this.g.drawString("RunTIME",140,60);
+	      this.g.setFont("7x11Numeric7Seg",5);
+  	      this.g.drawString(euc.time,192-(this.g.stringWidth(euc.time)/2),90); 
+          this.g.flip();
         }else{
-          g.setFont("7x11Numeric7Seg",6);
-          g.drawString(euc.amp|0,(142+(100-g.stringWidth(euc.amp|0))/2),73); 
-          g.flip();
+          this.g.setFont("7x11Numeric7Seg",6);
+          this.g.drawString(euc.amp|0,(142+(100-this.g.stringWidth(euc.amp|0))/2),73); 
+          this.g.flip();
         }    
     }
 	//Temp
     if (euc.temp!=this.temp) {
       this.temp=euc.temp;
-	  g.setColor(1,euc.tmpC);
-      g.fillRect(0,0,135,50);       
-      g.setColor(0,col.black);
-      g.setFont("7x11Numeric7Seg",4);
-      g.drawString(euc.temp, 10,3); //temp
-      g.flip();
+	  this.g.setColor(1,euc.tmpC);
+      this.g.fillRect(0,0,135,50);       
+      this.g.setColor(0,col("black"));
+      this.g.setFont("7x11Numeric7Seg",4);
+      this.g.drawString(euc.temp, 10,3); //temp
+      this.g.flip();
     }
 	//Battery
     if (euc.batt!=this.batt) {
    	  this.batt=euc.batt;
-	  g.setColor(1,euc.batC);
-      g.fillRect(139,0,239,50);
-      g.setColor(0,col.black);
-      g.setFont("7x11Numeric7Seg",4);
-      g.drawString(euc.batt,240-(g.stringWidth(euc.batt)+10),3); //fixed bat
-      g.flip();
+	  this.g.setColor(1,euc.batC);
+      this.g.fillRect(139,0,239,50);
+      this.g.setColor(0,col("black"));
+      this.g.setFont("7x11Numeric7Seg",4);
+      this.g.drawString(euc.batt,240-(this.g.stringWidth(euc.batt)+10),3); //fixed bat
+      this.g.flip();
     }
 	//Mileage
 	if (euc.trpN!=this.trpN) {
-	  eTmp.trpN=euc.trpN;
-	  g.setColor(0,col.black);
-	  g.fillRect(0,194,239,239);
-      g.setColor(1,col.lblue);
-	  g.setFont("7x11Numeric7Seg",3);
-   	  g.drawString(euc.trpN,0,205); 
-	  g.drawString(euc.trpT,(240-(g.stringWidth(euc.trpT)))/2,205); 
-	  g.drawString(euc.trpR,240-(g.stringWidth(euc.trpR)+1),205); 
-	  g.flip();
+	  euc.tmp.trpN=euc.trpN;
+	  this.g.setColor(0,col("black"));
+	  this.g.fillRect(0,194,239,239);
+      this.g.setColor(1,col("lblue"));
+	  this.g.setFont("7x11Numeric7Seg",3);
+   	  this.g.drawString(euc.trpN,0,205); 
+	  this.g.drawString(euc.trpT,(240-(this.g.stringWidth(euc.trpT)))/2,205); 
+	  this.g.drawString(euc.trpR,240-(this.g.stringWidth(euc.trpR)+1),205); 
+	  this.g.flip();
     }     
 //diconnected  
   } else if (euc.conn=="OFF")  {
     if (euc.lock!=this.lock){
     this.lock=euc.lock;
-    g.setColor(1,col.gray);
-    g.fillRect(0,54,135,154);
-    g.setColor(0,col.black);
-    g.setFontVector(18);
-    g.drawString("AV.SPEED",12,60);
-    g.setFont("7x11Numeric7Seg",5);
-    g.drawString(euc.aver,(139-(g.stringWidth(euc.aver)))/2,90); 
-    g.flip();
-    if (euc.lock==1) g.setColor(1,col.yellow);
-    else  g.setColor(1,col.gray);
-    g.fillRect(139,54,239,154); 
-    g.setColor(0,col.black); 
-	g.setFontVector(18);
-	g.drawString("RunTIME",140,60);
-	g.setFont("7x11Numeric7Seg",5);
-  	g.drawString(euc.time,192-(g.stringWidth(euc.time)/2),90); 
-    g.flip();
+    this.g.setColor(1,col("gray"));
+    this.g.fillRect(0,54,135,154);
+    this.g.setColor(0,col("black"));
+    this.g.setFontVector(18);
+    this.g.drawString("AV.SPEED",12,60);
+    this.g.setFont("7x11Numeric7Seg",5);
+    this.g.drawString(euc.aver,(139-(this.g.stringWidth(euc.aver)))/2,90); 
+    this.g.flip();
+    if (euc.lock==1) this.g.setColor(1,col("yellow"));
+    else  this.g.setColor(1,col("gray"));
+    this.g.fillRect(139,54,239,154); 
+    this.g.setColor(0,col("black")); 
+	this.g.setFontVector(18);
+	this.g.drawString("RunTIME",140,60);
+	this.g.setFont("7x11Numeric7Seg",5);
+  	this.g.drawString(euc.time,192-(this.g.stringWidth(euc.time)/2),90); 
+    this.g.flip();
 	if (euc.conn=="OFF" && euc.lock==1){
     this.exit(); //if (set.cli) console.log("faceEUCexited");
     }
@@ -210,27 +152,28 @@ face[0] = {
   } else  {
     if (euc.conn!=this.conn) {
     this.conn=euc.conn;
-    g.setColor(1,col.gray);
-	g.fillRect(0,54,135,154);
-	g.setColor(0,col.black);
-	g.setFontVector(18);
-    g.drawString("AV.SPEED",12,60);
-	g.setFont("7x11Numeric7Seg",5);
-	g.drawString(euc.aver,(139-(g.stringWidth(euc.aver)))/2,90); 
-    g.flip();
-    g.fillRect(139,54,239,154); 
-    g.setColor(1,col.white);     
-    g.setFont("Vector",27);
-    g.drawString(euc.conn,(142+(100-g.stringWidth(euc.conn))/2),85);
-    g.flip();
-    g.setColor(1,col.gray);
-    g.fillRect(0,0,135,50);
-    g.fillRect(139,0,239,50);
-    g.setColor(0,col.black);
-    g.setFont("7x11Numeric7Seg",4);
-    g.drawString(euc.temp, 10,3); //temp
-    g.drawString(euc.batt,240-(g.stringWidth(euc.batt)+10),3);    
-    g.flip();
+    this.g.setColor(1,col("gray"));
+	this.g.fillRect(0,54,135,154);
+	this.g.setColor(0,col("black"));
+	this.g.setFontVector(18);
+    this.g.drawString("AV.SPEED",12,60);
+	this.g.setFont("7x11Numeric7Seg",5);
+	this.g.drawString(euc.aver,(139-(this.g.stringWidth(euc.aver)))/2,90); 
+    this.g.flip();
+    this.g.fillRect(139,54,239,154); 
+    this.g.setColor(1,col("white"));     
+    this.g.setFont("Vector",27);
+    this.g.drawString(euc.conn,(142+(100-this.g.stringWidth(euc.conn))/2),85);
+    this.g.flip();
+    this.g.setColor(1,col("gray"));
+    this.g.fillRect(0,0,135,50);
+    this.g.fillRect(139,0,239,50);
+    this.g.setColor(0,col("black"));
+    this.g.setFont("7x11Numeric7Seg",4);
+    this.g.drawString(euc.temp, 10,3); //temp
+    this.g.drawString(euc.batt,240-(this.g.stringWidth(euc.batt)+10),3);
+    this.g.flip();
+	if (euc.conn=="WAIT"){this.spd[0]=-1;this.spd[1]=-1;this.amp=-1;this.temp=-1;this.batt=-1;this.trpN=-1;this.conn="OFF";this.lock=2;this.run=true;}
     }
   }
 //refresh 
@@ -242,20 +185,14 @@ face[0] = {
   tid:-1,
   run:false,
   clear : function(){
-    var g=w.gfx;
-	if (face.appPrev!="euc" || face.appCurr!="euc" || face.pageCurr!=0) g.clear();
-    this.exit();
-    return true;
-  },
-  exit: function(){
+	if (face.appPrev!="euc" || face.appCurr!="euc" || face.pageCurr!=0) this.g.clear();
     this.run=false;
     if (this.tid>=0) clearTimeout(this.tid);
     this.tid=-1;
     return true;
   },
   off: function(){
-    var g=w.gfx;
-    g.off();
+    this.g.off();
     this.clear();
   } 
 };
@@ -276,72 +213,71 @@ face[1] = {
 //settings face
 face[5] = {
   offms: 5000,
+  g:w.gfx,
   init: function(){
-    var g=w.gfx;
-    g.setColor(1,col.gray);
-    g.fillRect(0,0,115,75); //left up
-    g.fillRect(0,80,115,155); //left mid
-    g.fillRect(0,160,115,239); //left dn
-    g.fillRect(120,0,239,239); //right-riding mode      
-    g.setColor(0,col.black);
-    g.setFont("Vector",24);
-	g.drawString("RING",58-(g.stringWidth("RING")/2),9); 
-	g.drawString("LIGHT",58-(g.stringWidth("LIGHT")/2),41); 
-//    g.drawString("AUTO",58-(g.stringWidth("AUTO")/2),90);
-//    g.drawString("LOCK",58-(g.stringWidth("LOCK")/2),122);
-	g.drawString("TRIP",58-(g.stringWidth("TRIP")/2),170); 
-	g.drawString("RESET",58-(g.stringWidth("RESET")/2),202); 
+    this.g.setColor(1,col("gray"));
+    this.g.fillRect(0,0,115,75); //left up
+    this.g.fillRect(0,80,115,155); //left mid
+    this.g.fillRect(0,160,115,239); //left dn
+    this.g.fillRect(120,0,239,239); //right-riding mode      
+    this.g.setColor(0,col("black"));
+    this.g.setFont("Vector",24);
+	this.g.drawString("RING",58-(this.g.stringWidth("RING")/2),9); 
+	this.g.drawString("LIGHT",58-(this.g.stringWidth("LIGHT")/2),41); 
+//    this.g.drawString("AUTO",58-(this.g.stringWidth("AUTO")/2),90);
+//    this.g.drawString("LOCK",58-(this.g.stringWidth("LOCK")/2),122);
+	this.g.drawString("TRIP",58-(this.g.stringWidth("TRIP")/2),170); 
+	this.g.drawString("RESET",58-(this.g.stringWidth("RESET")/2),202); 
 	//rdmd
- 	g.drawString("IS",180-(g.stringWidth("IS")/2),105);
-    g.setFont("Vector",35);
-    g.drawString("EUC",180-(g.stringWidth("EUC")/2),60); 
-	g.drawString("OFF",180-(g.stringWidth("OFF")/2),140);
-	//g.setFont("Vector",80);
-    //g.drawString(euc.rdmd,180-(g.stringWidth(euc.rdmd)/2),80); //fixed bat
-	g.flip();
+ 	this.g.drawString("IS",180-(this.g.stringWidth("IS")/2),105);
+    this.g.setFont("Vector",35);
+    this.g.drawString("EUC",180-(this.g.stringWidth("EUC")/2),60); 
+	this.g.drawString("OFF",180-(this.g.stringWidth("OFF")/2),140);
+	//this.g.setFont("Vector",80);
+    //this.g.drawString(euc.rdmd,180-(this.g.stringWidth(euc.rdmd)/2),80); //fixed bat
+	this.g.flip();
     this.rdmd=-1;
     this.alck=-1;
 	this.run=true;
   },
   show : function(){
     if (!this.run) return; 
-    var g=w.gfx;
 //autolock
     if (euc.alck != this.alck) {
 	  this.alck=euc.alck;
-      if (this.alck==1) g.setColor(1,col.blue);
-      else g.setColor(1,col.gray);
-      g.fillRect(0,80,115,155); //left mid
-      g.setColor(0,col.black);
- 	  g.setFont("Vector",24);
-      g.drawString("AUTO",58-(g.stringWidth("AUTO")/2),90);
-      g.drawString("LOCK",58-(g.stringWidth("LOCK")/2),122);
-      g.flip();
+      if (this.alck==1) this.g.setColor(1,col("blue"));
+      else this.g.setColor(1,col("gray"));
+      this.g.fillRect(0,80,115,155); //left mid
+      this.g.setColor(0,col("black"));
+ 	  this.g.setFont("Vector",24);
+      this.g.drawString("AUTO",58-(this.g.stringWidth("AUTO")/2),90);
+      this.g.drawString("LOCK",58-(this.g.stringWidth("LOCK")/2),122);
+      this.g.flip();
     }
 //ride mode    
     if (euc.conn=="READY") {  
 	if (euc.rdmd != this.rdmd) {
 	  this.rdmd=euc.rdmd;	
-      g.setColor(1,col.lblue);
-      g.fillRect(120,0,239,239); //right-riding mode     
-      g.setColor(0,col.black);
-      g.setFont("Vector",88);
-      g.drawString(euc.rdmd,180-(g.stringWidth(euc.rdmd)/2),73);  
-      g.setFont("Vector",35);
+      this.g.setColor(1,col("lblue"));
+      this.g.fillRect(120,0,239,239); //right-riding mode     
+      this.g.setColor(0,col("black"));
+      this.g.setFont("Vector",88);
+      this.g.drawString(euc.rdmd,180-(this.g.stringWidth(euc.rdmd)/2),73);  
+      this.g.setFont("Vector",35);
       if (9>euc.rdmd) {
-      g.drawString(euc.rdmd+1,180-(g.stringWidth(euc.rdmd+1)/2),32);  
+      this.g.drawString(euc.rdmd+1,180-(this.g.stringWidth(euc.rdmd+1)/2),32);  
       }
       if (euc.rdmd>0) {
-      g.drawString(euc.rdmd-1,180-(g.stringWidth(euc.rdmd-1)/2),166); 
+      this.g.drawString(euc.rdmd-1,180-(this.g.stringWidth(euc.rdmd-1)/2),166); 
       }
-      g.setFont("Vector",20);
+      this.g.setFont("Vector",20);
       if (8>euc.rdmd) {
-      g.drawString(euc.rdmd+2,180-(g.stringWidth(euc.rdmd+2)/2),7); 
+      this.g.drawString(euc.rdmd+2,180-(this.g.stringWidth(euc.rdmd+2)/2),7); 
       }
       if (euc.rdmd>1) {
-      g.drawString(euc.rdmd-2,180-(g.stringWidth(euc.rdmd-2)/2),208); 
+      this.g.drawString(euc.rdmd-2,180-(this.g.stringWidth(euc.rdmd-2)/2),208); 
       }
-      g.flip();
+      this.g.flip();
     }
     }
 //loop
@@ -353,28 +289,21 @@ face[5] = {
   tid:-1,
   run:false,
   clear : function(){
-    var g=w.gfx;
-    g.clear();
-    this.exit();
-    return true;
-  },
-  exit: function(){
+    this.g.clear();
     this.run=false;
     if (this.tid>=0) clearTimeout(this.tid);
     this.tid=-1;
     return true;
   },
   off: function(){
-    var g=w.gfx;
-    g.off();
+    this.g.off();
     this.clear();
   }
 };
 //touch-main
 touchHandler[0]=function(e,x,y){
-    var p=w.pin.MOTOR;
     if (e==5){ 
-	  digitalPulse(p,1,40);
+	  digitalPulse(D16,1,40);
     }else if  (e==1){
 	  if (euc.conn!="OFF") {face.go("euc",-1);return;}
 	  else {face.go("main",0);return; }
@@ -382,65 +311,62 @@ touchHandler[0]=function(e,x,y){
 	  if (y>160&&x<50) {
         if (w.gfx.bri.lv!==7) {this.bri=w.gfx.bri.lv;w.gfx.bri.set(7);}
         else w.gfx.bri.set(this.bri);
-		digitalPulse(p,1,[30,50,30]);
+		digitalPulse(D16,1,[30,50,30]);
      }else if (y>190) {
 	  if (Boolean(require("Storage").read("settings"))) {face.go("settings",0);return;}
-	  } else digitalPulse(p,1,40);
+	  } else digitalPulse(D16,1,40);
     }else if  (e==3){
-	if (Boolean(require("Storage").read("repellent"))) {face.go("repellent",0);return;}else face.go("main",0);
+	  face.go("main",0);
     }else if  (e==4){		
-	  face.go(face.appRoot[0],face.appRoot[1],face.appRoot[2]);return;
+	  face.go("main",0);
+//	  face.go(face.appRoot[0],(face.appRoot[1])>2?face.appRoot[1]:0,face.appRoot[2]);return;
     }else if  (e==12){
 //euc on/off
 	  if  (y<158) {
   	    euc.tgl();
-		face.go("euc",0);return;
+//		face.go("euc",0);return;
 //euc settings
 	  }else if(euc.conn!=="WAIT"){
-        digitalPulse(p,1,140);
- 	    this.count=23;
+        digitalPulse(D16,1,140);
+ 	    euc.tmp.count=23;
 		face.go("euc",5);return;
-      }else digitalPulse(p,1,80);
+      }else digitalPulse(D16,1,80);
     }
     this.timeout();
 };
 //settings
 touchHandler[5]=function(e,x,y){    
-	this.fto=0;
-    this.farg=-1;
-	this.face="euc";
-    var p=w.pin.MOTOR;
     if (e==5){ 
-	  digitalPulse(p,1,40);
+	  digitalPulse(D16,1,40);
     }else if  (e==1){
       if  (x>=120) {
         euc.rdmd++;
-        if (euc.rdmd >9) {euc.rdmd=9; digitalPulse(p,1,40);}
-      }else digitalPulse(p,1,40);
+        if (euc.rdmd >9) {euc.rdmd=9; digitalPulse(D16,1,40);}
+      }else digitalPulse(D16,1,40);
     }else if  (e==2){
       if  (x>=120) {
         euc.rdmd--;
-        if (euc.rdmd <0) {euc.rdmd=0; digitalPulse(p,1,40);}
-      }else digitalPulse(p,1,40);
+        if (euc.rdmd <0) {euc.rdmd=0; digitalPulse(D16,1,40);}
+      }else digitalPulse(D16,1,40);
     }else if  (e==3){
-      digitalPulse(p,1,40);
+      digitalPulse(D16,1,40);
     }else if  (e==4){
 	  face.go("euc",0);return;
     }else if  (e==12){
       //ride mode
       if  (x>120) { 
-        eTmp.count=euc.rdmd+24;
+        euc.tmp.count=euc.rdmd+24;
       //reset mileage
       }else if (x<115 && y>145) {
         //if (set.cli) console.log("reset mileage");
-        digitalPulse(p,1,300);  
+        digitalPulse(D16,1,300);  
         euc.trpL="0.0";
 	  //toggle EUC auto lock
 	  }else if (x<115 && (80<y&&y<145)) {
         //if (set.cli) console.log("toggle alock");
-        digitalPulse(p,1,300);  
+        digitalPulse(D16,1,300);  
         euc.alck=1-euc.alck;
-      }else digitalPulse(p,1,40);
+      }else digitalPulse(D16,1,40);
     }
     this.timeout();
 };

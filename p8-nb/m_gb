@@ -1,6 +1,5 @@
+//m_gb
 //E.setConsole(Serial1,{force:true});
-//if (!Boolean(require('Storage').read('messages.txt'))) require('Storage').write('messages.txt',{"new":"0"});
-if (!Boolean(require('Storage').read('setting.json'))) require('Storage').write('setting.json',{"watchtype":"eucwatch"});
 function gbSend(message) {
     Bluetooth.println("");
     Bluetooth.println(JSON.stringify(message));
@@ -9,6 +8,7 @@ function sendBattery() {
     gbSend({ t: "status", bat: w.battVoltage() });
 }
 function handleNotificationEvent(event) {
+	if (event.t === "notify-") return;
 	let d=(Date()).toString().split(' ');
     let ti=(""+d[4]+" "+d[0]+" "+d[2]);
 	if (event.src==="Phone"&&event.title.startsWith('Missed')){
@@ -26,7 +26,6 @@ function handleNotificationEvent(event) {
 	digitalPulse(D16,1,[80,50,80]);
 
 } 
-
 function handleWeatherEvent(event) {
 	  notify.nInfo++;
   	  notify.New++;
@@ -39,12 +38,12 @@ function handleWeatherEvent(event) {
 	  notify.weather=event;
 } 
 function handleCallEvent(event) {
-		if (event.cmd==="accept"){
-		notify.in=event;
+	if (event.cmd==="accept"&&event.name){
+		notify.in=event;notify.ring=1;
 		digitalPulse(D16,1,[80,50,80,50,200,50,80,50,80]);
-	  }else {
-		notify.ring=0;notify.in=0;
-	  }
+	}else if (event.cmd!=="accept") {
+		  notify.ring=0;notify.in=0;
+	}
 } 
 //require('Storage').writeJSON("messages.log",messages)
 //if ( JSON.parse(messages[0]).t=="notify") print(1)
@@ -62,7 +61,7 @@ function handleFindEvent(event) {
 global.GB = (event) => {
 	switch (event.t) {
 	  case "notify":
-      case "notify-":
+      //case "notify-":
         handleNotificationEvent(event);
 		print("handle evenet");
         break;
