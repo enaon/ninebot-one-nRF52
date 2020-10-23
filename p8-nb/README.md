@@ -1,3 +1,7 @@
+## NOTICE: Project moved here:
+https://github.com/enaon/eucWatch
+
+
 ##### How to install espruino on the P8 smart watch:
 
 You will need an android smartphone, and an app called DaFlasher from the playstore, made by atc1441.
