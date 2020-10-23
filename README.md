@@ -1,3 +1,6 @@
+## NOTICE: Project moved here:
+https://github.com/enaon/eucWatch
+
 ## Description
 
 Scripts for directly connecting a Nordic Semiconductor nRF5 based smart watch/bracelet/fitness band, to a ninebot one c/e/p electric unicycle.
