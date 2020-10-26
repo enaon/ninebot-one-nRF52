@@ -20,7 +20,7 @@ The three files needed for the first step are the following, in this order:
 
 1. https://github.com/atc1441/DaFlasherFiles/blob/master/DaFitBootloader23Hacked.bin
 2. https://github.com/atc1441/DaFlasherFiles/blob/master/FitBootloaderDFU2.0.1.zip
-3. https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v07.13_p8_SDK11_SD20.zip
+3. https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v07.60_p8_SDK11_SD20_SPIFLASH.zip
 
 the first two files are a one time process, the last file is the espruino firmware image, and one could update just that in the future.
 
@@ -46,9 +46,15 @@ https://github.com/fanoush/ds-d6/tree/master/espruino/DFU/P8
 
 ~~https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v06.129_p8_SDK11_SD20.zip~~
 
-https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v07.13_p8_SDK11_SD20.zip
+~~https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v07.13_p8_SDK11_SD20.zip~~
 
-Use latest espruino firmware image, as it provides more flash space and the 810d36c bug fix.
+https://github.com/fanoush/ds-d6/blob/master/espruino/DFU/P8/espruino_2v07.60_p8_SDK11_SD20_SPIFLASH.zip
+
+Use latest espruino firmware image, as iit provides more space. 
+
+***Enter this in left hand side (webide) to enable flash(one time only) before uploading the scripts.***
+
+var spi=new SPI();spi.setup({sck:D2,mosi:D3,miso:D4,mode:0}); spi.send([0xab],D5); //wake
 
 #
 ##### Use of files in this repo:
